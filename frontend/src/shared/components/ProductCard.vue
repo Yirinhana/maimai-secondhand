@@ -8,6 +8,11 @@
         loading="lazy"
       />
       <span v-else class="mm-product-card__no-cover">暂无图片</span>
+      <span
+        v-if="isDemoProductImage(product.coverImage)"
+        class="mm-product-card__demo"
+        >演示示意图</span
+      >
       <span class="mm-product-card__condition">{{
         CONDITION_TEXT[product.condition]
       }}</span>
@@ -56,6 +61,7 @@
 <script setup lang="ts">
 import ItemImage from './ItemImage.vue';
 import { computed } from 'vue';
+import { isDemoProductImage } from '../demoImages';
 import MmIcon from './MmIcon.vue';
 import PriceText from './PriceText.vue';
 import {
@@ -106,6 +112,17 @@ const deliveryText = computed(() =>
   line-height: 1.5;
   color: #3c4634;
   background: #fbfcf6f2;
+}
+.mm-product-card__demo {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #fff;
+  background: #242421b8;
+  font-size: 10px;
+  line-height: 1.6;
 }
 .mm-product-card__meetup {
   color: #596a49;

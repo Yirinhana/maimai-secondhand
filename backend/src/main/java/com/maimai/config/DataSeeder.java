@@ -30,8 +30,10 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +43,7 @@ import java.util.stream.Collectors;
 /**
  * 本地开发种子数据（仅 local profile 启用）。
  * 仅当 users 表为空时执行；种子账号密码统一 Maimai#2026，仅用于本地开发，严禁用于任何真实环境。
- * 商品主图由程序生成 600×600 纯色 JPEG（画出商品标题文字）写入上传目录，不依赖任何外部资源。
+ * 在售示范主图从 JAR 内资源复制；未指定素材的待审核商品仍生成 600×600 标题图。
  */
 @Profile("local")
 @Component
@@ -120,33 +122,33 @@ public class DataSeeder implements ApplicationRunner {
                 "自用两年，全程戴壳贴膜，电池健康 86%，配件齐全。",
                 Product.Condition.LIKE_NEW, "边框一处轻微掉漆", 219900, 1,
                 "四川省成都市", "EXPRESS,MEETUP", 0, "面交当场验机，快递签收后 48 小时内可退",
-                Product.Status.ON_SALE, new Color(52, 96, 168));
+                Product.Status.ON_SALE, new Color(52, 96, 168), "iphone-blue.jpg");
         seedProduct(seller, categories.get("影音家电"), "索尼 WH-1000XM4 降噪耳机",
                 "功能完好，降噪正常，耳罩略有使用痕迹，附收纳盒。",
                 Product.Condition.GOOD, "耳罩轻微褶皱", 89900, 1,
                 "四川省成都市", "EXPRESS", 1200, "签收后 48 小时内可退",
-                Product.Status.ON_SALE, new Color(70, 70, 78));
+                Product.Status.ON_SALE, new Color(70, 70, 78), "headphones-charcoal.jpg");
         seedProduct(seller, categories.get("图书教材"), "Java 核心技术 卷I（第11版）",
                 "课程用书，内页少量笔记，无缺页。",
                 Product.Condition.GOOD, "封面轻微磨损", 4500, 2,
                 "四川省成都市", "EXPRESS,MEETUP", 600, "图书售出不退",
-                Product.Status.ON_SALE, new Color(126, 84, 40));
+                Product.Status.ON_SALE, new Color(126, 84, 40), "java-textbook.jpg");
         seedProduct(seller, categories.get("数码电子"), "Switch OLED 日版 九九新",
                 "仅试玩，箱说全，待平台审核上架。",
                 Product.Condition.LIKE_NEW, null, 189900, 1,
                 "四川省成都市", "MEETUP", 0, "面交当场验机",
-                Product.Status.PENDING_REVIEW, new Color(160, 60, 60));
+                Product.Status.PENDING_REVIEW, new Color(160, 60, 60), null);
 
         seedProduct(seller2, categories.get("服饰鞋包"), "优衣库羊毛混纺大衣 M 码",
                 "去年购入，穿着个位数，已干洗。",
                 Product.Condition.LIKE_NEW, null, 15900, 1,
                 "重庆市", "EXPRESS", 1000, "签收后 48 小时内可退",
-                Product.Status.ON_SALE, new Color(140, 100, 130));
+                Product.Status.ON_SALE, new Color(140, 100, 130), "wool-coat.jpg");
         seedProduct(seller2, categories.get("运动户外"), "尤尼克斯羽毛球拍 天斧77",
                 "已拉 26 磅线，拍框一处磕碰不影响打感。",
                 Product.Condition.GOOD, "拍框一处磕碰", 26000, 1,
                 "重庆市", "EXPRESS,MEETUP", 800, "当面验拍",
-                Product.Status.ON_SALE, new Color(60, 130, 90));
+                Product.Status.ON_SALE, new Color(60, 130, 90), "badminton-racket.jpg");
 
         log.info("开发种子数据已初始化：6 个账号（admin/operator/support/seller/seller2/buyer@maimai.local），"
                 + "6 个商品（5 个在售，1 个待审核）");
@@ -182,7 +184,7 @@ public class DataSeeder implements ApplicationRunner {
     private void seedProduct(User seller, Category category, String title, String description,
                              Product.Condition condition, String defects, long priceCents, int stock,
                              String region, String deliveryMethods, long freightCents,
-                             String returnPromise, Product.Status status, Color imageColor) {
+                             String returnPromise, Product.Status status, Color imageColor, String imageAsset) {
         Product product = new Product();
         product.setSellerId(seller.getId());
         product.setCategoryId(category.getId());
@@ -198,30 +200,27 @@ public class DataSeeder implements ApplicationRunner {
         product.setReturnPromise(returnPromise);
         product.setStatus(status);
         productRepository.save(product);
-        seedImage(product, imageColor);
+        seedImage(product, imageColor, imageAsset);
     }
 
-    /** 生成 600×600 纯色 JPEG 主图（画出商品标题文字）并登记 product_images。 */
-    private void seedImage(Product product, Color color) {
+    /** 素材按商品声明选择，目标仍按实际商品 ID 命名，不假定自增 ID 从 1 开始。 */
+    private void seedImage(Product product, Color color, String imageAsset) {
         String fileName = "seed-" + product.getId() + ".jpg";
         try {
             Path dir = Path.of(properties.getUploadDir(), "products").toAbsolutePath().normalize();
             Files.createDirectories(dir);
-            BufferedImage image = new BufferedImage(600, 600, BufferedImage.TYPE_INT_RGB);
-            Graphics2D g = image.createGraphics();
-            try {
-                g.setColor(color);
-                g.fillRect(0, 0, 600, 600);
-                g.setColor(Color.WHITE);
-                g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-                        RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-                g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 34));
-                drawWrappedTitle(g, product.getTitle());
-            } finally {
-                g.dispose();
+            Path target = dir.resolve(fileName);
+            if (imageAsset == null) {
+                writePlaceholderImage(product.getTitle(), color, target);
+            } else {
+                String resource = "/demo/products/" + imageAsset;
+                try (InputStream input = DataSeeder.class.getResourceAsStream(resource)) {
+                    if (input == null) {
+                        throw new IOException("缺少示范商品素材: " + resource);
+                    }
+                    Files.copy(input, target, StandardCopyOption.REPLACE_EXISTING);
+                }
             }
-            ImageIO.write(image, "jpeg", dir.resolve(fileName).toFile());
-            image.flush();
         } catch (IOException ex) {
             throw new IllegalStateException("种子商品图片生成失败: " + fileName, ex);
         }
@@ -230,6 +229,24 @@ public class DataSeeder implements ApplicationRunner {
         productImage.setPath("/uploads/products/" + fileName);
         productImage.setSort(0);
         productImageRepository.save(productImage);
+    }
+
+    private void writePlaceholderImage(String title, Color color, Path target) throws IOException {
+        BufferedImage image = new BufferedImage(600, 600, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = image.createGraphics();
+        try {
+            g.setColor(color);
+            g.fillRect(0, 0, 600, 600);
+            g.setColor(Color.WHITE);
+            g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+                    RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            g.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 34));
+            drawWrappedTitle(g, title);
+            ImageIO.write(image, "jpeg", target.toFile());
+        } finally {
+            g.dispose();
+            image.flush();
+        }
     }
 
     /** 标题按每行 10 个字符换行，居中绘制。 */

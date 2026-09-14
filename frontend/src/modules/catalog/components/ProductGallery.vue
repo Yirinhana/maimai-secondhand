@@ -29,7 +29,13 @@
       >
     </button>
     <div class="product-gallery__caption">
-      <span>{{ images.length ? '商品图片' : '卖家暂未上传图片' }}</span
+      <span>{{
+        isDemoProductImage(currentImage?.path)
+          ? '演示示意图 · 非卖家实拍'
+          : images.length
+            ? '商品图片'
+            : '卖家暂未上传图片'
+      }}</span
       ><span v-if="images.length"
         >{{ currentIndex + 1 }} / {{ images.length }}</span
       >
@@ -94,6 +100,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { isDemoProductImage } from '../../../shared/demoImages';
 import ItemImage from '../../../shared/components/ItemImage.vue';
 import type { ProductImage } from '../../../shared/types';
 import CatalogDialog from './CatalogDialog.vue';

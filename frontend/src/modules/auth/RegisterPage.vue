@@ -1,8 +1,12 @@
 <template>
   <div class="mm-auth">
-    <AuthIntro />
-    <MmCard title="注册麦麦二手" class="mm-auth__card">
-      <p class="mm-auth__lead">用邮箱创建账号，开始整理和发现闲置。</p>
+    <RegistrationVisual />
+    <section class="mm-auth__card" aria-labelledby="registration-title">
+      <header class="mm-auth__heading">
+        <p class="mm-auth__eyebrow">WELCOME TO MAIMAI</p>
+        <h1 id="registration-title">注册麦麦二手</h1>
+        <p class="mm-auth__lead">用邮箱创建账号，开始整理和发现闲置。</p>
+      </header>
       <form
         ref="formElement"
         class="mm-auth__form"
@@ -122,16 +126,15 @@
           </div>
         </fieldset>
       </form>
-    </MmCard>
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
-import AuthIntro from '../../shared/components/AuthIntro.vue';
+import RegistrationVisual from './RegistrationVisual.vue';
 import { nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import MmButton from '../../shared/components/MmButton.vue';
-import MmCard from '../../shared/components/MmCard.vue';
 import MmInput from '../../shared/components/MmInput.vue';
 import { get, post, type ApiError } from '../../shared/api';
 import { useAuthStore } from '../../shared/stores/auth';
@@ -295,97 +298,50 @@ async function onSubmit() {
 </script>
 
 <style scoped>
-.mm-auth__terms {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  font-size: 14px;
-  line-height: 1.7;
-}
-.mm-auth__terms input {
-  flex: none;
-  margin-top: 5px;
-}
 .mm-auth {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 460px);
-  gap: clamp(32px, 5vw, 64px);
-  max-width: 1080px;
-  margin: 0 auto;
-  padding: 44px 28px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 440px);
+  gap: clamp(38px, 5vw, 76px);
   align-items: start;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 48px 28px 64px;
 }
-
 .mm-auth__card {
   width: 100%;
-  max-width: 460px;
-  padding: 14px 10px;
-  box-shadow: none;
-  border-radius: 10px;
-}
-
-.mm-auth__form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--mm-space-4);
-}
-
-.mm-auth__code-row {
-  display: flex;
-  align-items: flex-end;
-  gap: var(--mm-space-2);
-}
-
-.mm-auth__code-input {
-  flex: 1;
   min-width: 0;
+  padding: 10px 0 0;
 }
-
-.mm-auth__code-row .mm-button {
-  flex-shrink: 0;
-  white-space: nowrap;
+.mm-auth__heading {
+  margin-bottom: 28px;
 }
-
-.mm-auth__hint {
-  font-size: var(--mm-font-s);
+.mm-auth__eyebrow {
   color: var(--mm-muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  line-height: 1.7;
 }
-
-.mm-auth__error {
-  font-size: var(--mm-font-s);
-  color: var(--mm-danger);
-}
-
-.mm-auth__links {
-  display: flex;
-  justify-content: space-between;
-  font-size: var(--mm-font-s);
-}
-@media (max-width: 760px) {
-  .mm-auth {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 20px;
-    padding: 20px 16px 32px;
-  }
-  .mm-auth__card {
-    max-width: none;
-    padding: 8px 0;
-  }
-  .mm-auth__links {
-    flex-wrap: wrap;
-    gap: 12px;
-  }
+.mm-auth__heading h1 {
+  margin: 10px 0;
+  font-size: 30px;
+  line-height: 1.4;
+  letter-spacing: -0.6px;
 }
 .mm-auth__lead {
   color: var(--mm-muted);
   font-size: 14px;
   line-height: 1.8;
-  margin-bottom: 24px;
+}
+.mm-auth__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mm-space-4);
 }
 .mm-auth__fields {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 19px;
   min-width: 0;
   border: 0;
   padding: 0;
@@ -394,10 +350,49 @@ async function onSubmit() {
 .mm-auth__fields:disabled {
   opacity: 0.75;
 }
-.mm-auth__links {
-  border-top: 1px solid var(--mm-border);
-  padding-top: 18px;
-  line-height: 1.6;
+.mm-auth__code-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+.mm-auth__code-input {
+  flex: 1;
+  min-width: 0;
+}
+.mm-auth__code-row .mm-button {
+  flex-shrink: 0;
+  white-space: nowrap;
+  padding: 0 15px;
+}
+.mm-auth__terms {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  font-size: 13px;
+  line-height: 1.8;
+}
+.mm-auth__terms input {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 4px;
+  accent-color: var(--mm-primary);
+}
+.mm-auth__terms input:focus-visible {
+  outline: 2px solid var(--mm-primary);
+  outline-offset: 3px;
+}
+.mm-auth__terms a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.mm-auth__hint {
+  font-size: 13px;
+  color: var(--mm-muted);
+}
+.mm-auth__error {
+  font-size: 13px;
+  color: var(--mm-danger);
 }
 .mm-auth__error,
 .mm-auth__hint {
@@ -413,19 +408,66 @@ async function onSubmit() {
   padding: 4px 0;
   text-decoration: underline;
 }
-@media (max-width: 420px) {
-  .mm-auth__code-row {
-    display: grid;
+.mm-auth__fields > .mm-button {
+  min-height: 48px;
+}
+.mm-auth__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  border-top: 1px solid var(--mm-border);
+  padding-top: 20px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+@media (max-width: 1000px) and (min-width: 761px) {
+  .mm-auth {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 380px);
+    padding-left: 24px;
+    padding-right: 24px;
+    gap: 36px;
+  }
+}
+@media (max-width: 760px) {
+  .mm-auth {
     grid-template-columns: minmax(0, 1fr);
-    gap: 10px;
+    gap: 24px;
+    padding: 20px 20px 36px;
+    max-width: 540px;
   }
-  .mm-auth__code-row > .mm-button {
-    justify-self: start;
+  .mm-auth__card {
+    padding: 0;
   }
-  .mm-auth__card :deep(.mm-card__body),
-  .mm-auth__card :deep(.mm-card__header) {
-    padding-left: 20px;
-    padding-right: 20px;
+  .mm-auth__heading {
+    margin-bottom: 22px;
+  }
+  .mm-auth__heading h1 {
+    margin: 0 0 8px;
+    font-size: 27px;
+  }
+  .mm-auth__eyebrow {
+    display: none;
+  }
+  .mm-auth__fields {
+    gap: 18px;
+  }
+  .mm-auth__code-row .mm-button {
+    padding: 0 12px;
+    font-size: 13px;
+  }
+}
+@media (max-width: 360px) {
+  .mm-auth {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .mm-auth__code-row {
+    gap: 8px;
+  }
+  .mm-auth__code-row .mm-button {
+    padding: 0 10px;
+    font-size: 12px;
   }
 }
 </style>

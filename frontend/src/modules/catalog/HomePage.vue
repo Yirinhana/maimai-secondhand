@@ -44,6 +44,11 @@
             loading="eager" />
           <div>
             <h2>{{ featured.title }}</h2>
+            <small
+              v-if="isDemoProductImage(featured.coverImage)"
+              class="mm-home__demo"
+              >演示示意图</small
+            >
             <p><MmIcon name="pin" />{{ featured.region }}</p>
             <PriceText :cents="featured.priceCents" /></div
         ></RouterLink>
@@ -125,6 +130,7 @@
   </div>
 </template>
 <script setup lang="ts">
+import { isDemoProductImage } from '../../shared/demoImages';
 import { computed, onMounted, ref } from 'vue';
 import { get, type ApiError } from '../../shared/api';
 import type { Category, Page, ProductSummary } from '../../shared/types';
@@ -186,6 +192,12 @@ onMounted(async () => {
 });
 </script>
 <style scoped>
+.mm-home__demo {
+  display: block;
+  color: var(--mm-muted);
+  font-size: 11px;
+  margin-top: 6px;
+}
 .mm-home {
   max-width: 1280px;
   margin: auto;

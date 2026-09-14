@@ -8,6 +8,8 @@ v0.2.0 本地验证已完成：后端 **191/191**，新版界面专项 **5/5**�
 
 v0.2.1 继续打磨首页、发现、商品详情、账户和交易页面：手机高级筛选折叠、大图与键盘操作、密码显隐、失败重试、购物车与结算分区、浏览位置恢复。TypeScript/Vite 构建、4/4 独立账号交互用例及 21 个页面视口组合通过。支付方案保持原样。本轮范围与证据见 [v0.2.1验收记录](docs/testing/visual-ux-polish.md)；后端测试数量沿用上一版本记录，不计为本轮重新执行。
 
+v0.2.2 为五件示范商品配置图片，注册页加入独立生活场景配图，并明确标注商品图片为演示示意。后端 **193/193**、前端构建、12 个页面视口组合和候选包校验通过。当前本地实例的五张示范图已经备份后更新，其他上传图保持。用户已授权腾讯云部署，正在等待实际 SSH 接入信息，尚未上线；详见 [v0.2.2 验收与部署进度](docs/testing/demo-imagery.md)。
+
 GitHub 私有仓库 [Yirinhana/maimai-secondhand](https://github.com/Yirinhana/maimai-secondhand) 已建立，本地 origin 已确认直连正式 GitHub。CI 与 PR 模板已准备并通过本地 actionlint 静态检查，平台实际运行状态以 [GitHub Actions](https://github.com/Yirinhana/maimai-secondhand/actions) 为准；静态校验不能替代平台运行通过。远程推送遵循用户确认，流程见 [GitHub 协作说明](docs/development/github-workflow.md)。
 
 ## 目录
@@ -26,7 +28,7 @@ GitHub 私有仓库 [Yirinhana/maimai-secondhand](https://github.com/Yirinhana/m
 | `VERSION` | 产品版本唯一来源，Maven 构建时由脚本传入 |
 | `.local/` | 忽略的本地凭据、数据库、工具、日志、截图及构建包 |
 
-根目录四份课程 DOCX 是原始提交模板，保持原样。需求和条款 DOCX 保存在 `docs/requirements/`、`docs/policies/`；本轮实施与验收以 `docs/testing/visual-ux-polish.md` 为入口。
+根目录四份课程 DOCX 是原始提交模板，保持原样。需求和条款 DOCX 保存在 `docs/requirements/`、`docs/policies/`；本轮实施与验收以 `docs/testing/demo-imagery.md` 为入口。
 
 ## 本机启动
 
