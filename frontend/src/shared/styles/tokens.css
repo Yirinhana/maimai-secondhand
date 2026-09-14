@@ -1,0 +1,52 @@
+/* 麦麦二手设计令牌：来源 docs/design/brand/palette.json */
+:root {
+  /* 品牌色 */
+  --mm-primary: #6D42D8;
+  --mm-primary-hover: #5C36BE;
+  --mm-primary-active: #4C2CA0;
+  --mm-canvas: #F7F5FC;
+  --mm-ink: #241D34;
+  --mm-muted: #716B7C;
+  --mm-white: #FFFFFF;
+
+  /* 功能色 */
+  --mm-danger: #C0344A;
+  --mm-danger-hover: #A82B40;
+  --mm-success: #1E7B4E;
+  --mm-warning: #A35E00;
+  --mm-info: #1F5FA8;
+
+  /* 线条与阴影 */
+  --mm-border: #E3DEEF;
+  --mm-shadow: 0 1px 3px rgba(36, 29, 52, 0.1);
+  --mm-radius-s: 6px;
+  --mm-radius-m: 10px;
+  --mm-radius-l: 16px;
+
+  /* 字号 */
+  --mm-font-s: 13px;
+  --mm-font-base: 15px;
+  --mm-font-l: 18px;
+  --mm-font-xl: 22px;
+  --mm-font-xxl: 28px;
+
+  /* 间距基准 */
+  --mm-space-1: 4px;
+  --mm-space-2: 8px;
+  --mm-space-3: 12px;
+  --mm-space-4: 16px;
+  --mm-space-5: 24px;
+  --mm-space-6: 32px;
+
+  /* 断点（媒体查询无法使用变量，此处仅作文档与 JS 侧参考） */
+  --mm-bp-mobile: 360px;
+  --mm-bp-tablet: 768px;
+  --mm-bp-desktop: 1440px;
+}
+
+/* 焦点可见：键盘导航时可辨识 */
+:focus-visible {
+  outline: 2px solid var(--mm-primary);
+  outline-offset: 2px;
+  border-radius: var(--mm-radius-s);
+}

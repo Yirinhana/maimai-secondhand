@@ -1,0 +1,15 @@
+.local/
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+target/
+coverage/
+test-results/
+playwright-report/
+*.log
+*.pid
+.idea/
+.vscode/
+~$*.docx

@@ -1,0 +1,26 @@
+[Unit]
+Description=Maimai marketplace API
+After=network-online.target mysql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=maimai
+Group=maimai
+WorkingDirectory=/opt/maimai/current
+EnvironmentFile=/etc/maimai/maimai.env
+ExecStart=/usr/bin/java -Xms128m -Xmx512m -XX:MaxMetaspaceSize=192m -XX:+ExitOnOutOfMemoryError -jar /opt/maimai/current/backend.jar --spring.profiles.active=prod
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=30
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/maimai
+MemoryHigh=768M
+MemoryMax=900M
+
+[Install]
+WantedBy=multi-user.target

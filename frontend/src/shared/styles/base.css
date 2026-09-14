@@ -1,0 +1,102 @@
+/* 全局基础样式：reset + 正文字体栈 + 对比度基线 */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family:
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC",
+    system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: var(--mm-font-base);
+  line-height: 1.6;
+  color: var(--mm-ink);
+  background-color: var(--mm-canvas);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6, p, ul, ol, figure {
+  margin: 0;
+}
+
+ul, ol {
+  padding: 0;
+  list-style: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: var(--mm-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input,
+textarea,
+select {
+  font-family: inherit;
+  font-size: inherit;
+  color: var(--mm-ink);
+}
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 屏幕阅读器专用文本 */
+.mm-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.mm-page { width:100%;max-width:1080px;margin:0 auto;padding:24px 16px;display:flex;flex-direction:column;gap:20px; }
+.mm-page h1 {font-size:28px;letter-spacing:-.5px}
+.mm-page h2 {font-size:20px}
+.mm-stack {display:flex;flex-direction:column;gap:14px}
+.mm-actions {display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.mm-panel {background:var(--mm-white);border:1px solid var(--mm-border);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.mm-muted {color:var(--mm-muted);font-size:14px}
+.mm-error {color:var(--mm-danger);overflow-wrap:anywhere}
+.mm-notice {background:#f0ebff;border-left:4px solid var(--mm-primary);padding:12px 16px;border-radius:6px;font-size:14px}
+.mm-form {display:flex;flex-direction:column;gap:14px;max-width:620px}
+.mm-form label {display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:14px}
+.mm-form input,.mm-form textarea,.mm-form select,.mm-select {width:100%;min-height:42px;padding:9px 12px;border:1px solid var(--mm-border);border-radius:8px;background:white}
+.mm-form textarea {min-height:90px;resize:vertical}
+.mm-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.mm-data {display:grid;grid-template-columns:auto 1fr;gap:8px 20px;font-size:14px;margin:0}
+.mm-data dt {color:var(--mm-muted)}
+.mm-data dd {margin:0;overflow-wrap:anywhere}
+.mm-chip {padding:3px 9px;background:#eee8fb;border-radius:6px;font-size:13px;align-self:flex-start}
+.mm-item {display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
+.mm-item img {width:76px;height:76px;border-radius:10px;object-fit:cover}
+.mm-item-body {flex:1;min-width:180px;overflow-wrap:anywhere}
+:focus-visible {outline:3px solid #9071d9;outline-offset:3px}
+@media(max-width:640px) {.mm-grid {grid-template-columns:1fr}.mm-panel {padding:16px}.mm-page h1 {font-size:24px}}

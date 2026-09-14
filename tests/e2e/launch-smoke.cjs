@@ -1,0 +1,2 @@
+const { chromium } = require('@playwright/test');
+(async()=>{const browser=await chromium.launch({channel:'chrome',headless:true});try{const page=await browser.newPage({viewport:{width:1440,height:960}});await page.goto('http://127.0.0.1:5173',{waitUntil:'domcontentloaded'});console.log('BROWSER_LAUNCHED title='+await page.title());await page.screenshot({path:'../../.local/screenshots/022-launch-home.png',fullPage:true});}finally{await browser.close();}})().catch(e=>{console.error(e.message);process.exitCode=1});

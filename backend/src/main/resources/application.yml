@@ -1,0 +1,51 @@
+spring:
+  application:
+    name: maimai-backend
+  datasource:
+    url: jdbc:mysql://${MAIMAI_DB_HOST:127.0.0.1}:${MAIMAI_DB_PORT:3307}/maimai?useUnicode=true&characterEncoding=UTF-8&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${MAIMAI_DB_USER:maimai}
+    password: ${MAIMAI_DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: 5
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc.time_zone: UTC
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 25MB
+  session:
+    jdbc:
+      initialize-schema: never
+      table-name: SPRING_SESSION
+    timeout: 7d
+
+server:
+  port: 8080
+
+maimai:
+  upload-dir: ${MAIMAI_UPLOAD_DIR:.local/uploads}
+  mail:
+    # 非 local 默认 ses（未真实接入前发送一律拒绝）；capture/mock 仅 local/test 可用
+    provider: ${MAIMAI_MAIL_PROVIDER:ses}
+    from: ${MAIMAI_MAIL_FROM:noreply@maimai.local}
+    capture-dir: ${MAIMAI_MAIL_CAPTURE_DIR:.local/mail-capture}
+  payment:
+    channel: ${MAIMAI_PAY_CHANNEL:wechat}
+    wechat:
+      mch-id: ${MAIMAI_WECHAT_MCH_ID:}
+      app-id: ${MAIMAI_WECHAT_APP_ID:}
+      api-key: ${MAIMAI_WECHAT_API_KEY:}
+      cert-path: ${MAIMAI_WECHAT_CERT_PATH:}
+  frontend-origin: ${MAIMAI_FRONTEND_ORIGIN:http://localhost:5173}
+
+logging:
+  level:
+    root: info

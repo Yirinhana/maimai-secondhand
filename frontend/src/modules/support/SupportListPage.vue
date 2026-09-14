@@ -1,0 +1,18 @@
+<script setup lang="ts">
+import {computed,onMounted,ref} from 'vue'
+import {useRoute,useRouter} from 'vue-router'
+import {get,post,type ApiError} from '../../shared/api'
+import {formatTime} from '../../shared/format'
+import {useAuthStore} from '../../shared/stores/auth'
+import type {CommunityPage} from '../community/types'
+import {ticketStatus,type Ticket,type Faq} from './types'
+import MmButton from '../../shared/components/MmButton.vue'
+import MmPagination from '../../shared/components/MmPagination.vue'
+const route=useRoute(),router=useRouter(),admin=computed(()=>route.path.startsWith('/admin/')),items=ref<Ticket[]>([]),faqs=ref<Faq[]>([]),page=ref(0),pages=ref(0),status=ref('OPEN'),error=ref(''),loading=ref(false),busy=ref(false),form=ref({title:'',body:'',orderNo:''}),showForm=ref(false)
+const auth=useAuthStore()
+if(typeof route.query.title==='string'&&typeof route.query.body==='string'){form.value.title=route.query.title.slice(0,100);form.value.body=route.query.body.slice(0,2000);showForm.value=true}
+async function load(){if(!auth.me)return;loading.value=true;error.value='';try{const r=await get<CommunityPage<Ticket>>(admin.value?'/support/admin/tickets':'/support/tickets',{page:page.value,size:15,...admin.value?{status:status.value}:{}});items.value=r.items;pages.value=r.totalPages}catch(e){error.value=(e as ApiError).message}finally{loading.value=false}}
+async function create(){busy.value=true;error.value='';try{const ticket=await post<Ticket>('/support/tickets',{title:form.value.title,body:form.value.body,orderNo:form.value.orderNo.trim()||null});await router.push(`/support/tickets/${ticket.id}`)}catch(e){error.value=(e as ApiError).message}finally{busy.value=false}}
+onMounted(async()=>{if(!auth.meLoaded)await auth.fetchMe();if(auth.me)await load();if(!admin.value){try{faqs.value=await get<Faq[]>('/support/faq')}catch{/* 工单入口保留独立错误反馈 */}}})
+</script>
+<template><section :class="admin?'mm-stack':'mm-page'"><h1>{{admin?'客服工作台':'帮助与客服'}}</h1><p class="mm-muted">{{admin?'先接管工单后处理，所有回复保留记录。':'查询交易规则，或提交工单联系人工客服。请勿在留言中填写密码、验证码或支付密钥。'}}</p><template v-if="!admin"><div class="mm-panel"><h2>常见问题</h2><details v-for="faq in faqs" :key="faq.topic"><summary>{{faq.title}}</summary><p style="white-space:pre-wrap">{{faq.answer}}</p></details><p v-if="!faqs.length" class="mm-muted">常见问题暂不可用，可提交人工工单。</p></div><RouterLink v-if="!auth.me" :to="{path:'/login',query:{redirect:route.fullPath}}">登录后提交人工工单</RouterLink><MmButton v-else @click="showForm=!showForm">{{showForm?'收起表单':'联系人工客服'}}</MmButton><form v-if="showForm&&auth.me" class="mm-panel mm-form" @submit.prevent="create"><label>问题标题<input v-model="form.title" required maxlength="100" /></label><label>关联订单号（可选）<input v-model="form.orderNo" maxlength="64" /></label><label>问题描述<textarea v-model="form.body" required maxlength="2000" /></label><MmButton type="submit" :loading="busy">提交工单</MmButton></form></template><label v-else>状态 <select v-model="status" @change="page=0;load()"><option value="OPEN">待接管</option><option value="IN_PROGRESS">处理中</option><option value="CLOSED">已关闭</option></select></label><p v-if="error" class="mm-error" role="alert">{{error}}</p><template v-if="auth.me"><h2>{{admin?'处理队列':'我的工单'}}</h2><p v-if="loading">加载中…</p><RouterLink v-for="ticket in items" :key="ticket.id" :to="`/support/tickets/${ticket.id}`" class="mm-panel"><strong>{{ticket.title}}</strong><p>{{ticketStatus[ticket.status]}}</p><p class="mm-muted">{{admin?ticket.ownerNickname+' · ':''}}{{formatTime(ticket.updatedAt)}}</p></RouterLink><p v-if="!loading&&!items.length" class="mm-muted">暂无工单</p><MmPagination :page="page" :total-pages="pages" @change="page=$event;load()" /></template></section></template>

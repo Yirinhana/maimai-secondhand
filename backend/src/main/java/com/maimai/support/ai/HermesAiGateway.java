@@ -1,0 +1,59 @@
+package com.maimai.support.ai;
+
+import com.maimai.common.BizException;
+import com.maimai.support.service.SupportFaq;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
+import tools.jackson.databind.json.JsonMapper;
+import java.net.URI;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Semaphore;
+
+/** FAQ-only gateway. No ticket text, identifiers, order data, tools or arbitrary prompts cross this boundary. */
+@Component
+public class HermesAiGateway implements SupportAiGateway {
+    private final String base,token,model;
+    private final boolean verified;
+    private final HermesTransport transport;
+    private final Semaphore slot=new Semaphore(1);
+    private final JsonMapper json=JsonMapper.builder().build();
+    public HermesAiGateway(@Value("${MAIMAI_HERMES_BASE_URL:}") String base,@Value("${MAIMAI_HERMES_TOKEN:}") String token,
+                           @Value("${MAIMAI_HERMES_MODEL:}") String model,@Value("${MAIMAI_HERMES_READONLY_VERIFIED:false}") boolean verified,HermesTransport transport) {
+        this.base=base; this.token=token; this.model=model; this.verified=verified; this.transport=transport;
+    }
+    @Override
+    public String explain(SupportFaq.Topic topic) {
+        URI endpoint=endpoint();
+        if(topic==null) throw BizException.badRequest("AI_TOPIC_INVALID","请选择帮助主题");
+        if(!slot.tryAcquire()) throw BizException.tooMany("智能客服忙碌，请稍后重试或转人工");
+        try {
+            // Exactly two fixed public messages; no user-authored history is sent.
+            String body=json.writeValueAsString(Map.of("model",model,"stream",false,"max_tokens",600,"tool_choice","none",
+                    "messages",List.of(Map.of("role","system","content","你是麦麦二手规则解释助手。只用给定规则回答，不使用任何工具，不访问文件、网络、终端或订单，不执行退款或决定争议。不知道的内容转人工。用中文简短说明，不编造规则。"),
+                    Map.of("role","user","content","请简明解释以下已审核规则，不添加承诺："+topic.answer))));
+            var root=json.readTree(transport.post(endpoint,token,body));
+            var message=root.path("choices").path(0).path("message");
+            var content=message.path("content");
+            if(message.hasNonNull("tool_calls")||message.hasNonNull("function_call")||!content.isString()
+                    ||content.asString().isBlank()||content.asString().length()>1800) throw invalidResponse();
+            return content.asString().strip();
+        } catch(BizException ex) { throw ex; }
+        catch(RuntimeException ex) { throw invalidResponse(); }
+        finally { slot.release(); }
+    }
+    private URI endpoint() {
+        if(!verified||base.isBlank()||token.isBlank()||model.isBlank()||token.contains("\n")||token.contains("\r")) throw unconfigured();
+        try {
+            URI uri=URI.create(base.strip());
+            boolean scheme="https".equals(uri.getScheme())||("http".equals(uri.getScheme())&&Set.of("127.0.0.1","localhost","[::1]").contains(uri.getHost()));
+            if(!scheme||uri.getHost()==null||uri.getUserInfo()!=null||uri.getQuery()!=null||uri.getFragment()!=null
+                    ||!Set.of("","/","/v1","/v1/").contains(uri.getPath())||!model.matches("[A-Za-z0-9_.:/-]{1,100}")) throw unconfigured();
+            return new URI(uri.getScheme(),null,uri.getHost(),uri.getPort(),"/v1/chat/completions",null,null);
+        } catch(Exception ex) { throw unconfigured(); }
+    }
+    private static BizException unconfigured() { return new BizException("AI_NOT_CONFIGURED","智能客服尚未完成安全接入，请使用人工工单",HttpStatus.SERVICE_UNAVAILABLE); }
+    private static BizException invalidResponse() { return new BizException("AI_RESPONSE_INVALID","智能客服返回内容无效，请联系人工客服",HttpStatus.BAD_GATEWAY); }
+}

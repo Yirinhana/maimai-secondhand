@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600" role="img" aria-label="图片暂不可用">
+  <rect width="600" height="600" rx="24" fill="#f3effa"/>
+  <g fill="none" stroke="#aa97c6" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="180" y="165" width="240" height="210" rx="25"/>
+    <circle cx="247" cy="229" r="23"/>
+    <path d="m189 347 82-87 64 68 39-42 39 41"/>
+  </g>
+  <text x="300" y="445" fill="#76638f" font-family="sans-serif" font-size="29" text-anchor="middle">图片暂不可用</text>
+</svg>
