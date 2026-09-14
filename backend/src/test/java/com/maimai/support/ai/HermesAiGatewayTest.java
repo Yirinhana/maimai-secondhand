@@ -12,6 +12,20 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.assertj.core.api.Assertions.*;
 
 class HermesAiGatewayTest {
+    @Test void minimaxSeparatesReasoningAndReturnsOnlyFinalAnswer() {
+        var gateway=new HermesAiGateway("https://api.minimaxi.com/v1","test","MiniMax-M3",true,(uri,token,body)->{
+            var request=JsonMapper.builder().build().readTree(body);
+            assertThat(request.path("reasoning_split").asBoolean()).isTrue();
+            assertThat(request.has("tools")).isFalse();
+            return "{\"choices\":[{\"message\":{\"content\":\"服务费0.03元。\",\"reasoning_content\":\"internal reasoning\",\"reasoning_details\":[{\"text\":\"hidden\"}]}}]}";
+        });
+        assertThat(gateway.chat(java.util.List.of(new SupportAiGateway.ChatMessage("user","100元的费率？"))))
+                .isEqualTo("服务费0.03元。");
+        var unsafe=new HermesAiGateway("https://api.minimaxi.com/v1","test","MiniMax-M3",true,(u,t,b)->
+                "{\"choices\":[{\"message\":{\"content\":\"<think>hidden</think>回复\"}}]}");
+        assertThatThrownBy(()->unsafe.chat(java.util.List.of(new SupportAiGateway.ChatMessage("user","问题"))))
+                .isInstanceOfSatisfying(BizException.class,e->assertThat(e.getCode()).isEqualTo("AI_RESPONSE_INVALID"));
+    }
     @Test void tinaChatHasVersionedPersonaFixedRolesAndNoTools() {
         var payload=new AtomicReference<String>();
         var gateway=new HermesAiGateway("http://127.0.0.1:8643","private-token","tina-readonly",true,(u,t,b)->{

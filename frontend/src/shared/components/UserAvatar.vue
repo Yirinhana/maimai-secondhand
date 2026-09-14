@@ -1,10 +1,11 @@
 <template>
   <span class="mm-avatar" :style="{ width: `${size}px`, height: `${size}px` }">
     <img
-      v-if="src && !failed"
-      :src="src"
+      v-if="imageSrc"
+      :src="imageSrc"
       :alt="`${nickname}的头像`"
-      @error="failed = true"
+      decoding="async"
+      @error="onError"
     />
     <span v-else aria-hidden="true">{{
       nickname.trim().slice(0, 1) || '麦'
@@ -12,16 +13,30 @@
   </span>
 </template>
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
+import { defaultAvatar } from '../defaultAvatars';
 const props = withDefaults(
   defineProps<{ src?: string | null; nickname: string; size?: number }>(),
   { size: 38 },
 );
 const failed = ref(false);
+const fallbackFailed = ref(false);
+const imageSrc = computed(() =>
+  props.src && !failed.value
+    ? props.src
+    : fallbackFailed.value
+      ? null
+      : defaultAvatar(props.nickname),
+);
+function onError() {
+  if (props.src && !failed.value) failed.value = true;
+  else fallbackFailed.value = true;
+}
 watch(
-  () => props.src,
+  () => [props.src, props.nickname],
   () => {
     failed.value = false;
+    fallbackFailed.value = false;
   },
 );
 </script>

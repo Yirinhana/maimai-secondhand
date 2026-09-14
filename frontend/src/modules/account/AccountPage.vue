@@ -2,13 +2,11 @@
   <div class="mm-account">
     <header class="mm-account__identity">
       <div class="mm-account__portrait" aria-label="个人头像">
-        <img
-          v-if="auth.me?.avatarUrl && !avatarBroken"
-          :src="auth.me.avatarUrl"
-          alt="我的头像"
-          @error="avatarBroken = true"
+        <UserAvatar
+          :src="auth.me?.avatarUrl"
+          :nickname="auth.me?.nickname || '麦'"
+          :size="76"
         />
-        <span v-else>{{ auth.me?.nickname?.slice(0, 1) || '麦' }}</span>
       </div>
       <div>
         <p class="mm-account__eyebrow">{{ auth.me?.nickname }} · 我的麦麦</p>
@@ -64,6 +62,26 @@
               头像会显示在顶部个人菜单中，请使用适合公开展示的图片。
             </p>
           </div>
+          <div
+            class="mm-account__avatar-presets"
+            role="group"
+            aria-label="选择默认头像"
+          >
+            <button
+              v-for="avatar in defaultAvatars"
+              :key="avatar.id"
+              type="button"
+              :disabled="avatarSaving"
+              :aria-label="`使用${avatar.name}头像`"
+              @click="saveDefaultAvatar(avatar)"
+            >
+              <img :src="avatar.src" alt="" width="52" height="52" />
+              <span>{{ avatar.name }}</span>
+            </button>
+          </div>
+          <p class="mm-account__meta">
+            点选一款插画头像，或上传自己的照片。插画由 AI 生成。
+          </p>
           <label class="mm-account__avatar-upload"
             >{{ avatarSaving ? '头像保存中…' : '上传新头像'
             }}<input
@@ -408,6 +426,8 @@
 
 <script setup lang="ts">
 import { askConfirmation } from '../../shared/confirm';
+import UserAvatar from '../../shared/components/UserAvatar.vue';
+import { defaultAvatars } from '../../shared/defaultAvatars';
 import { computed, nextTick, onUnmounted, reactive, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { del, get, post, put, upload } from '../../shared/api';
@@ -494,8 +514,38 @@ const currentTabTitle = computed(
 );
 const avatarSaving = ref(false),
   avatarError = ref(''),
-  avatarDone = ref(false),
-  avatarBroken = ref(false);
+  avatarDone = ref(false);
+async function saveDefaultAvatar(avatar: (typeof defaultAvatars)[number]) {
+  if (avatarSaving.value) return;
+  const version = accountVersion;
+  avatarSaving.value = true;
+  avatarError.value = '';
+  avatarDone.value = false;
+  try {
+    const response = await fetch(avatar.src, {
+      credentials: 'omit',
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!response.ok) throw new Error('头像素材暂时无法加载，请稍后重试');
+    const blob = await response.blob();
+    if (!current(version)) return;
+    const body = new FormData();
+    body.append(
+      'file',
+      new File([blob], `${avatar.id}.jpg`, { type: 'image/jpeg' }),
+    );
+    const saved = await upload<{ avatarUrl: string }>('/me/avatar', body);
+    if (!current(version)) return;
+    if (auth.me) auth.me.avatarUrl = saved.avatarUrl;
+    avatarDone.value = true;
+  } catch (error) {
+    if (current(version))
+      avatarError.value =
+        (error as Error).message || '头像保存失败，请稍后重试';
+  } finally {
+    if (current(version)) avatarSaving.value = false;
+  }
+}
 async function saveAvatar(event: Event) {
   const input = event.target as HTMLInputElement;
   const file = input.files?.[0];
@@ -518,7 +568,6 @@ async function saveAvatar(event: Event) {
     const saved = await upload<{ avatarUrl: string }>('/me/avatar', body);
     if (!current(version)) return;
     if (auth.me) auth.me.avatarUrl = saved.avatarUrl;
-    avatarBroken.value = false;
     avatarDone.value = true;
   } catch (error) {
     if (!current(version)) return;
@@ -877,7 +926,6 @@ watch(
     addresses.value = [];
     notifications.value = [];
     sellerApp.value = null;
-    avatarBroken.value = false;
     avatarDone.value = false;
     avatarError.value = '';
     avatarSaving.value = false;
@@ -918,12 +966,6 @@ watch(
     }
   },
   { immediate: true, flush: 'sync' },
-);
-watch(
-  () => auth.me?.avatarUrl,
-  () => {
-    avatarBroken.value = false;
-  },
 );
 onUnmounted(() => {
   disposed = true;
@@ -1062,6 +1104,42 @@ onUnmounted(() => {
 .mm-account__avatar-settings h3 {
   font-size: 18px;
   margin-bottom: 8px;
+}
+.mm-account__avatar-presets {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+  max-width: 320px;
+}
+.mm-account__avatar-presets button {
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  padding: 9px 4px;
+  border: 1px solid var(--mm-border);
+  border-radius: 12px;
+  background: var(--mm-white);
+  font-size: 12px;
+  color: var(--mm-ink);
+  cursor: pointer;
+}
+.mm-account__avatar-presets img {
+  width: 52px;
+  height: 52px;
+  max-width: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.mm-account__avatar-presets button:hover:not(:disabled),
+.mm-account__avatar-presets button:focus-visible {
+  outline: 2px solid var(--mm-primary);
+  outline-offset: 2px;
+  background: var(--mm-canvas);
+}
+.mm-account__avatar-presets button:disabled {
+  opacity: 0.55;
+  cursor: wait;
 }
 .mm-account__avatar-upload {
   width: max-content;

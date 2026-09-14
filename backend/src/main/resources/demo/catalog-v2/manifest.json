@@ -1,0 +1,2281 @@
+{
+  "batch": "maimai-generated-media-043",
+  "disclosure": "AI 生成演示图，非卖家实拍，不实际出售",
+  "items": [
+    {
+      "key": "item-001",
+      "originalTitle": "iPhone 12 128GB 蓝色",
+      "originalPublicId": 1,
+      "originalSellerId": 2,
+      "originalImage": "/uploads/products/seed-1.jpg",
+      "title": "iPhone 12 128GB 蓝色",
+      "category": "手机",
+      "priceCents": 219900,
+      "condition": "LIKE_NEW",
+      "defects": "边框有轻微使用痕迹",
+      "description": "【课程演示商品，不实际出售】iPhone 12 128GB 蓝色。展示二手商品的外观、成色与多角度浏览方式。具体成色见三视图。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand item listing photo (FRONT view) for the demo listing 'iPhone 12 128GB 蓝色'. One blue iPhone 12, flat blue aluminium frame, black front display with WIDE original iPhone 12 notch (no dynamic island), two rear lenses vertically stacked in a rounded square blue camera bump. Front view shows display off with subtle natural reflections; no lock-screen private details.  Scene: pale oak desk near a window. Condition: carefully used, faint realistic contact marks, no major damage. This is a DISTINCT individual item in a distinct seller's home, batch reference 1. Natural smartphone-camera photography, soft window daylight, slight imperfect alignment, plausible scale, clear material detail. Keep the whole item inside the frame with breathing space on all sides; full item is easy to inspect, no hidden parts. Do not use any existing sample images. NOT a studio advertising render, not pristine generic e-commerce stock art, no gradient, no floating product, no hands, no face, no caption, no watermark, no added infographic. One image, one product, one view; no collage, no panels.",
+      "object": null,
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-001-front.jpg",
+          "sha256": "9dbaaa4f47e784b69ffc36fd572e67ca419581f7905d52af962dbb4342da7759",
+          "bytes": 264627
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-001-back.jpg",
+          "sha256": "02e2455511eaa02b70e25039b3bc09ed33b6898938435becbe87e0cda101ae4b",
+          "bytes": 258861
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-001-side.jpg",
+          "sha256": "1b9a67b8d1fcd73cfbc3891d8a47d1193afce197710d12c8ff20a14239015e08",
+          "bytes": 262014
+        }
+      ]
+    },
+    {
+      "key": "item-002",
+      "originalTitle": "索尼 WH-1000XM4 降噪耳机",
+      "originalPublicId": 2,
+      "originalSellerId": 2,
+      "originalImage": "/uploads/products/seed-2.jpg",
+      "title": "索尼 WH-1000XM4 降噪耳机",
+      "category": "影音家电",
+      "priceCents": 89900,
+      "condition": "GOOD",
+      "defects": "耳罩及头梁有正常使用痕迹",
+      "description": "【课程演示商品，不实际出售】索尼 WH-1000XM4 降噪耳机。展示二手商品的外观、成色与多角度浏览方式。具体成色见三视图。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand item listing photo (FRONT view) for the demo listing '索尼 WH-1000XM4 降噪耳机'. One charcoal-black Sony WH-1000XM4 over-ear headphone, authentic rounded earcups and slim padded headband with articulated folding hinges, slightly creased ear pads. Headband upright and earcups symmetrical; front view is a realistic full three-quarter front presentation exposing ear cushions.  Scene: pale oak desk near a window. Condition: normally used, small honest scuffs and slight edge wear, intact and clean. This is a DISTINCT individual item in a distinct seller's home, batch reference 2. Natural smartphone-camera photography, soft window daylight, slight imperfect alignment, plausible scale, clear material detail. Keep the whole item inside the frame with breathing space on all sides; full item is easy to inspect, no hidden parts. Do not use any existing sample images. NOT a studio advertising render, not pristine generic e-commerce stock art, no gradient, no floating product, no hands, no face, no caption, no watermark, no added infographic. One image, one product, one view; no collage, no panels.",
+      "object": null,
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-002-front.jpg",
+          "sha256": "241bc5e778255fb24fe5b6311c7db70b0f458d7df39652b5009584fcd299d92d",
+          "bytes": 211111
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-002-back.jpg",
+          "sha256": "dbfb33b64aae67ba457c26d96e183861b4e69d4502f6c14fa16b778cab142912",
+          "bytes": 238698
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-002-side.jpg",
+          "sha256": "08c8e14ad21b603a0ea8eec0b2d439e8ae912effa82372a68bafefdba5894f95",
+          "bytes": 204945
+        }
+      ]
+    },
+    {
+      "key": "item-003",
+      "originalTitle": "Java 核心技术 卷 I",
+      "originalPublicId": 3,
+      "originalSellerId": 2,
+      "originalImage": "/uploads/products/seed-3.jpg",
+      "title": "Java 核心技术 卷 I",
+      "category": "图书教材",
+      "priceCents": 4500,
+      "condition": "GOOD",
+      "defects": "封面边角轻微磨损",
+      "description": "【课程演示商品，不实际出售】Java 核心技术 卷 I。展示二手商品的外观、成色与多角度浏览方式。具体成色见三视图。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand item listing photo (FRONT view) for the demo listing 'Java 核心技术 卷 I'. One thick Chinese paperback Java programming textbook, white and muted red cover with legible main title 'Java 核心技术 卷 I', used paper edge. No publisher seal needed. Front view shows the whole front cover face on.  Scene: pale oak desk near a window. Condition: normally used, small honest scuffs and slight edge wear, intact and clean. This is a DISTINCT individual item in a distinct seller's home, batch reference 3. Natural smartphone-camera photography, soft window daylight, slight imperfect alignment, plausible scale, clear material detail. Keep the whole item inside the frame with breathing space on all sides; full item is easy to inspect, no hidden parts. Do not use any existing sample images. NOT a studio advertising render, not pristine generic e-commerce stock art, no gradient, no floating product, no hands, no face, no caption, no watermark, no added infographic. One image, one product, one view; no collage, no panels.",
+      "object": null,
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-003-front.jpg",
+          "sha256": "8b90d5545f9d1f0b61e0326f598c276d412d720ec7bbbf483f37797db3dbf496",
+          "bytes": 230539
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-003-back.jpg",
+          "sha256": "a6d92ca94676cc0f9b151706ac5986a715603928d897fdd81d50cff2d2132c67",
+          "bytes": 245016
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-003-side.jpg",
+          "sha256": "ed776e56b358fccdd670adccffc482de46702a6b573e79ffff689a42034a2188",
+          "bytes": 194121
+        }
+      ]
+    },
+    {
+      "key": "item-004",
+      "originalTitle": "羊毛混纺大衣 M 码",
+      "originalPublicId": 4,
+      "originalSellerId": 2,
+      "originalImage": "/uploads/products/seed-4.jpg",
+      "title": "羊毛混纺大衣 M 码",
+      "category": "服饰鞋包",
+      "priceCents": 15900,
+      "condition": "LIKE_NEW",
+      "defects": "袖口有轻微使用痕迹",
+      "description": "【课程演示商品，不实际出售】羊毛混纺大衣 M 码。展示二手商品的外观、成色与多角度浏览方式。具体成色见三视图。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand item listing photo (FRONT view) for the demo listing '羊毛混纺大衣 M 码'. One M-size wool-blend coat, knee length, notch lapels, three dark buttons single-breasted, two slanted welt pockets, long sleeves. Front view fully displays the front of the coat laid flat naturally or on a simple wooden hanger, no mannequin and no person. Coat fabric color: camel beige. Scene: pale oak desk near a window. Condition: carefully used, faint realistic contact marks, no major damage. This is a DISTINCT individual item in a distinct seller's home, batch reference 4. Natural smartphone-camera photography, soft window daylight, slight imperfect alignment, plausible scale, clear material detail. Keep the whole item inside the frame with breathing space on all sides; full item is easy to inspect, no hidden parts. Do not use any existing sample images. NOT a studio advertising render, not pristine generic e-commerce stock art, no gradient, no floating product, no hands, no face, no caption, no watermark, no added infographic. One image, one product, one view; no collage, no panels.",
+      "object": null,
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-004-front.jpg",
+          "sha256": "c10f544313242ec0d8ce5b96b584edd744ca13c4a567f684312c1c1a1b5c1ce3",
+          "bytes": 287185
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-004-back.jpg",
+          "sha256": "c6c79810df754cb107ae92ed3e78a9ea59e6d08991b510b599ea6b664e421f04",
+          "bytes": 272024
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-004-side.jpg",
+          "sha256": "25b80fa97b0f3ed26545c07932e028cc6879ea68ecc5edfe0795cf5e9bb74ad2",
+          "bytes": 173623
+        }
+      ]
+    },
+    {
+      "key": "item-005",
+      "originalTitle": "羽毛球拍 天斧77",
+      "originalPublicId": 5,
+      "originalSellerId": 2,
+      "originalImage": "/uploads/products/seed-5.jpg",
+      "title": "羽毛球拍 天斧77",
+      "category": "运动户外",
+      "priceCents": 26000,
+      "condition": "GOOD",
+      "defects": "拍框及握柄有正常使用痕迹",
+      "description": "【课程演示商品，不实际出售】羽毛球拍 天斧77。展示二手商品的外观、成色与多角度浏览方式。具体成色见三视图。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand item listing photo (FRONT view) for the demo listing '羽毛球拍 天斧77'. One Yonex Astrox 77 badminton racket, dark navy graphite frame with subtle yellow accents, white strings with regular physically plausible weave, black grip tape. Entire racket in frame, front view string-bed face directly visible; don't invent multiple shafts or extra strings.  Scene: pale oak desk near a window. Condition: normally used, small honest scuffs and slight edge wear, intact and clean. This is a DISTINCT individual item in a distinct seller's home, batch reference 5. Natural smartphone-camera photography, soft window daylight, slight imperfect alignment, plausible scale, clear material detail. Keep the whole item inside the frame with breathing space on all sides; full item is easy to inspect, no hidden parts. Do not use any existing sample images. NOT a studio advertising render, not pristine generic e-commerce stock art, no gradient, no floating product, no hands, no face, no caption, no watermark, no added infographic. One image, one product, one view; no collage, no panels.",
+      "object": null,
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-005-front.jpg",
+          "sha256": "e6390c0700b8fc9993ed565fa400c014e661e098801a593a4b2a81670d04b10b",
+          "bytes": 288385
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-005-back.jpg",
+          "sha256": "a7979f070effdb00acba6771faf529d8fd92a0e11598705ddec98c2f19039439",
+          "bytes": 234365
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-005-side.jpg",
+          "sha256": "c09cb8be41d418888b40e489a9eca2769d61a00e01b9fbd50c81d3c8f99fc8cf",
+          "bytes": 241646
+        }
+      ]
+    },
+    {
+      "key": "item-006",
+      "originalTitle": "iPhone 12 128GB 蓝色 · 轻量通勤",
+      "originalPublicId": 6,
+      "originalSellerId": 4,
+      "originalImage": "/uploads/products/seed-9040001.jpg",
+      "title": "复古银黑微单相机套机",
+      "category": "数码电子",
+      "priceCents": 168000,
+      "condition": "GOOD",
+      "defects": "机身底部轻微擦痕",
+      "description": "【课程演示商品，不实际出售】复古银黑微单相机套机。展示二手商品的外观、成色与多角度浏览方式。机身底部轻微擦痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one silver-and-black compact mirrorless camera with a short black kit lens; FRONT faces round lens, silver top dials. Plausible gently used condition: 机身底部轻微擦痕; clean, intact, not brand new. Setting: a pale oak table beside a window; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"复古银黑微单相机套机\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one silver-and-black compact mirrorless camera with a short black kit lens; FRONT faces round lens, silver top dials",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-006-front.jpg",
+          "sha256": "7df7bd67b00a7a2884f832c0dfc84c00d19cd6414fcb7d4f887cf0fadba615cf",
+          "bytes": 232824
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-006-back.jpg",
+          "sha256": "19cfc585cd8e102d6dfbd2c2edef8222a4b681d76dd7d6415afe08049b8f7dcc",
+          "bytes": 211429
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-006-side.jpg",
+          "sha256": "8f0cda9ddfff637080a531e9695e55529e8e5896d55aa725f7e7d6601a9bfa65",
+          "bytes": 222732
+        }
+      ]
+    },
+    {
+      "key": "item-007",
+      "originalTitle": "索尼 WH-1000XM4 降噪耳机 · 通勤听歌",
+      "originalPublicId": 7,
+      "originalSellerId": 4,
+      "originalImage": "/uploads/products/seed-9040002.jpg",
+      "title": "红蓝手柄游戏掌机",
+      "category": "数码电子",
+      "priceCents": 98000,
+      "condition": "GOOD",
+      "defects": "手柄背部有正常使用痕迹",
+      "description": "【课程演示商品，不实际出售】红蓝手柄游戏掌机。展示二手商品的外观、成色与多角度浏览方式。手柄背部有正常使用痕迹。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one black handheld game console with attached neon red right and blue left controllers, screen off. Plausible gently used condition: 手柄背部有正常使用痕迹; clean, intact, not brand new. Setting: a muted grey linen-covered table; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"红蓝手柄游戏掌机\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one black handheld game console with attached neon red right and blue left controllers, screen off",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-007-front.jpg",
+          "sha256": "ae2d780e993e08fd6f16f0cd7893e3a88047edabbe173516cad32d34ccab9922",
+          "bytes": 290267
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-007-back.jpg",
+          "sha256": "66ce0fb9e350d161dea865335d1c071b75f9d5a6dcb5009c9df40b6939dbedc4",
+          "bytes": 279129
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-007-side.jpg",
+          "sha256": "f6bddcd364fca89ec628de5a04608f90632b8986c2aabf4128e42a1969e8166c",
+          "bytes": 360667
+        }
+      ]
+    },
+    {
+      "key": "item-008",
+      "originalTitle": "Java 核心技术 卷 I · 基础入门",
+      "originalPublicId": 8,
+      "originalSellerId": 4,
+      "originalImage": "/uploads/products/seed-9040003.jpg",
+      "title": "奶油白 4L 空气炸锅",
+      "category": "生活家居",
+      "priceCents": 12000,
+      "condition": "GOOD",
+      "defects": "抽屉把手边缘轻微磨损",
+      "description": "【课程演示商品，不实际出售】奶油白 4L 空气炸锅。展示二手商品的外观、成色与多角度浏览方式。抽屉把手边缘轻微磨损。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one cream-white round 4L air fryer with a pull-out black-handled basket and two circular top control dials. Plausible gently used condition: 抽屉把手边缘轻微磨损; clean, intact, not brand new. Setting: a plain walnut desk in a lived-in room; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"奶油白 4L 空气炸锅\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one cream-white round 4L air fryer with a pull-out black-handled basket and two circular top control dials",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-008-front.jpg",
+          "sha256": "9de5bbe84c1c16f58bdf57a3888760e57d5d96c09aebbc7d4f97852e4334e674",
+          "bytes": 168897
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-008-back.jpg",
+          "sha256": "611a8ceaad129ba2d6dad418a43430302c1c76edc68063d6a4bc78b567adf348",
+          "bytes": 162026
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-008-side.jpg",
+          "sha256": "850a59ff0e02a0e0db322fef26e70687ca6e02f07adb2b9d260c6f9498046a61",
+          "bytes": 163958
+        }
+      ]
+    },
+    {
+      "key": "item-009",
+      "originalTitle": "羊毛混纺大衣 M 码 · 秋冬通勤",
+      "originalPublicId": 9,
+      "originalSellerId": 4,
+      "originalImage": "/uploads/products/seed-9040004.jpg",
+      "title": "橡木色靠背餐椅",
+      "category": "生活家居",
+      "priceCents": 7500,
+      "condition": "GOOD",
+      "defects": "椅腿下部有小磕碰",
+      "description": "【课程演示商品，不实际出售】橡木色靠背餐椅。展示二手商品的外观、成色与多角度浏览方式。椅腿下部有小磕碰。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one honey-oak wooden dining chair with four legs, curved slatted backrest, natural wood seat. Plausible gently used condition: 椅腿下部有小磕碰; clean, intact, not brand new. Setting: light beige floor near a window; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"橡木色靠背餐椅\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one honey-oak wooden dining chair with four legs, curved slatted backrest, natural wood seat",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-009-front.jpg",
+          "sha256": "7bccdaa760cd39ccae86404cc14a501f1a5efca51cf9e0808f56af0eb06610f0",
+          "bytes": 229186
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-009-back.jpg",
+          "sha256": "7a5b29eaa22bcc71fb8f798867f280f0be150b0164f9681408b2778336a8230f",
+          "bytes": 221492
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-009-side.jpg",
+          "sha256": "292c2a870fc56001ea12c17ffdc86b537cf244105f3d57b46fe8730e2010d217",
+          "bytes": 203465
+        }
+      ]
+    },
+    {
+      "key": "item-010",
+      "originalTitle": "羽毛球拍 天斧77 · 周末球局",
+      "originalPublicId": 10,
+      "originalSellerId": 4,
+      "originalImage": "/uploads/products/seed-9040005.jpg",
+      "title": "墨绿 35L 登山背包",
+      "category": "运动户外",
+      "priceCents": 9000,
+      "condition": "GOOD",
+      "defects": "底部有浅色摩擦痕",
+      "description": "【课程演示商品，不实际出售】墨绿 35L 登山背包。展示二手商品的外观、成色与多角度浏览方式。底部有浅色摩擦痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one forest-green 35L hiking backpack with black straps, side mesh pockets and orange zipper pulls. Plausible gently used condition: 底部有浅色摩擦痕; clean, intact, not brand new. Setting: a quiet home corner with off-white wall and wood floor; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"墨绿 35L 登山背包\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one forest-green 35L hiking backpack with black straps, side mesh pockets and orange zipper pulls",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-010-front.jpg",
+          "sha256": "93373f4f2220a5423065a61ef2d7d91ae3a158f407af98492d9f789d5c2b007c",
+          "bytes": 215845
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-010-back.jpg",
+          "sha256": "069be0d1fe7b0802f41d4214719bb4114589d112e09a7d23aa12c0758477b06b",
+          "bytes": 223560
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-010-side.jpg",
+          "sha256": "465273c72fb792168ee4ebd596ef364136504deb2e07d62ed68c465d3d722e11",
+          "bytes": 209485
+        }
+      ]
+    },
+    {
+      "key": "item-011",
+      "originalTitle": "iPhone 12 128GB 蓝色 · 备用机",
+      "originalPublicId": 11,
+      "originalSellerId": 5,
+      "originalImage": "/uploads/products/seed-9040001.jpg",
+      "title": "银色 14 英寸轻薄笔记本",
+      "category": "电脑及配件",
+      "priceCents": 138000,
+      "condition": "GOOD",
+      "defects": "外壳边缘有细小划痕",
+      "description": "【课程演示商品，不实际出售】银色 14 英寸轻薄笔记本。展示二手商品的外观、成色与多角度浏览方式。外壳边缘有细小划痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one silver aluminium 14-inch laptop, open at 105 degrees, black keyboard and screen off, no visible logo. Plausible gently used condition: 外壳边缘有细小划痕; clean, intact, not brand new. Setting: a pale oak table beside a window; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"银色 14 英寸轻薄笔记本\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one silver aluminium 14-inch laptop, open at 105 degrees, black keyboard and screen off, no visible logo",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-011-front.jpg",
+          "sha256": "bee30337f16016de95e8e6a9f9770ad8504da268d0e717c8783735a07a43f589",
+          "bytes": 211596
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-011-back.jpg",
+          "sha256": "3caba92f859db0fa90c18bdf327e0aa40d444e4b1b69d7ac9f727fd320f14bef",
+          "bytes": 206506
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-011-side.jpg",
+          "sha256": "214054b1270af66b3cf3f27810845ce04d86151cecb5f765d7cd233b3dd04190",
+          "bytes": 199524
+        }
+      ]
+    },
+    {
+      "key": "item-012",
+      "originalTitle": "索尼 WH-1000XM4 降噪耳机 · 书房降噪",
+      "originalPublicId": 12,
+      "originalSellerId": 5,
+      "originalImage": "/uploads/products/seed-9040002.jpg",
+      "title": "不锈钢 1.7L 电热水壶",
+      "category": "生活家居",
+      "priceCents": 3500,
+      "condition": "GOOD",
+      "defects": "壶身有细微擦痕",
+      "description": "【课程演示商品，不实际出售】不锈钢 1.7L 电热水壶。展示二手商品的外观、成色与多角度浏览方式。壶身有细微擦痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one brushed stainless steel electric kettle with black handle, black circular base, short pouring spout. Plausible gently used condition: 壶身有细微擦痕; clean, intact, not brand new. Setting: a muted grey linen-covered table; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"不锈钢 1.7L 电热水壶\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one brushed stainless steel electric kettle with black handle, black circular base, short pouring spout",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-012-front.jpg",
+          "sha256": "eaf16d3ba46acabf2e45180dc69e10a9f7df1525490d503fa31a1b879645b7d0",
+          "bytes": 263783
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-012-back.jpg",
+          "sha256": "10de88d6dcb55755b20069c6bba8ba19cca39eb2dd01146453d7f7330bc4996c",
+          "bytes": 250805
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-012-side.jpg",
+          "sha256": "61030ce9e348ae97bfd78a75363e74c84f6bedbe91c12d6945b80be97ca44f86",
+          "bytes": 246571
+        }
+      ]
+    },
+    {
+      "key": "item-013",
+      "originalTitle": "Java 核心技术 卷 I · 课后阅读",
+      "originalPublicId": 13,
+      "originalSellerId": 5,
+      "originalImage": "/uploads/products/seed-9040003.jpg",
+      "title": "原木色 41 寸民谣吉他",
+      "category": "其他闲置",
+      "priceCents": 26000,
+      "condition": "GOOD",
+      "defects": "护板上有细小拨片划痕",
+      "description": "【课程演示商品，不实际出售】原木色 41 寸民谣吉他。展示二手商品的外观、成色与多角度浏览方式。护板上有细小拨片划痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one full-size six-string acoustic guitar, natural spruce top, dark brown sides, circular sound hole, complete neck and headstock visible. Plausible gently used condition: 护板上有细小拨片划痕; clean, intact, not brand new. Setting: a plain walnut desk in a lived-in room; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"原木色 41 寸民谣吉他\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one full-size six-string acoustic guitar, natural spruce top, dark brown sides, circular sound hole, complete neck and headstock visible",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-013-front.jpg",
+          "sha256": "08be7bc01a8146a7ab3dc5a25dbb84a1f3ffd41b68edf652fb420016a4eb6b3a",
+          "bytes": 227846
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-013-back.jpg",
+          "sha256": "6b95df196ee9f90398f265e108f06779e5a19be80db334ef1a5df51c07396fa7",
+          "bytes": 222803
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-013-side.jpg",
+          "sha256": "3b784ba8b69e2e24a87b49ee3ccd3c41da17499af0fae79bcf0481bc73ac296b",
+          "bytes": 213767
+        }
+      ]
+    },
+    {
+      "key": "item-014",
+      "originalTitle": "羊毛混纺大衣 M 码 · 日常百搭",
+      "originalPublicId": 14,
+      "originalSellerId": 5,
+      "originalImage": "/uploads/products/seed-9040004.jpg",
+      "title": "灰白网面运动鞋 42 码",
+      "category": "服饰鞋包",
+      "priceCents": 8500,
+      "condition": "GOOD",
+      "defects": "鞋底边缘轻微发黄",
+      "description": "【课程演示商品，不实际出售】灰白网面运动鞋 42 码。展示二手商品的外观、成色与多角度浏览方式。鞋底边缘轻微发黄。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one matched pair of grey-white mesh running sneakers, white midsoles, grey laces, clean but used. Plausible gently used condition: 鞋底边缘轻微发黄; clean, intact, not brand new. Setting: light beige floor near a window; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"灰白网面运动鞋 42 码\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one matched pair of grey-white mesh running sneakers, white midsoles, grey laces, clean but used",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-014-front.jpg",
+          "sha256": "a6dcf32872c75d07597fbcecaa54bfd978fe83d2fb01f334e2235f656df5fed4",
+          "bytes": 266898
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-014-back.jpg",
+          "sha256": "8f54ff5bf103df5f85154522e158367d3ac9976267971c303a952e62133a2739",
+          "bytes": 228947
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-014-side.jpg",
+          "sha256": "54614fd649dfb1e226def5849755bc2dd2de8377b95da4e151554502869ef4a2",
+          "bytes": 257510
+        }
+      ]
+    },
+    {
+      "key": "item-015",
+      "originalTitle": "羽毛球拍 天斧77 · 运动入门",
+      "originalPublicId": 15,
+      "originalSellerId": 5,
+      "originalImage": "/uploads/products/seed-9040005.jpg",
+      "title": "奶白色金属落地阅读灯",
+      "category": "生活家居",
+      "priceCents": 8000,
+      "condition": "GOOD",
+      "defects": "底座有两处小掉漆",
+      "description": "【课程演示商品，不实际出售】奶白色金属落地阅读灯。展示二手商品的外观、成色与多角度浏览方式。底座有两处小掉漆。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one ivory metal reading desk lamp, round base, adjustable angled arm and domed shade. Plausible gently used condition: 底座有两处小掉漆; clean, intact, not brand new. Setting: a quiet home corner with off-white wall and wood floor; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"奶白色金属阅读台灯\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one ivory adjustable metal floor reading lamp, round base, long stem and domed shade",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-015-front.jpg",
+          "sha256": "1e35559cb0104b8001917447d865d0f8ff86784d5417e02f667937bf0ff4ba5b",
+          "bytes": 190437
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-015-back.jpg",
+          "sha256": "999752db16b4415b0f9db4ee6db545a3ab9a2ec94f66c56281fb9e1ce57d34e2",
+          "bytes": 183235
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-015-side.jpg",
+          "sha256": "5b3acc5872723966a7f79596c7f7ef02f2662e8e8d930d57400fddbf064f0815",
+          "bytes": 179682
+        }
+      ]
+    },
+    {
+      "key": "item-016",
+      "originalTitle": "iPhone 12 128GB 蓝色 · 日常拍照",
+      "originalPublicId": 16,
+      "originalSellerId": 6,
+      "originalImage": "/uploads/products/seed-9040001.jpg",
+      "title": "黑色 6 英寸电子阅读器",
+      "category": "数码电子",
+      "priceCents": 18000,
+      "condition": "GOOD",
+      "defects": "边框有细小磨痕",
+      "description": "【课程演示商品，不实际出售】黑色 6 英寸电子阅读器。展示二手商品的外观、成色与多角度浏览方式。边框有细小磨痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one slim black 6-inch e-ink reader, plain light grey resting screen without text, slightly rounded corners. Plausible gently used condition: 边框有细小磨痕; clean, intact, not brand new. Setting: a pale oak table beside a window; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"黑色 6 英寸电子阅读器\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one slim black 6-inch e-ink reader, plain light grey resting screen without text, slightly rounded corners",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-016-front.jpg",
+          "sha256": "24093745463db3ec0bf18b217093f53c7e6ad6186d58e4597cc1c63da6ebd6aa",
+          "bytes": 182394
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-016-back.jpg",
+          "sha256": "75ab357b1d09bedcd9bf0bd70aa68f9f8406905e336ff0f01723cdedd805a818",
+          "bytes": 201703
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-016-side.jpg",
+          "sha256": "e096895fc8e58180433eada32174d05d3758cd26f1cf107a0fadd2e225617b40",
+          "bytes": 203154
+        }
+      ]
+    },
+    {
+      "key": "item-017",
+      "originalTitle": "索尼 WH-1000XM4 降噪耳机 · 线上会议",
+      "originalPublicId": 17,
+      "originalSellerId": 6,
+      "originalImage": "/uploads/products/seed-9040002.jpg",
+      "title": "米白 87 键机械键盘",
+      "category": "电脑及配件",
+      "priceCents": 13000,
+      "condition": "GOOD",
+      "defects": "常用按键有轻微抛光痕",
+      "description": "【课程演示商品，不实际出售】米白 87 键机械键盘。展示二手商品的外观、成色与多角度浏览方式。常用按键有轻微抛光痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one cream 87-key tenkeyless mechanical keyboard with a few muted orange keys and detachable white USB cable. Plausible gently used condition: 常用按键有轻微抛光痕; clean, intact, not brand new. Setting: a muted grey linen-covered table; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"米白 87 键机械键盘\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one cream 87-key tenkeyless mechanical keyboard with a few muted orange keys and detachable white USB cable",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-017-front.jpg",
+          "sha256": "22d1b977b413f70e506719ce3ab671ba8a8f1e05cb6e3b58006feaa7db2e46dd",
+          "bytes": 380808
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-017-back.jpg",
+          "sha256": "a5f0621b94ac794dbccd48e7b7e49f0edc2c1b05cbd8cebdc1c63a33a2ad859f",
+          "bytes": 275186
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-017-side.jpg",
+          "sha256": "9dd037336bea8e899dad4bf436803acab2af9f3f4ad52a391e54fb1c1b5c0cb2",
+          "bytes": 342431
+        }
+      ]
+    },
+    {
+      "key": "item-018",
+      "originalTitle": "Java 核心技术 卷 I · 书桌清理",
+      "originalPublicId": 18,
+      "originalSellerId": 6,
+      "originalImage": "/uploads/products/seed-9040003.jpg",
+      "title": "浅蓝色小型桌面风扇",
+      "category": "生活家居",
+      "priceCents": 2500,
+      "condition": "GOOD",
+      "defects": "底座轻微划痕",
+      "description": "【课程演示商品，不实际出售】浅蓝色小型桌面风扇。展示二手商品的外观、成色与多角度浏览方式。底座轻微划痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one light blue tabletop electric fan with circular protective grille, three blades, oval base and short support stem. Plausible gently used condition: 底座轻微划痕; clean, intact, not brand new. Setting: a plain walnut desk in a lived-in room; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"浅蓝色小型桌面风扇\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one light blue tabletop electric fan with circular protective grille, three blades, oval base and short support stem",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-018-front.jpg",
+          "sha256": "f099648eb1c49ee1be019aacfa0652cf89c5bf4feeed28886f45b5e82a39d14f",
+          "bytes": 220861
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-018-back.jpg",
+          "sha256": "9d1882305b5f0a9164f5f14dcd436205ebb52bc418264afb46cbf462f115183d",
+          "bytes": 205028
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-018-side.jpg",
+          "sha256": "76407935cb75b11a0e9b8422cae89c3d416b37c22832d640fc9a77e9cc279eaf",
+          "bytes": 170869
+        }
+      ]
+    },
+    {
+      "key": "item-019",
+      "originalTitle": "羊毛混纺大衣 M 码 · 简约衣橱",
+      "originalPublicId": 19,
+      "originalSellerId": 6,
+      "originalImage": "/uploads/products/seed-9040004.jpg",
+      "title": "卡其色双人露营帐篷",
+      "category": "运动户外",
+      "priceCents": 16000,
+      "condition": "GOOD",
+      "defects": "外帐边角有浅色使用印迹",
+      "description": "【课程演示商品，不实际出售】卡其色双人露营帐篷。展示二手商品的外观、成色与多角度浏览方式。外帐边角有浅色使用印迹。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one fully pitched khaki dome tent for two people, black poles, closed triangular front zippered door, all tent visible on a small lawn. Plausible gently used condition: 外帐边角有浅色使用印迹; clean, intact, not brand new. Setting: light beige floor near a window; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"卡其色双人露营帐篷\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one fully pitched khaki dome tent for two people, black poles, closed triangular front zippered door, all tent visible on a small lawn",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-019-front.jpg",
+          "sha256": "2b6fddc5c3ff07f7b3b05cdb6b58407c1277b4a1361011495c867f4efbd687cd",
+          "bytes": 393380
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-019-back.jpg",
+          "sha256": "04b957d410d3768fd77672364106412a04de716bdaf6e42676a0b6b6f2349949",
+          "bytes": 373450
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-019-side.jpg",
+          "sha256": "018b43f0e83fc6aeebf36f0c2df4a60e522fd816deab3bd0b098aa1393bbea95",
+          "bytes": 369281
+        }
+      ]
+    },
+    {
+      "key": "item-020",
+      "originalTitle": "羽毛球拍 天斧77 · 休闲练习",
+      "originalPublicId": 20,
+      "originalSellerId": 6,
+      "originalImage": "/uploads/products/seed-9040005.jpg",
+      "title": "焦糖棕帆布单肩包",
+      "category": "服饰鞋包",
+      "priceCents": 5500,
+      "condition": "GOOD",
+      "defects": "背面布料轻微起毛",
+      "description": "【课程演示商品，不实际出售】焦糖棕帆布单肩包。展示二手商品的外观、成色与多角度浏览方式。背面布料轻微起毛。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one caramel-brown canvas messenger bag, rectangular flap, two small buckle straps and long adjustable shoulder strap. Plausible gently used condition: 背面布料轻微起毛; clean, intact, not brand new. Setting: a quiet home corner with off-white wall and wood floor; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"焦糖棕帆布单肩包\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one caramel-brown canvas messenger bag, rectangular flap, two small buckle straps and long adjustable shoulder strap",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-020-front.jpg",
+          "sha256": "63ca00235c116fbc3ab98f2c602b099f22c6e9f35bbaa46bd191544f583a37cf",
+          "bytes": 341192
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-020-back.jpg",
+          "sha256": "a1fbefe7177a45f4902ad3d9a20c40cb4fc2e8cc9257d89b6ea0ca0bf0b9fbaa",
+          "bytes": 333906
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-020-side.jpg",
+          "sha256": "198136f3887013ae01ed5cb9a579a7816116cf29adec074c03dc22edc0fd1222",
+          "bytes": 272692
+        }
+      ]
+    },
+    {
+      "key": "item-021",
+      "originalTitle": "iPhone 12 128GB 蓝色 · 周末出行",
+      "originalPublicId": 21,
+      "originalSellerId": 7,
+      "originalImage": "/uploads/products/seed-9040001.jpg",
+      "title": "黑色 24 英寸显示器",
+      "category": "电脑及配件",
+      "priceCents": 26000,
+      "condition": "GOOD",
+      "defects": "底座有浅划痕",
+      "description": "【课程演示商品，不实际出售】黑色 24 英寸显示器。展示二手商品的外观、成色与多角度浏览方式。底座有浅划痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one black 24-inch flat computer monitor with slim bezel, rectangular stand and powered-off reflective screen. Plausible gently used condition: 底座有浅划痕; clean, intact, not brand new. Setting: a pale oak table beside a window; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"黑色 24 英寸显示器\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one black 24-inch flat computer monitor with slim bezel, rectangular stand and powered-off reflective screen",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-021-front.jpg",
+          "sha256": "c8a56b8ecf8fff363c7cabf8784325e95e6ef51038190c5099020e08aaec3178",
+          "bytes": 160886
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-021-back.jpg",
+          "sha256": "623b10aba77bd3829d16ce9803a90ac89d46cb264c8040f69ee52a9ceff4b518",
+          "bytes": 184121
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-021-side.jpg",
+          "sha256": "37309b2b3ac796688adb11a5bbc364b258279923985bd81edfae44e45b0d6b54",
+          "bytes": 170942
+        }
+      ]
+    },
+    {
+      "key": "item-022",
+      "originalTitle": "索尼 WH-1000XM4 降噪耳机 · 安静阅读",
+      "originalPublicId": 22,
+      "originalSellerId": 7,
+      "originalImage": "/uploads/products/seed-9040002.jpg",
+      "title": "白灰色手持吸尘器",
+      "category": "生活家居",
+      "priceCents": 16000,
+      "condition": "GOOD",
+      "defects": "地刷外壳有正常擦痕",
+      "description": "【课程演示商品，不实际出售】白灰色手持吸尘器。展示二手商品的外观、成色与多角度浏览方式。地刷外壳有正常擦痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one white-and-grey cordless stick vacuum, clear dust canister, long straight tube and floor head, standing upright. Plausible gently used condition: 地刷外壳有正常擦痕; clean, intact, not brand new. Setting: a muted grey linen-covered table; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"白灰色手持吸尘器\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one white-and-grey cordless stick vacuum, clear dust canister, long straight tube and floor head, standing upright",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-022-front.jpg",
+          "sha256": "b212b4f4d3dde9e514ad7c0a1551e844c73c8d72c57c40bb087b1bccaee4a57a",
+          "bytes": 207721
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-022-back.jpg",
+          "sha256": "8194d1dfe1d9f8960889acd8d6cd9c263203397a404f868bb5c432f25f8788eb",
+          "bytes": 196869
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-022-side.jpg",
+          "sha256": "88976753d92b7b87048424d7fcba730cfa31518c1833afc14d515fb266f6c2c5",
+          "bytes": 194034
+        }
+      ]
+    },
+    {
+      "key": "item-023",
+      "originalTitle": "Java 核心技术 卷 I · 编程练习",
+      "originalPublicId": 23,
+      "originalSellerId": 7,
+      "originalImage": "/uploads/products/seed-9040003.jpg",
+      "title": "桃花芯木尤克里里",
+      "category": "其他闲置",
+      "priceCents": 8000,
+      "condition": "GOOD",
+      "defects": "琴体下沿有轻微磕痕",
+      "description": "【课程演示商品，不实际出售】桃花芯木尤克里里。展示二手商品的外观、成色与多角度浏览方式。琴体下沿有轻微磕痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one small four-string mahogany ukulele, warm reddish brown wooden body, black tuning pegs, full neck visible. Plausible gently used condition: 琴体下沿有轻微磕痕; clean, intact, not brand new. Setting: a plain walnut desk in a lived-in room; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"桃花芯木尤克里里\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one small four-string mahogany ukulele, warm reddish brown wooden body, black tuning pegs, full neck visible",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-023-front.jpg",
+          "sha256": "7aa05f4256220accdc44aad6024f5d295baffbf88791c22ab058dfe3faee2321",
+          "bytes": 212426
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-023-back.jpg",
+          "sha256": "0fab958568a9b3b374ee96116a820a85e90e1ecd12c133d05a690f3e8414e704",
+          "bytes": 202782
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-023-side.jpg",
+          "sha256": "9e4ecf6d429fa4afbb3e2eb6a55b4175288117390bfc2b36face26fd4f60b4a3",
+          "bytes": 191385
+        }
+      ]
+    },
+    {
+      "key": "item-024",
+      "originalTitle": "羊毛混纺大衣 M 码 · 周末穿搭",
+      "originalPublicId": 24,
+      "originalSellerId": 7,
+      "originalImage": "/uploads/products/seed-9040004.jpg",
+      "title": "水洗蓝牛仔夹克 L 码",
+      "category": "服饰鞋包",
+      "priceCents": 6500,
+      "condition": "GOOD",
+      "defects": "袖口边缘自然褪色",
+      "description": "【课程演示商品，不实际出售】水洗蓝牛仔夹克 L 码。展示二手商品的外观、成色与多角度浏览方式。袖口边缘自然褪色。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one washed blue denim jacket size L, silver metal buttons, two chest flap pockets, laid neatly on neutral cloth. Plausible gently used condition: 袖口边缘自然褪色; clean, intact, not brand new. Setting: light beige floor near a window; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"水洗蓝牛仔夹克 L 码\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one washed blue denim jacket size L, silver metal buttons, two chest flap pockets, laid neatly on neutral cloth",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-024-front.jpg",
+          "sha256": "dd2460b809947408fd9c1e6e1809ff9a08700ec3ef2b2fc772ccb8ebf62a8ce4",
+          "bytes": 433865
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-024-back.jpg",
+          "sha256": "81f1238ce8db0865cc57c6d079b89371e621d497398f4213b07460f86a863ead",
+          "bytes": 419594
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-024-side.jpg",
+          "sha256": "bb94d836b186a40ade424d43ee3d48415ce0c3ffad73b49d78b4b6925bdf95d8",
+          "bytes": 407536
+        }
+      ]
+    },
+    {
+      "key": "item-025",
+      "originalTitle": "羽毛球拍 天斧77 · 球场搭子",
+      "originalPublicId": 25,
+      "originalSellerId": 7,
+      "originalImage": "/uploads/products/seed-9040005.jpg",
+      "title": "三层竹制收纳书架",
+      "category": "生活家居",
+      "priceCents": 5500,
+      "condition": "GOOD",
+      "defects": "侧板有小面积浅划痕",
+      "description": "【课程演示商品，不实际出售】三层竹制收纳书架。展示二手商品的外观、成色与多角度浏览方式。侧板有小面积浅划痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one small three-tier light bamboo open bookshelf, rectangular shelves and slatted side frames, completely empty. Plausible gently used condition: 侧板有小面积浅划痕; clean, intact, not brand new. Setting: a quiet home corner with off-white wall and wood floor; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"三层竹制收纳书架\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one small three-tier light bamboo open bookshelf, rectangular shelves and slatted side frames, completely empty",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-025-front.jpg",
+          "sha256": "471ca97352f79b7ebf0316db802a8b3769ff0cbda447a72277490d5b6fe04257",
+          "bytes": 210895
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-025-back.jpg",
+          "sha256": "6ea1c8de979cc24976201a0a7e81b80536879f523153cb8200a70852fabc1713",
+          "bytes": 203711
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-025-side.jpg",
+          "sha256": "9d3a379d81029b8b010f90e646fc6f644cce1840676be11f2c2d4d3daf7e0e83",
+          "bytes": 202722
+        }
+      ]
+    },
+    {
+      "key": "item-026",
+      "originalTitle": "iPhone 12 128GB 蓝色 · 小屏爱好者",
+      "originalPublicId": 26,
+      "originalSellerId": 8,
+      "originalImage": "/uploads/products/seed-9040001.jpg",
+      "title": "深空灰 10 英寸平板电脑",
+      "category": "数码电子",
+      "priceCents": 65000,
+      "condition": "GOOD",
+      "defects": "金属后壳有细小划痕",
+      "description": "【课程演示商品，不实际出售】深空灰 10 英寸平板电脑。展示二手商品的外观、成色与多角度浏览方式。金属后壳有细小划痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one dark space-grey 10-inch tablet with black glass screen off, rounded slim metal body, no accessories. Plausible gently used condition: 金属后壳有细小划痕; clean, intact, not brand new. Setting: a pale oak table beside a window; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"深空灰 10 英寸平板电脑\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one dark space-grey 10-inch tablet with black glass screen off, rounded slim metal body, no accessories",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-026-front.jpg",
+          "sha256": "4cf4d0eff3a817897eab389c2dccc536df71f15388b9ff892ecddfb9ace10df9",
+          "bytes": 171108
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-026-back.jpg",
+          "sha256": "b6f645770a4163924f7ba38d4fbaf5c10261bba465ab5077e1a4a58cd896dad6",
+          "bytes": 188067
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-026-side.jpg",
+          "sha256": "c95d1454031f154e43e6b09cdb5243402f8338e6b45dd21487878282ca01b72f",
+          "bytes": 219901
+        }
+      ]
+    },
+    {
+      "key": "item-027",
+      "originalTitle": "索尼 WH-1000XM4 降噪耳机 · 自习搭子",
+      "originalPublicId": 27,
+      "originalSellerId": 8,
+      "originalImage": "/uploads/products/seed-9040002.jpg",
+      "title": "橙色织物蓝牙音箱",
+      "category": "影音家电",
+      "priceCents": 9000,
+      "condition": "GOOD",
+      "defects": "底部橡胶有轻微磨痕",
+      "description": "【课程演示商品，不实际出售】橙色织物蓝牙音箱。展示二手商品的外观、成色与多角度浏览方式。底部橡胶有轻微磨痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one compact cylindrical burnt-orange fabric bluetooth speaker, rubber ends, small carrying loop. Plausible gently used condition: 底部橡胶有轻微磨痕; clean, intact, not brand new. Setting: a muted grey linen-covered table; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"橙色织物蓝牙音箱\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one compact cylindrical burnt-orange fabric bluetooth speaker, rubber ends, small carrying loop",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-027-front.jpg",
+          "sha256": "d3cc79e76d46a1e2c464acfcb62ff34473239a4aadae2d00481b8d1d31dc19be",
+          "bytes": 293938
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-027-back.jpg",
+          "sha256": "e3700e683c69ee36ad716a940fba123d5e3a12dea5d455dc1549faa82ed17e68",
+          "bytes": 280450
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-027-side.jpg",
+          "sha256": "c0a1a4f2ab0c00c898ee03bc5a3d88d02750ea73ebff00dd0fc18002a65950b6",
+          "bytes": 292647
+        }
+      ]
+    },
+    {
+      "key": "item-028",
+      "originalTitle": "Java 核心技术 卷 I · 知识回顾",
+      "originalPublicId": 28,
+      "originalSellerId": 8,
+      "originalImage": "/uploads/products/seed-9040003.jpg",
+      "title": "白色 3L 电饭煲",
+      "category": "生活家居",
+      "priceCents": 6500,
+      "condition": "GOOD",
+      "defects": "内胆外缘有轻微使用印迹",
+      "description": "【课程演示商品，不实际出售】白色 3L 电饭煲。展示二手商品的外观、成色与多角度浏览方式。内胆外缘有轻微使用印迹。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one white 3L electric rice cooker with rounded cuboid body, grey top handle, simple front controls. Plausible gently used condition: 内胆外缘有轻微使用印迹; clean, intact, not brand new. Setting: a plain walnut desk in a lived-in room; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"白色 3L 电饭煲\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one white 3L electric rice cooker with rounded cuboid body, grey top handle, simple front controls",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-028-front.jpg",
+          "sha256": "cf765fd4f0e857ed09064d55cd03896a90d9c2e4d321d270f168cafab755441b",
+          "bytes": 161908
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-028-back.jpg",
+          "sha256": "714ea4ef53906896a566de86572ee85407edc50295af92493d6810ad2d719bc0",
+          "bytes": 167601
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-028-side.jpg",
+          "sha256": "edb0392179be70a37230d8ccb2c31d747dfba7c77466ce051a25bfad2590a892",
+          "bytes": 147049
+        }
+      ]
+    },
+    {
+      "key": "item-029",
+      "originalTitle": "羊毛混纺大衣 M 码 · 换季整理",
+      "originalPublicId": 29,
+      "originalSellerId": 8,
+      "originalImage": "/uploads/products/seed-9040004.jpg",
+      "title": "原木色双翘滑板",
+      "category": "运动户外",
+      "priceCents": 8000,
+      "condition": "GOOD",
+      "defects": "板尾边缘有擦痕，轮子有使用印迹",
+      "description": "【课程演示商品，不实际出售】原木色双翘滑板。展示二手商品的外观、成色与多角度浏览方式。板尾边缘有擦痕，轮子有使用印迹。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one maple wood double-kick skateboard with plain black grip tape top, natural wood underside, silver trucks and cream wheels. Plausible gently used condition: 板尾边缘有擦痕，轮子有使用印迹; clean, intact, not brand new. Setting: light beige floor near a window; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"原木色双翘滑板\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one maple wood double-kick skateboard with plain black grip tape top, natural wood underside, silver trucks and cream wheels",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-029-front.jpg",
+          "sha256": "8013403599478ff5f14ecefdb21e9f29c0aa77c2f7460c3d0a05d627b10972d3",
+          "bytes": 247517
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-029-back.jpg",
+          "sha256": "23b8d85c8b26f17690343a23cf0e7fd0a3bd5e7500a52d313a4194c43e4d7b49",
+          "bytes": 231580
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-029-side.jpg",
+          "sha256": "a6e4adc8da76f7ba3373a9ac95a80ce458b4a983e55cf380f86c62ccaf257526",
+          "bytes": 194705
+        }
+      ]
+    },
+    {
+      "key": "item-030",
+      "originalTitle": "羽毛球拍 天斧77 · 课余运动",
+      "originalPublicId": 30,
+      "originalSellerId": 8,
+      "originalImage": "/uploads/products/seed-9040005.jpg",
+      "title": "雾蓝色 20 寸登机箱",
+      "category": "服饰鞋包",
+      "priceCents": 11000,
+      "condition": "GOOD",
+      "defects": "箱体背部有浅擦痕",
+      "description": "【课程演示商品，不实际出售】雾蓝色 20 寸登机箱。展示二手商品的外观、成色与多角度浏览方式。箱体背部有浅擦痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one muted blue hard-shell 20-inch carry-on suitcase, vertical ribs, four black spinner wheels, telescopic handle retracted. Plausible gently used condition: 箱体背部有浅擦痕; clean, intact, not brand new. Setting: a quiet home corner with off-white wall and wood floor; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"雾蓝色 20 寸登机箱\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one muted blue hard-shell 20-inch carry-on suitcase, vertical ribs, four black spinner wheels, telescopic handle retracted",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-030-front.jpg",
+          "sha256": "a8b4229ce680cc63b98dc0479c1bf307c92244a91b65678532bad1044dcc8292",
+          "bytes": 204472
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-030-back.jpg",
+          "sha256": "f98c4c7a1750df6cc969c6ed49256f31bd40ef92cb4793434dbf1b45e152713e",
+          "bytes": 193472
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-030-side.jpg",
+          "sha256": "6afe9db200d6abc4fff3a3ff56ec62c9afac282805c0336062b2fca3885f9a3f",
+          "bytes": 172046
+        }
+      ]
+    },
+    {
+      "key": "item-031",
+      "originalTitle": "iPhone 12 128GB 蓝色 · 轻装出门",
+      "originalPublicId": 31,
+      "originalSellerId": 9,
+      "originalImage": "/uploads/products/seed-9040001.jpg",
+      "title": "黑色无线办公鼠标",
+      "category": "电脑及配件",
+      "priceCents": 3500,
+      "condition": "GOOD",
+      "defects": "掌托处有轻微使用光泽",
+      "description": "【课程演示商品，不实际出售】黑色无线办公鼠标。展示二手商品的外观、成色与多角度浏览方式。掌托处有轻微使用光泽。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one matte black ergonomic wireless computer mouse, silver scroll wheel, two left thumb buttons. Plausible gently used condition: 掌托处有轻微使用光泽; clean, intact, not brand new. Setting: a pale oak table beside a window; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"黑色无线办公鼠标\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one matte black ergonomic wireless computer mouse, silver scroll wheel, two left thumb buttons",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-031-front.jpg",
+          "sha256": "d8b50c9ff038769a0f7e31e9a8d1d23cc33aa8ea3f2b9964c679d8613d3c5724",
+          "bytes": 222914
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-031-back.jpg",
+          "sha256": "670009a233146f31f9ea15588701469c59ccc887eb978427077e676c4b7ddb99",
+          "bytes": 233304
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-031-side.jpg",
+          "sha256": "6fb8fa00d35421ca14ccf8c0c366d677ef274939aa91111361884971a20063e0",
+          "bytes": 231990
+        }
+      ]
+    },
+    {
+      "key": "item-032",
+      "originalTitle": "索尼 WH-1000XM4 降噪耳机 · 长途旅行",
+      "originalPublicId": 32,
+      "originalSellerId": 9,
+      "originalImage": "/uploads/products/seed-9040002.jpg",
+      "title": "白色迷你家用投影仪",
+      "category": "影音家电",
+      "priceCents": 23000,
+      "condition": "GOOD",
+      "defects": "机身角落有浅划痕",
+      "description": "【课程演示商品，不实际出售】白色迷你家用投影仪。展示二手商品的外观、成色与多角度浏览方式。机身角落有浅划痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one small white rectangular home projector with large circular lens on front left and grey fabric grille. Plausible gently used condition: 机身角落有浅划痕; clean, intact, not brand new. Setting: a muted grey linen-covered table; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"白色迷你家用投影仪\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one small white rectangular home projector with large circular lens on front left and grey fabric grille",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-032-front.jpg",
+          "sha256": "8c8fa262d56d6bb56cf4c2b90143bed381d04db893686083ff94987c48221a73",
+          "bytes": 338700
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-032-back.jpg",
+          "sha256": "830ae80f3ec0a1b3191a181c7d06e9efd1375515a98db6cd280e1eafcf847be9",
+          "bytes": 267204
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-032-side.jpg",
+          "sha256": "c2ed2817c6461cfeae88a5bd50b5ffe086fffc06fcbb3191283a6b5d70c9ef0b",
+          "bytes": 298499
+        }
+      ]
+    },
+    {
+      "key": "item-033",
+      "originalTitle": "Java 核心技术 卷 I · 假期自学",
+      "originalPublicId": 33,
+      "originalSellerId": 9,
+      "originalImage": "/uploads/products/seed-9040003.jpg",
+      "title": "黑银色滴滤咖啡机",
+      "category": "生活家居",
+      "priceCents": 9500,
+      "condition": "GOOD",
+      "defects": "底座有细小擦痕",
+      "description": "【课程演示商品，不实际出售】黑银色滴滤咖啡机。展示二手商品的外观、成色与多角度浏览方式。底座有细小擦痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one compact black-and-silver drip coffee maker with clear glass carafe, black handle, removable top lid. Plausible gently used condition: 底座有细小擦痕; clean, intact, not brand new. Setting: a plain walnut desk in a lived-in room; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"黑银色滴滤咖啡机\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one compact black-and-silver drip coffee maker with clear glass carafe, black handle, removable top lid",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-033-front.jpg",
+          "sha256": "18937cbf2fc04a73ebf3e261ccdafc01c283c09b4c0c976caaf15cc75742e455",
+          "bytes": 214358
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-033-back.jpg",
+          "sha256": "dbbafd809798c5f4e255e299d0c866643f28f9a404b373a1924754f70098dc3a",
+          "bytes": 207550
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-033-side.jpg",
+          "sha256": "bcec2d0873acf479bcc2170811f76b49c2c2e442f26949da45c0c1eefdbdaf88",
+          "bytes": 216893
+        }
+      ]
+    },
+    {
+      "key": "item-034",
+      "originalTitle": "羊毛混纺大衣 M 码 · 暖色系",
+      "originalPublicId": 34,
+      "originalSellerId": 9,
+      "originalImage": "/uploads/products/seed-9040004.jpg",
+      "title": "鼠尾草绿加厚瑜伽垫",
+      "category": "运动户外",
+      "priceCents": 3000,
+      "condition": "GOOD",
+      "defects": "边缘有浅压痕",
+      "description": "【课程演示商品，不实际出售】鼠尾草绿加厚瑜伽垫。展示二手商品的外观、成色与多角度浏览方式。边缘有浅压痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one sage-green thick foam yoga mat unrolled flat with one short end slightly curled, faint ribbed texture. Plausible gently used condition: 边缘有浅压痕; clean, intact, not brand new. Setting: light beige floor near a window; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"鼠尾草绿加厚瑜伽垫\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one sage-green thick foam yoga mat unrolled flat with one short end slightly curled, faint ribbed texture",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-034-front.jpg",
+          "sha256": "7aec88ff57f62342e60401035f1b52caacd47ecb1dc8f29de2cc5f41710a3063",
+          "bytes": 230842
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-034-back.jpg",
+          "sha256": "cb11d4ceca2aedaa41f16c9d0b95870f37f3eb18e7995ee52e06e5c373dbe2bc",
+          "bytes": 222027
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-034-side.jpg",
+          "sha256": "777a961ff12d29a81582b6d9f8cb9d467b01aa7685bf198e6d55c780cb9c8aae",
+          "bytes": 257528
+        }
+      ]
+    },
+    {
+      "key": "item-035",
+      "originalTitle": "羽毛球拍 天斧77 · 双打练习",
+      "originalPublicId": 35,
+      "originalSellerId": 9,
+      "originalImage": "/uploads/products/seed-9040005.jpg",
+      "title": "米灰色羊毛围巾",
+      "category": "服饰鞋包",
+      "priceCents": 4000,
+      "condition": "GOOD",
+      "defects": "局部轻微起球",
+      "description": "【课程演示商品，不实际出售】米灰色羊毛围巾。展示二手商品的外观、成色与多角度浏览方式。局部轻微起球。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one beige-grey wool scarf with soft fringed ends, loosely folded once to display weave. Plausible gently used condition: 局部轻微起球; clean, intact, not brand new. Setting: a quiet home corner with off-white wall and wood floor; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"米灰色羊毛围巾\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one beige-grey wool scarf with soft fringed ends, loosely folded once to display weave",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-035-front.jpg",
+          "sha256": "695675d95e2377c409ba8426f9705e3917f150de5ed46612bb101000b87a221e",
+          "bytes": 312653
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-035-back.jpg",
+          "sha256": "eac3295a42ed4d40c401f7d99204b12b02d5fc027c3a701560bdfc5e123b23a7",
+          "bytes": 289796
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-035-side.jpg",
+          "sha256": "5ac641036638b0d469820e10b31799fa3a38a3a6a9ba6f32ef28ecb7b6d4eca1",
+          "bytes": 280637
+        }
+      ]
+    },
+    {
+      "key": "item-036",
+      "originalTitle": "iPhone 12 128GB 蓝色 · 宿舍备用",
+      "originalPublicId": 36,
+      "originalSellerId": 10,
+      "originalImage": "/uploads/products/seed-9040001.jpg",
+      "title": "灰白色家用喷墨打印机",
+      "category": "电脑及配件",
+      "priceCents": 19000,
+      "condition": "GOOD",
+      "defects": "顶盖有细小划痕",
+      "description": "【课程演示商品，不实际出售】灰白色家用喷墨打印机。展示二手商品的外观、成色与多角度浏览方式。顶盖有细小划痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one grey-white compact inkjet printer with a flat scanner lid and front paper output tray, no paper in tray. Plausible gently used condition: 顶盖有细小划痕; clean, intact, not brand new. Setting: a pale oak table beside a window; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"灰白色家用喷墨打印机\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one grey-white compact inkjet printer with a flat scanner lid and front paper output tray, no paper in tray",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-036-front.jpg",
+          "sha256": "de218140dfee9a05f9cba36278ac1f1a038abdaeee8c06d5188ee76c7a5312b1",
+          "bytes": 197216
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-036-back.jpg",
+          "sha256": "c89b3e178afaa76d8cfe8687de39ed23199b76fecb300d72bb1841768883cd7c",
+          "bytes": 188445
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-036-side.jpg",
+          "sha256": "450226cba10043f8c89643d03cbf0e62e1365fe840c646b29df507ee38fd0ce7",
+          "bytes": 191924
+        }
+      ]
+    },
+    {
+      "key": "item-037",
+      "originalTitle": "索尼 WH-1000XM4 降噪耳机 · 桌面听音",
+      "originalPublicId": 37,
+      "originalSellerId": 10,
+      "originalImage": "/uploads/products/seed-9040002.jpg",
+      "title": "深灰色负离子吹风机",
+      "category": "美妆个护",
+      "priceCents": 6000,
+      "condition": "GOOD",
+      "defects": "握柄有轻微使用痕迹",
+      "description": "【课程演示商品，不实际出售】深灰色负离子吹风机。展示二手商品的外观、成色与多角度浏览方式。握柄有轻微使用痕迹。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one dark charcoal hair dryer with short cylindrical barrel, narrow nozzle, vertical handle and coiled black cord. Plausible gently used condition: 握柄有轻微使用痕迹; clean, intact, not brand new. Setting: a muted grey linen-covered table; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"深灰色负离子吹风机\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one dark charcoal hair dryer with short cylindrical barrel, narrow nozzle, vertical handle and coiled black cord",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-037-front.jpg",
+          "sha256": "2693b628cb9ce277520408ccbda0890e0fdabdb6cb94ae11aba6ceede7f3a91c",
+          "bytes": 377503
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-037-back.jpg",
+          "sha256": "bb35fef0bd27e6de33d33b758129451d4dbacc0e65ac42f941b74ce704c5d993",
+          "bytes": 365094
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-037-side.jpg",
+          "sha256": "214e24af718effe1eec29e82ab4377438a11f4dd7418cab25cc07f8adfd6fd9d",
+          "bytes": 361378
+        }
+      ]
+    },
+    {
+      "key": "item-038",
+      "originalTitle": "Java 核心技术 卷 I · 课程参考",
+      "originalPublicId": 38,
+      "originalSellerId": 10,
+      "originalImage": "/uploads/products/seed-9040003.jpg",
+      "title": "黑色 61 键电子琴",
+      "category": "其他闲置",
+      "priceCents": 22000,
+      "condition": "GOOD",
+      "defects": "两侧外壳有轻微擦痕",
+      "description": "【课程演示商品，不实际出售】黑色 61 键电子琴。展示二手商品的外观、成色与多角度浏览方式。两侧外壳有轻微擦痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one black 61-key electronic keyboard instrument, simple small display and buttons, full width visible on plain table. Plausible gently used condition: 两侧外壳有轻微擦痕; clean, intact, not brand new. Setting: a plain walnut desk in a lived-in room; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"黑色 61 键电子琴\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one black 61-key electronic keyboard instrument, simple small display and buttons, full width visible on plain table",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-038-front.jpg",
+          "sha256": "037ccc53390ed1f1c33c89909d5945992614e41a6783f28668d68cace56dd7a6",
+          "bytes": 243071
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-038-back.jpg",
+          "sha256": "722a37f22f7af20055504574885bf725016fb21463939af2647a19ac3e6df63f",
+          "bytes": 215970
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-038-side.jpg",
+          "sha256": "3064e2b8caa3d47271af6a3e9ce38c740920327a7f2b07d96d2bcdb574f05b24",
+          "bytes": 210917
+        }
+      ]
+    },
+    {
+      "key": "item-039",
+      "originalTitle": "羊毛混纺大衣 M 码 · 城市漫步",
+      "originalPublicId": 39,
+      "originalSellerId": 10,
+      "originalImage": "/uploads/products/seed-9040004.jpg",
+      "title": "卡其色折叠露营椅",
+      "category": "运动户外",
+      "priceCents": 5500,
+      "condition": "GOOD",
+      "defects": "椅脚有正常户外使用痕迹",
+      "description": "【课程演示商品，不实际出售】卡其色折叠露营椅。展示二手商品的外观、成色与多角度浏览方式。椅脚有正常户外使用痕迹。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one khaki fabric folding camp chair with black crossed tubular legs, fabric armrests and mesh cup holder. Plausible gently used condition: 椅脚有正常户外使用痕迹; clean, intact, not brand new. Setting: light beige floor near a window; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"卡其色折叠露营椅\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one khaki fabric folding camp chair with black crossed tubular legs, fabric armrests and mesh cup holder",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-039-front.jpg",
+          "sha256": "3c7ab63b2f1e963492f8d2aec9428f79960cef9485f00038c05c9ee90fdd0468",
+          "bytes": 241338
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-039-back.jpg",
+          "sha256": "407544df2c293d78c319a398a84e8c949460ac100c5a36d751533b52a9b37724",
+          "bytes": 233335
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-039-side.jpg",
+          "sha256": "eb2ef569c4555381949cd60e53db42d50450752c44831a39ad552120e950a85c",
+          "bytes": 218388
+        }
+      ]
+    },
+    {
+      "key": "item-040",
+      "originalTitle": "羽毛球拍 天斧77 · 下班开打",
+      "originalPublicId": 40,
+      "originalSellerId": 10,
+      "originalImage": "/uploads/products/seed-9040005.jpg",
+      "title": "红色珐琅铸铁炖锅 22cm",
+      "category": "生活家居",
+      "priceCents": 11000,
+      "condition": "GOOD",
+      "defects": "锅盖外沿有轻微擦痕",
+      "description": "【课程演示商品，不实际出售】红色珐琅铸铁炖锅 22cm。展示二手商品的外观、成色与多角度浏览方式。锅盖外沿有轻微擦痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one round red enamel cast-iron casserole pot, matching domed red lid, black knob, two side loop handles. Plausible gently used condition: 锅盖外沿有轻微擦痕; clean, intact, not brand new. Setting: a quiet home corner with off-white wall and wood floor; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"红色珐琅铸铁炖锅 22cm\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one round red enamel cast-iron casserole pot, matching domed red lid, black knob, two side loop handles",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-040-front.jpg",
+          "sha256": "e65983abb3b546f5e7da34ec16b556790de5fd7958603984799bbe3180681b58",
+          "bytes": 179287
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-040-back.jpg",
+          "sha256": "eecd14c5ddcea580c899131e6bae32170b06107c2069573ab99a46aa41964adf",
+          "bytes": 172045
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-040-side.jpg",
+          "sha256": "f3bf7e186fd557770518ea26b45cd1897b466156e6f709ad875d4bcb361c75e7",
+          "bytes": 171427
+        }
+      ]
+    },
+    {
+      "key": "item-041",
+      "originalTitle": "iPhone 12 128GB 蓝色 · 随身记录",
+      "originalPublicId": 41,
+      "originalSellerId": 11,
+      "originalImage": "/uploads/products/seed-9040001.jpg",
+      "title": "黑色 USB 高清摄像头",
+      "category": "电脑及配件",
+      "priceCents": 4500,
+      "condition": "GOOD",
+      "defects": "夹具底部有小划痕",
+      "description": "【课程演示商品，不实际出售】黑色 USB 高清摄像头。展示二手商品的外观、成色与多角度浏览方式。夹具底部有小划痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one small black rectangular USB webcam with centered round glass lens, hinged monitor clip and thin black cable. Plausible gently used condition: 夹具底部有小划痕; clean, intact, not brand new. Setting: a pale oak table beside a window; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"黑色 USB 高清摄像头\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one small black rectangular USB webcam with centered round glass lens, hinged monitor clip and thin black cable",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-041-front.jpg",
+          "sha256": "bdbb74d01c50bca0a2c72cf5bbbbb74b58e48b08fb853f83883d0f51d75b971b",
+          "bytes": 235711
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-041-back.jpg",
+          "sha256": "a20a22083eb93f1fadfd457df2c702c920dc0995caca6fe2ce429b919c0040f9",
+          "bytes": 243695
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-041-side.jpg",
+          "sha256": "50596544a762eb580e112f8b9ed4820775cc4dd0db864b9f0261744896b077d0",
+          "bytes": 226625
+        }
+      ]
+    },
+    {
+      "key": "item-042",
+      "originalTitle": "索尼 WH-1000XM4 降噪耳机 · 午后音乐",
+      "originalPublicId": 42,
+      "originalSellerId": 11,
+      "originalImage": "/uploads/products/seed-9040002.jpg",
+      "title": "白色 10000mAh 充电宝",
+      "category": "数码电子",
+      "priceCents": 4000,
+      "condition": "GOOD",
+      "defects": "外壳有正常细划痕",
+      "description": "【课程演示商品，不实际出售】白色 10000mAh 充电宝。展示二手商品的外观、成色与多角度浏览方式。外壳有正常细划痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one white rounded rectangular 10000mAh portable power bank, subtle small indicator dots, ports on short top edge, no brand or number text. Plausible gently used condition: 外壳有正常细划痕; clean, intact, not brand new. Setting: a muted grey linen-covered table; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"白色 10000mAh 充电宝\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one white rounded rectangular 10000mAh portable power bank, subtle small indicator dots, ports on short top edge, no brand or number text",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-042-front.jpg",
+          "sha256": "06a17b684642887c9926b6d44d2116c483a29975537fa445eb1c7246a9342317",
+          "bytes": 350603
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-042-back.jpg",
+          "sha256": "c1e4d24dab8b2293292ceba99ffbb13bb38ccc507cc8a5d3f41c90344525a6ed",
+          "bytes": 334201
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-042-side.jpg",
+          "sha256": "7459385c04b15fb993a29838ba4f738d6e0169c6849ad4b6408f9f4647e6bc3f",
+          "bytes": 359377
+        }
+      ]
+    },
+    {
+      "key": "item-043",
+      "originalTitle": "Java 核心技术 卷 I · 技术书架",
+      "originalPublicId": 43,
+      "originalSellerId": 11,
+      "originalImage": "/uploads/products/seed-9040003.jpg",
+      "title": "薄荷绿双槽烤面包机",
+      "category": "生活家居",
+      "priceCents": 6000,
+      "condition": "GOOD",
+      "defects": "底部边缘有小擦痕",
+      "description": "【课程演示商品，不实际出售】薄荷绿双槽烤面包机。展示二手商品的外观、成色与多角度浏览方式。底部边缘有小擦痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one mint-green two-slot toaster with silver upper trim, lever and small browning dial. Plausible gently used condition: 底部边缘有小擦痕; clean, intact, not brand new. Setting: a plain walnut desk in a lived-in room; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"薄荷绿双槽烤面包机\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one mint-green two-slot toaster with silver upper trim, lever and small browning dial",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-043-front.jpg",
+          "sha256": "51645d4064b7b554f1e17cae48913e799353052ac2a976a02368057956404190",
+          "bytes": 207991
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-043-back.jpg",
+          "sha256": "2f533481312a65e735d85c71a36332e8e3becbc6fac5e17cf204d7aa75b603bd",
+          "bytes": 195741
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-043-side.jpg",
+          "sha256": "7e17aeb17686af8be97a2efae3efa20dbd5b43247fc31647f4edae04d0aa5692",
+          "bytes": 195251
+        }
+      ]
+    },
+    {
+      "key": "item-044",
+      "originalTitle": "羊毛混纺大衣 M 码 · 轻松出门",
+      "originalPublicId": 44,
+      "originalSellerId": 11,
+      "originalImage": "/uploads/products/seed-9040004.jpg",
+      "title": "黑色六角包胶哑铃一对",
+      "category": "运动户外",
+      "priceCents": 7000,
+      "condition": "GOOD",
+      "defects": "橡胶端部有正常摩擦痕",
+      "description": "【课程演示商品，不实际出售】黑色六角包胶哑铃一对。展示二手商品的外观、成色与多角度浏览方式。橡胶端部有正常摩擦痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one pair of black hexagonal rubber dumbbells with chrome knurled handles, same size, two complete weights. Plausible gently used condition: 橡胶端部有正常摩擦痕; clean, intact, not brand new. Setting: light beige floor near a window; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"黑色六角包胶哑铃一对\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one pair of black hexagonal rubber dumbbells with chrome knurled handles, same size, two complete weights",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-044-front.jpg",
+          "sha256": "4e3049a0c08efe72cc75ed173f1ca53f866628f347aa5f7de93898f7c266bfe0",
+          "bytes": 212819
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-044-back.jpg",
+          "sha256": "6023692925f6481b230a12ecd89626667cc38b4c0b58d6825985fdec7f228273",
+          "bytes": 202413
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-044-side.jpg",
+          "sha256": "c9601b2721cda7f471414eac7a2573bf9bddb2e927937b0e9693ad0951fed2ad",
+          "bytes": 214862
+        }
+      ]
+    },
+    {
+      "key": "item-045",
+      "originalTitle": "羽毛球拍 天斧77 · 健身计划",
+      "originalPublicId": 45,
+      "originalSellerId": 11,
+      "originalImage": "/uploads/products/seed-9040005.jpg",
+      "title": "浅木色 A4 实木相框",
+      "category": "生活家居",
+      "priceCents": 1800,
+      "condition": "GOOD",
+      "defects": "框角有极轻微磕痕",
+      "description": "【课程演示商品，不实际出售】浅木色 A4 实木相框。展示二手商品的外观、成色与多角度浏览方式。框角有极轻微磕痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one pale oak A4 picture frame holding a plain beige abstract leaf print, simple wooden border and clear glass. Plausible gently used condition: 框角有极轻微磕痕; clean, intact, not brand new. Setting: a quiet home corner with off-white wall and wood floor; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"浅木色 A4 实木相框\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one pale oak A4 picture frame holding a plain beige abstract leaf print, simple wooden border and clear glass",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-045-front.jpg",
+          "sha256": "6101c38be875b4147175e132202ccd09c4a19f4cb93171eb4ca97966ef86205f",
+          "bytes": 187087
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-045-back.jpg",
+          "sha256": "689bbfb438de04480b6c79a0a51800bb7a718f4af62c58d07420ab390b8f76c5",
+          "bytes": 220805
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-045-side.jpg",
+          "sha256": "f94af3480e80c780111e44aee2c796ffa7f51a2aa49d61e239305031d0aab862",
+          "bytes": 187845
+        }
+      ]
+    },
+    {
+      "key": "item-046",
+      "originalTitle": "iPhone 12 128GB 蓝色 · 蓝色收藏",
+      "originalPublicId": 46,
+      "originalSellerId": 12,
+      "originalImage": "/uploads/products/seed-9040001.jpg",
+      "title": "白色四天线无线路由器",
+      "category": "电脑及配件",
+      "priceCents": 5500,
+      "condition": "GOOD",
+      "defects": "底面有轻微磨痕",
+      "description": "【课程演示商品，不实际出售】白色四天线无线路由器。展示二手商品的外观、成色与多角度浏览方式。底面有轻微磨痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one white rectangular wifi router with four upright slim antennas, small indicator light strip, no cable attached. Plausible gently used condition: 底面有轻微磨痕; clean, intact, not brand new. Setting: a pale oak table beside a window; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"白色四天线无线路由器\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one white rectangular wifi router with four upright slim antennas, small indicator light strip, no cable attached",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-046-front.jpg",
+          "sha256": "8c09d11b5800a660a10ecf26c877d6f5df0cb3f94830cbcf11a6e79bc101d994",
+          "bytes": 185576
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-046-back.jpg",
+          "sha256": "8ec813d227cd5022c0c99a681f1e64ea531d731d12723dea8c425d15b32db95a",
+          "bytes": 190420
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-046-side.jpg",
+          "sha256": "b6fc838967ed77f24f52ee31826133bcb3504290d94b1e6bc6a38643487bf624",
+          "bytes": 192294
+        }
+      ]
+    },
+    {
+      "key": "item-047",
+      "originalTitle": "索尼 WH-1000XM4 降噪耳机 · 居家学习",
+      "originalPublicId": 47,
+      "originalSellerId": 12,
+      "originalImage": "/uploads/products/seed-9040002.jpg",
+      "title": "白色 3L 桌面加湿器",
+      "category": "生活家居",
+      "priceCents": 4000,
+      "condition": "GOOD",
+      "defects": "水箱外壁有浅擦痕",
+      "description": "【课程演示商品，不实际出售】白色 3L 桌面加湿器。展示二手商品的外观、成色与多角度浏览方式。水箱外壁有浅擦痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one white cylindrical 3L humidifier with translucent pale blue water tank, small top mist outlet, device switched off. Plausible gently used condition: 水箱外壁有浅擦痕; clean, intact, not brand new. Setting: a muted grey linen-covered table; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"白色 3L 桌面加湿器\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one white cylindrical 3L humidifier with translucent pale blue water tank, small top mist outlet, device switched off",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-047-front.jpg",
+          "sha256": "48d245ba90683ba1602f86bd59ec20bf8453aee7443e0b7ffff0160eb4cefa18",
+          "bytes": 233674
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-047-back.jpg",
+          "sha256": "d1da3053244129b3ddf2a5bb4fe4d658da207461170761bbaab6c11771344af5",
+          "bytes": 221218
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-047-side.jpg",
+          "sha256": "a1fc455de07644a18b2321532a7e035542ff5afae2442c716ef1aa31929c49de",
+          "bytes": 228416
+        }
+      ]
+    },
+    {
+      "key": "item-048",
+      "originalTitle": "Java 核心技术 卷 I · 阅读计划",
+      "originalPublicId": 48,
+      "originalSellerId": 12,
+      "originalImage": "/uploads/products/seed-9040003.jpg",
+      "title": "黑色中号数位板",
+      "category": "电脑及配件",
+      "priceCents": 15000,
+      "condition": "GOOD",
+      "defects": "绘图区有浅笔触磨痕",
+      "description": "【课程演示商品，不实际出售】黑色中号数位板。展示二手商品的外观、成色与多角度浏览方式。绘图区有浅笔触磨痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one black medium drawing tablet with matte rectangular active area, four buttons on left edge and one black digital pen lying beside it. Plausible gently used condition: 绘图区有浅笔触磨痕; clean, intact, not brand new. Setting: a plain walnut desk in a lived-in room; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"黑色中号数位板\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one black medium drawing tablet with matte rectangular active area, four buttons on left edge and one black digital pen lying beside it",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-048-front.jpg",
+          "sha256": "c044b20507134a4de4ab63cc47d46434e54b47214819c1424aadb3d6793d3537",
+          "bytes": 265171
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-048-back.jpg",
+          "sha256": "5d43c665719c1348144d379a648da55f8dc5d3457766b8196969d0fc8926e97c",
+          "bytes": 262635
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-048-side.jpg",
+          "sha256": "cb51b2f3a60c3261142d773c0c02e07176a1396c423990901504fa7c93212f2d",
+          "bytes": 251873
+        }
+      ]
+    },
+    {
+      "key": "item-049",
+      "originalTitle": "羊毛混纺大衣 M 码 · 基础款",
+      "originalPublicId": 49,
+      "originalSellerId": 12,
+      "originalImage": "/uploads/products/seed-9040004.jpg",
+      "title": "黑白五号足球",
+      "category": "运动户外",
+      "priceCents": 3500,
+      "condition": "GOOD",
+      "defects": "球面有正常摩擦印迹",
+      "description": "【课程演示商品，不实际出售】黑白五号足球。展示二手商品的外观、成色与多角度浏览方式。球面有正常摩擦印迹。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one classic black-and-white size-five football with stitched pentagon and hexagon panels, slight realistic used scuffs. Plausible gently used condition: 球面有正常摩擦印迹; clean, intact, not brand new. Setting: light beige floor near a window; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"黑白五号足球\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one classic black-and-white size-five football with stitched pentagon and hexagon panels, slight realistic used scuffs",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-049-front.jpg",
+          "sha256": "8eddde416c14328e550e158db57c8dfd36c45ded9826dadce9f7d958438e30c5",
+          "bytes": 201340
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-049-back.jpg",
+          "sha256": "37d65cd8a0bb69b8119fdc2407d524ad5875070a2e36fd10fc68022d25cef6fb",
+          "bytes": 207350
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-049-side.jpg",
+          "sha256": "c4c14fa8835f1a2207d6c922854b2e75340a9dab76dc622217297606f5bb883d",
+          "bytes": 221590
+        }
+      ]
+    },
+    {
+      "key": "item-050",
+      "originalTitle": "羽毛球拍 天斧77 · 轻松挥拍",
+      "originalPublicId": 50,
+      "originalSellerId": 12,
+      "originalImage": "/uploads/products/seed-9040005.jpg",
+      "title": "灰橙色家用工具箱",
+      "category": "生活家居",
+      "priceCents": 6000,
+      "condition": "GOOD",
+      "defects": "箱底有浅划痕",
+      "description": "【课程演示商品，不实际出售】灰橙色家用工具箱。展示二手商品的外观、成色与多角度浏览方式。箱底有浅划痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one closed grey plastic toolbox with orange latches and orange folding top handle, compact rectangular case. Plausible gently used condition: 箱底有浅划痕; clean, intact, not brand new. Setting: a quiet home corner with off-white wall and wood floor; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"灰橙色家用工具箱\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one closed grey plastic toolbox with orange latches and orange folding top handle, compact rectangular case",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-050-front.jpg",
+          "sha256": "31db0c518f7a812b4b9a821b61cd132d397a394c30683fa866f4e71d072c4302",
+          "bytes": 191406
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-050-back.jpg",
+          "sha256": "529d13d4fa2f5c3a7a9414e68170c141267c14f46380a40f81d29f0b7b7f372b",
+          "bytes": 189624
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-050-side.jpg",
+          "sha256": "1ea68589f3d8c6bc2f51f73f438425f159858d4d668e94d3c2f6a1f155ae9c27",
+          "bytes": 179972
+        }
+      ]
+    },
+    {
+      "key": "item-051",
+      "originalTitle": "iPhone 12 128GB 蓝色 · 日常通讯",
+      "originalPublicId": 51,
+      "originalSellerId": 13,
+      "originalImage": "/uploads/products/seed-9040001.jpg",
+      "title": "银黑色轻便摄影三脚架",
+      "category": "数码电子",
+      "priceCents": 5500,
+      "condition": "GOOD",
+      "defects": "脚管有细小擦痕",
+      "description": "【课程演示商品，不实际出售】银黑色轻便摄影三脚架。展示二手商品的外观、成色与多角度浏览方式。脚管有细小擦痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one lightweight silver aluminium camera tripod with black joints, all three legs extended on floor, black pan-tilt head and short handle. Plausible gently used condition: 脚管有细小擦痕; clean, intact, not brand new. Setting: a pale oak table beside a window; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"银黑色轻便摄影三脚架\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one lightweight silver aluminium camera tripod with black joints, all three legs extended on floor, black pan-tilt head and short handle",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-051-front.jpg",
+          "sha256": "379736afdbc775adb11e596774c65a8387cabf3dfaf6f78887870022b828d40a",
+          "bytes": 212889
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-051-back.jpg",
+          "sha256": "70ef00b87c0512a29bdf9fef985819cff8ad55cc553c455f78aca77158ee3fe1",
+          "bytes": 206424
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-051-side.jpg",
+          "sha256": "ed19f5d6ca4f988c7b9232274619732f5424170c21bdbf73bde4fda86d989bf3",
+          "bytes": 203920
+        }
+      ]
+    },
+    {
+      "key": "item-052",
+      "originalTitle": "索尼 WH-1000XM4 降噪耳机 · 背包随行",
+      "originalPublicId": 52,
+      "originalSellerId": 13,
+      "originalImage": "/uploads/products/seed-9040002.jpg",
+      "title": "白紫色家用蒸汽熨斗",
+      "category": "生活家居",
+      "priceCents": 4500,
+      "condition": "GOOD",
+      "defects": "底板有浅细划痕",
+      "description": "【课程演示商品，不实际出售】白紫色家用蒸汽熨斗。展示二手商品的外观、成色与多角度浏览方式。底板有浅细划痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one white-and-muted-purple steam iron with pointed stainless steel soleplate, arched handle and coiled white cord. Plausible gently used condition: 底板有浅细划痕; clean, intact, not brand new. Setting: a muted grey linen-covered table; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"白紫色家用蒸汽熨斗\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one white-and-muted-purple steam iron with pointed stainless steel soleplate, arched handle and coiled white cord",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-052-front.jpg",
+          "sha256": "3a2d3b1c31dfb94d52555e8fff51a389824c33a8bb3fce6410dc26f5aaad49c3",
+          "bytes": 288644
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-052-back.jpg",
+          "sha256": "71ff25d3a16be9eaf0bfb2a13beeb1b6dd22bb36b03699dfdd51e5861abfaffa",
+          "bytes": 279395
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-052-side.jpg",
+          "sha256": "a4f34d5e621b0c02751973f3830893646d94b6ff0b917d95170beea47b8aeb5c",
+          "bytes": 292642
+        }
+      ]
+    },
+    {
+      "key": "item-053",
+      "originalTitle": "Java 核心技术 卷 I · 实践复习",
+      "originalPublicId": 53,
+      "originalSellerId": 13,
+      "originalImage": "/uploads/products/seed-9040003.jpg",
+      "title": "墨绿 8 倍户外望远镜",
+      "category": "运动户外",
+      "priceCents": 9000,
+      "condition": "GOOD",
+      "defects": "镜身外壳有正常磨痕",
+      "description": "【课程演示商品，不实际出售】墨绿 8 倍户外望远镜。展示二手商品的外观、成色与多角度浏览方式。镜身外壳有正常磨痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one compact forest-green rubber binocular with two short barrels, central focusing wheel and thin black neck strap. Plausible gently used condition: 镜身外壳有正常磨痕; clean, intact, not brand new. Setting: a plain walnut desk in a lived-in room; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"墨绿 8 倍户外望远镜\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one compact forest-green rubber binocular with two short barrels, central focusing wheel and thin black neck strap",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-053-front.jpg",
+          "sha256": "0861c271d8fa60ac8713ef61a3709c3de80b7feb068b4e90fbfce245509ad0cf",
+          "bytes": 230189
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-053-back.jpg",
+          "sha256": "8304f0b0125e9fe166d55a7d3d3f6bf3ba2c41626aed32038ed737d202f48805",
+          "bytes": 235947
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-053-side.jpg",
+          "sha256": "817214eb9557c87377ca32bb088be2d0551fd03c0bf56ff58f65db99b9087438",
+          "bytes": 221812
+        }
+      ]
+    },
+    {
+      "key": "item-054",
+      "originalTitle": "羊毛混纺大衣 M 码 · 衣橱换新",
+      "originalPublicId": 54,
+      "originalSellerId": 13,
+      "originalImage": "/uploads/products/seed-9040004.jpg",
+      "title": "直筒深蓝牛仔裤 30 码",
+      "category": "服饰鞋包",
+      "priceCents": 4500,
+      "condition": "GOOD",
+      "defects": "裤脚边缘自然褪色",
+      "description": "【课程演示商品，不实际出售】直筒深蓝牛仔裤 30 码。展示二手商品的外观、成色与多角度浏览方式。裤脚边缘自然褪色。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one pair of dark indigo straight-leg jeans size 30, brass button and traditional five-pocket design, full garment laid flat. Plausible gently used condition: 裤脚边缘自然褪色; clean, intact, not brand new. Setting: light beige floor near a window; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"直筒深蓝牛仔裤 30 码\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one pair of dark indigo straight-leg jeans size 30, brass button and traditional five-pocket design, full garment laid flat",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-054-front.jpg",
+          "sha256": "f0d0154d986da60c8384cb5f13f076e2c2bfd8b0ce519e51dab2c73ae27e52f6",
+          "bytes": 269192
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-054-back.jpg",
+          "sha256": "98940ad823ff3f3fcfd8e4df9b23f4b5bb77baf4c6a45c33a8ea663023433e70",
+          "bytes": 253385
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-054-side.jpg",
+          "sha256": "723b3ea8172735d6e4560f32b35fda6e9c2209306a509fbcce4ec07edf064d9e",
+          "bytes": 223181
+        }
+      ]
+    },
+    {
+      "key": "item-055",
+      "originalTitle": "羽毛球拍 天斧77 · 周末约球",
+      "originalPublicId": 55,
+      "originalSellerId": 13,
+      "originalImage": "/uploads/products/seed-9040005.jpg",
+      "title": "白色家用电动缝纫机",
+      "category": "生活家居",
+      "priceCents": 18000,
+      "condition": "GOOD",
+      "defects": "机身底部有小擦痕",
+      "description": "【课程演示商品，不实际出售】白色家用电动缝纫机。展示二手商品的外观、成色与多角度浏览方式。机身底部有小擦痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one compact white electric sewing machine with teal dial, metal needle plate, spool pin and carry handle. Plausible gently used condition: 机身底部有小擦痕; clean, intact, not brand new. Setting: a quiet home corner with off-white wall and wood floor; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"白色家用电动缝纫机\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one compact white electric sewing machine with teal dial, metal needle plate, spool pin and carry handle",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-055-front.jpg",
+          "sha256": "5b2c62617e6eeb08a8c1f5e773faee6dfe4b6a41ee4c900273ebfd7a5c95845c",
+          "bytes": 196699
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-055-back.jpg",
+          "sha256": "a6151d6f67d0f192b79df5efe30dd43732f37d12ab0e3424b4200dd13013cfc3",
+          "bytes": 186794
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-055-side.jpg",
+          "sha256": "74813852f0e5525bf95bf244ce952cd202645950955f95c2269317cb73a7273b",
+          "bytes": 204746
+        }
+      ]
+    },
+    {
+      "key": "item-056",
+      "originalTitle": "iPhone 12 128GB 蓝色 · 入门体验",
+      "originalPublicId": 56,
+      "originalSellerId": 14,
+      "originalImage": "/uploads/products/seed-9040001.jpg",
+      "title": "黑色 1TB 移动硬盘",
+      "category": "电脑及配件",
+      "priceCents": 12000,
+      "condition": "GOOD",
+      "defects": "外壳有细小擦痕",
+      "description": "【课程演示商品，不实际出售】黑色 1TB 移动硬盘。展示二手商品的外观、成色与多角度浏览方式。外壳有细小擦痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one black slim rectangular portable external hard drive with subtle ribbed top texture, short detached USB cable beside it. Plausible gently used condition: 外壳有细小擦痕; clean, intact, not brand new. Setting: a pale oak table beside a window; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"黑色 1TB 移动硬盘\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one black slim rectangular portable external hard drive with subtle ribbed top texture, short detached USB cable beside it",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-056-front.jpg",
+          "sha256": "0593732c40ff593c9a1ad61b2cf09b1768cea2917ae7d351fcf0169deb2e623b",
+          "bytes": 325173
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-056-back.jpg",
+          "sha256": "44bbdfc7d5ff0c4677b05c2c7e4ed87659dcc1a5b1ad2937faea100b60c0a1f6",
+          "bytes": 302219
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-056-side.jpg",
+          "sha256": "7478b009170f9f6c72495f843dc3c129f7e5304e8e75a109267bbaee75ddd63d",
+          "bytes": 304199
+        }
+      ]
+    },
+    {
+      "key": "item-057",
+      "originalTitle": "索尼 WH-1000XM4 降噪耳机 · 专注时刻",
+      "originalPublicId": 57,
+      "originalSellerId": 14,
+      "originalImage": "/uploads/products/seed-9040002.jpg",
+      "title": "白色玻璃电子体重秤",
+      "category": "生活家居",
+      "priceCents": 2500,
+      "condition": "GOOD",
+      "defects": "玻璃边角有细小擦痕",
+      "description": "【课程演示商品，不实际出售】白色玻璃电子体重秤。展示二手商品的外观、成色与多角度浏览方式。玻璃边角有细小擦痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one square white glass digital bathroom scale with four circular brushed metal pads and small dark display. Plausible gently used condition: 玻璃边角有细小擦痕; clean, intact, not brand new. Setting: a muted grey linen-covered table; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"白色玻璃电子体重秤\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one square white glass digital bathroom scale with four circular brushed metal pads and small dark display",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-057-front.jpg",
+          "sha256": "71f985c9f6ca0bccacc5baa07e421d3366a0ea3beb01e0033809a26ebb484803",
+          "bytes": 210209
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-057-back.jpg",
+          "sha256": "252b53edeab8d2a97ca095d39a9986587966ab92e4a14532b974f00582841d2a",
+          "bytes": 201572
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-057-side.jpg",
+          "sha256": "7cc1a8ef12975ea6350ced7191f5be07ebe6915c4d779e97fe437cac411e112f",
+          "bytes": 230515
+        }
+      ]
+    },
+    {
+      "key": "item-058",
+      "originalTitle": "Java 核心技术 卷 I · 系统学习",
+      "originalPublicId": 58,
+      "originalSellerId": 14,
+      "originalImage": "/uploads/products/seed-9040003.jpg",
+      "title": "哑光灰城市骑行头盔",
+      "category": "运动户外",
+      "priceCents": 6500,
+      "condition": "GOOD",
+      "defects": "外壳有轻微表面擦痕",
+      "description": "【课程演示商品，不实际出售】哑光灰城市骑行头盔。展示二手商品的外观、成色与多角度浏览方式。外壳有轻微表面擦痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one matte grey bicycle helmet with multiple ventilation slots and black adjustable chin straps. Plausible gently used condition: 外壳有轻微表面擦痕; clean, intact, not brand new. Setting: a plain walnut desk in a lived-in room; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"哑光灰城市骑行头盔\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one matte grey bicycle helmet with multiple ventilation slots and black adjustable chin straps",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-058-front.jpg",
+          "sha256": "4529414f26f09bf9610735815dfffd4aef3f00e37087ae30c2e04616e7e7aa06",
+          "bytes": 240342
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-058-back.jpg",
+          "sha256": "27ba6fe6980a47635076ec1ea771d37f01c594669dd2a8ee73de1dafe1123f95",
+          "bytes": 236826
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-058-side.jpg",
+          "sha256": "590101e73cf089199512a5a3bd1b04b8948ec1aea1747c3989bf0adacb225e5c",
+          "bytes": 239299
+        }
+      ]
+    },
+    {
+      "key": "item-059",
+      "originalTitle": "羊毛混纺大衣 M 码 · 午后出行",
+      "originalPublicId": 59,
+      "originalSellerId": 14,
+      "originalImage": "/uploads/products/seed-9040004.jpg",
+      "title": "千片风景拼图盒装",
+      "category": "其他闲置",
+      "priceCents": 2500,
+      "condition": "GOOD",
+      "defects": "盒角有轻微压痕",
+      "description": "【课程演示商品，不实际出售】千片风景拼图盒装。展示二手商品的外观、成色与多角度浏览方式。盒角有轻微压痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one flat rectangular cardboard jigsaw puzzle box with a soft illustrated mountain-lake scene on lid, no readable words or numbers. Plausible gently used condition: 盒角有轻微压痕; clean, intact, not brand new. Setting: light beige floor near a window; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"千片风景拼图盒装\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one flat rectangular cardboard jigsaw puzzle box with a soft illustrated mountain-lake scene on lid, no readable words or numbers",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-059-front.jpg",
+          "sha256": "394d9cfc314eb19b01051b03ea25c0175ee583cd81c14200611ab207a7f70774",
+          "bytes": 350337
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-059-back.jpg",
+          "sha256": "f6edc8161d3636337249cb903aa386c632ebf4312fb5cfe1db313056ed258f0a",
+          "bytes": 251294
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-059-side.jpg",
+          "sha256": "b0b4345e3c3c0dca9ffe1f040144910cb713a994829e45b3f0829361b955ec01",
+          "bytes": 306887
+        }
+      ]
+    },
+    {
+      "key": "item-060",
+      "originalTitle": "羽毛球拍 天斧77 · 运动日常",
+      "originalPublicId": 60,
+      "originalSellerId": 14,
+      "originalImage": "/uploads/products/seed-9040005.jpg",
+      "title": "白色双抽屉床头柜",
+      "category": "生活家居",
+      "priceCents": 6500,
+      "condition": "GOOD",
+      "defects": "侧面有浅划痕",
+      "description": "【课程演示商品，不实际出售】白色双抽屉床头柜。展示二手商品的外观、成色与多角度浏览方式。侧面有浅划痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one small white bedside cabinet with two drawers, round pale wood knobs and four short wooden legs. Plausible gently used condition: 侧面有浅划痕; clean, intact, not brand new. Setting: a quiet home corner with off-white wall and wood floor; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"白色双抽屉床头柜\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one small white bedside cabinet with two drawers, round pale wood knobs and four short wooden legs",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-060-front.jpg",
+          "sha256": "6fb176b0106911f8ed2e6e3c8460fc59794ff93d764c2b0c01cb74db0e1d076b",
+          "bytes": 125651
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-060-back.jpg",
+          "sha256": "2ce71614c8308e2b447338459210882612d8eaf0face6ab09f598e571d4f6bcc",
+          "bytes": 163234
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-060-side.jpg",
+          "sha256": "5796e676c02dc94b0b4da9b298e870eef23c38f07dd36c861a7e8c18129ceb80",
+          "bytes": 123666
+        }
+      ]
+    },
+    {
+      "key": "item-061",
+      "originalTitle": "iPhone 12 128GB 蓝色 · 旅途记录",
+      "originalPublicId": 61,
+      "originalSellerId": 15,
+      "originalImage": "/uploads/products/seed-9040001.jpg",
+      "title": "黑色 USB 桌面麦克风",
+      "category": "电脑及配件",
+      "priceCents": 10000,
+      "condition": "GOOD",
+      "defects": "底座有正常使用擦痕",
+      "description": "【课程演示商品，不实际出售】黑色 USB 桌面麦克风。展示二手商品的外观、成色与多角度浏览方式。底座有正常使用擦痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one black USB condenser microphone with metal mesh cylindrical head on a short round desktop stand. Plausible gently used condition: 底座有正常使用擦痕; clean, intact, not brand new. Setting: a pale oak table beside a window; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"黑色 USB 桌面麦克风\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one black USB condenser microphone with metal mesh cylindrical head on a short round desktop stand",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-061-front.jpg",
+          "sha256": "0fd55fa918b9a3525b01f711e41b62e9ccda7ae113a07255b0dbb8cf77fb09b3",
+          "bytes": 250554
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-061-back.jpg",
+          "sha256": "93782cda4c06b8c4bec37b085d6f9ac7f114532e55ff12e3a8b3b7c0c113490c",
+          "bytes": 237451
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-061-side.jpg",
+          "sha256": "81f4707ffa5bd10d5e7a8b4d353d049afb5a8ab83ea516283cccec4bfcf07070",
+          "bytes": 231418
+        }
+      ]
+    },
+    {
+      "key": "item-062",
+      "originalTitle": "索尼 WH-1000XM4 降噪耳机 · 影音入门",
+      "originalPublicId": 62,
+      "originalSellerId": 15,
+      "originalImage": "/uploads/products/seed-9040002.jpg",
+      "title": "白橙色迷你榨汁机",
+      "category": "生活家居",
+      "priceCents": 5000,
+      "condition": "GOOD",
+      "defects": "杯座外壳有浅细划痕",
+      "description": "【课程演示商品，不实际出售】白橙色迷你榨汁机。展示二手商品的外观、成色与多角度浏览方式。杯座外壳有浅细划痕。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one small white countertop blender with clear glass cup, orange control dial, matching white lid. Plausible gently used condition: 杯座外壳有浅细划痕; clean, intact, not brand new. Setting: a muted grey linen-covered table; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"白橙色迷你榨汁机\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one small white countertop blender with clear glass cup, orange control dial, matching white lid",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-062-front.jpg",
+          "sha256": "94df1c9359d874107ffcb6bd60a35a702bd5b9a77838e84d77cb4f2f8f689e11",
+          "bytes": 234367
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-062-back.jpg",
+          "sha256": "098558c0678b7e1cac509ff80f21f1ca26d90684b69bb55b462ff7479677e4c7",
+          "bytes": 223403
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-062-side.jpg",
+          "sha256": "120ec53fab0cee179fb557f60a9a966159c4bc6044c4d58713e38b4c2e2dfe94",
+          "bytes": 225690
+        }
+      ]
+    },
+    {
+      "key": "item-063",
+      "originalTitle": "Java 核心技术 卷 I · 入门书单",
+      "originalPublicId": 63,
+      "originalSellerId": 15,
+      "originalImage": "/uploads/products/seed-9040003.jpg",
+      "title": "黑红色直排轮滑鞋 40 码",
+      "category": "运动户外",
+      "priceCents": 12000,
+      "condition": "GOOD",
+      "defects": "轮子表面有正常使用印迹",
+      "description": "【课程演示商品，不实际出售】黑红色直排轮滑鞋 40 码。展示二手商品的外观、成色与多角度浏览方式。轮子表面有正常使用印迹。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one matched pair of black inline skates with red cuff straps, four wheels each, laces and buckles intact. Plausible gently used condition: 轮子表面有正常使用印迹; clean, intact, not brand new. Setting: a plain walnut desk in a lived-in room; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"黑红色直排轮滑鞋 40 码\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one matched pair of black inline skates with red cuff straps, four wheels each, laces and buckles intact",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-063-front.jpg",
+          "sha256": "733bd0673faebecb1d7f42aa4385de521876357d60383b5c589be36962335660",
+          "bytes": 300069
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-063-back.jpg",
+          "sha256": "609fe597a893ceee3ae0c36ca3e6ecd78f18441e020979b434c2d1f3bf7a75d7",
+          "bytes": 268790
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-063-side.jpg",
+          "sha256": "3175c15b67499dd57b0b6176024e9e7557841301cdb3c0654e9e26034674a540",
+          "bytes": 279789
+        }
+      ]
+    },
+    {
+      "key": "item-064",
+      "originalTitle": "羊毛混纺大衣 M 码 · 冬日散步",
+      "originalPublicId": 64,
+      "originalSellerId": 15,
+      "originalImage": "/uploads/products/seed-9040004.jpg",
+      "title": "城市旅行摄影集",
+      "category": "图书教材",
+      "priceCents": 3500,
+      "condition": "GOOD",
+      "defects": "封面边角轻微卷翘",
+      "description": "【课程演示商品，不实际出售】城市旅行摄影集。展示二手商品的外观、成色与多角度浏览方式。封面边角轻微卷翘。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one thick softcover photo book with a quiet city street photograph printed on cover, simple cream margins, no large readable title. Plausible gently used condition: 封面边角轻微卷翘; clean, intact, not brand new. Setting: light beige floor near a window; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"城市旅行摄影集\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one thick softcover photo book with a quiet city street photograph printed on cover, simple cream margins, no large readable title",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-064-front.jpg",
+          "sha256": "2368b517209a8aeb6d12442cc58a46217014cacaf2e2bc20d241e5a5fe1d262e",
+          "bytes": 283538
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-064-back.jpg",
+          "sha256": "07ed8b811174f75b5443edf38b028317d7d7311d72845c30bc5d2fbe80c8cd43",
+          "bytes": 207185
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-064-side.jpg",
+          "sha256": "3c95db9b14d7655762d4fa81e96e1cb064308d19275491e6cce43ee7eaf56161",
+          "bytes": 307820
+        }
+      ]
+    },
+    {
+      "key": "item-065",
+      "originalTitle": "羽毛球拍 天斧77 · 练球时光",
+      "originalPublicId": 65,
+      "originalSellerId": 15,
+      "originalImage": "/uploads/products/seed-9040005.jpg",
+      "title": "深棕色短款皮钱包",
+      "category": "服饰鞋包",
+      "priceCents": 4500,
+      "condition": "GOOD",
+      "defects": "折边有自然皮革使用纹路",
+      "description": "【课程演示商品，不实际出售】深棕色短款皮钱包。展示二手商品的外观、成色与多角度浏览方式。折边有自然皮革使用纹路。三张图片分别展示正面、背面与侧面，均为 AI 生成示意图，不代表真实物品、实测性能或卖家实拍；标价仅用于课程演示。",
+      "prompt": "Generate exactly ONE square photorealistic secondhand listing photograph, FRONT view of one dark brown leather bifold wallet, closed, rounded worn corners, plain stitched border, no logo. Plausible gently used condition: 折边有自然皮革使用纹路; clean, intact, not brand new. Setting: a quiet home corner with off-white wall and wood floor; for large furniture/instruments/outdoor equipment use sensible full-size floor or lawn positioning. Natural window daylight, casual phone-camera photo from a normal viewing height, subtle real material detail, mild asymmetry. Whole item fully inside the frame with margin, no cropped parts. Focus on its normal front face, clearly recognizable form. This is one specific used item for listing \"深棕色短款皮钱包\". No people, no hands, no private info, no caption or watermark, no collage or split panels, no artificial floating product, no glossy studio advert, no dramatic colored backdrop. ONE product (or explicitly matched pair) and ONE view.",
+      "object": "one dark brown leather bifold wallet, closed, rounded worn corners, plain stitched border, no logo",
+      "images": [
+        {
+          "view": "front",
+          "file": "demo043-item-065-front.jpg",
+          "sha256": "745502c4d261f6d001440a01c8215ac58e4d5a88c74dfeca1251772ec7ece1ac",
+          "bytes": 244745
+        },
+        {
+          "view": "back",
+          "file": "demo043-item-065-back.jpg",
+          "sha256": "5bcba39b0944c0281c7354d24f2c1d8860ffbbb4754a8adc8093409dc2e6d5e7",
+          "bytes": 247649
+        },
+        {
+          "view": "side",
+          "file": "demo043-item-065-side.jpg",
+          "sha256": "91246d2b5439d15f8ede88fa2a7244db0aabb34a57c81f6126d8857683578387",
+          "bytes": 197317
+        }
+      ]
+    }
+  ]
+}

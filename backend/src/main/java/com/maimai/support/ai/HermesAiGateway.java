@@ -44,11 +44,11 @@ public class HermesAiGateway implements SupportAiGateway {
         if(history.size()%2==0||length>18000) throw BizException.badRequest("AI_CHAT_INVALID","对话内容过长");
         if(!slot.tryAcquire()) throw BizException.tooMany("缇娜正在回复其他问题，请稍后重试");
         try {
-            String body=json.writeValueAsString(Map.of("model",model,"stream",false,"max_tokens",600,"tool_choice","none","messages",messages));
+            String body=requestBody(endpoint,messages);
             var message=json.readTree(transport.post(endpoint,token,body)).path("choices").path(0).path("message");
             var content=message.path("content");
             if(message.hasNonNull("tool_calls")||message.hasNonNull("function_call")||!content.isString()
-                    ||content.asString().isBlank()||content.asString().length()>1800) throw invalidResponse();
+                    ||!safeAnswer(content.asString())) throw invalidResponse();
             return content.asString().strip();
         } catch(BizException error) { throw error; }
         catch(RuntimeException error) { throw invalidResponse(); }
@@ -61,18 +61,29 @@ public class HermesAiGateway implements SupportAiGateway {
         if(!slot.tryAcquire()) throw BizException.tooMany("智能客服忙碌，请稍后重试或转人工");
         try {
             // Exactly two fixed public messages; no user-authored history is sent.
-            String body=json.writeValueAsString(Map.of("model",model,"stream",false,"max_tokens",600,"tool_choice","none",
-                    "messages",List.of(Map.of("role","system","content","你是麦麦二手规则解释助手。只用给定规则回答，不使用任何工具，不访问文件、网络、终端或订单，不执行退款或决定争议。不知道的内容转人工。用中文简短说明，不编造规则。"),
-                    Map.of("role","user","content","请简明解释以下已审核规则，不添加承诺："+topic.answer))));
+            String body=requestBody(endpoint,List.of(Map.of("role","system","content","你是麦麦二手规则解释助手。只用给定规则回答，不使用任何工具，不访问文件、网络、终端或订单，不执行退款或决定争议。不知道的内容转人工。用中文简短说明，不编造规则。"),
+                    Map.of("role","user","content","请简明解释以下已审核规则，不添加承诺："+topic.answer)));
             var root=json.readTree(transport.post(endpoint,token,body));
             var message=root.path("choices").path(0).path("message");
             var content=message.path("content");
             if(message.hasNonNull("tool_calls")||message.hasNonNull("function_call")||!content.isString()
-                    ||content.asString().isBlank()||content.asString().length()>1800) throw invalidResponse();
+                    ||!safeAnswer(content.asString())) throw invalidResponse();
             return content.asString().strip();
         } catch(BizException ex) { throw ex; }
         catch(RuntimeException ex) { throw invalidResponse(); }
         finally { slot.release(); }
+    }
+    private String requestBody(URI endpoint,List<Map<String,String>> messages) {
+        var payload=new java.util.LinkedHashMap<String,Object>();
+        payload.put("model",model);payload.put("stream",false);payload.put("max_tokens",600);
+        payload.put("tool_choice","none");payload.put("messages",messages);
+        // MiniMax's documented split keeps internal reasoning out of the visible answer and history.
+        if(Set.of("api.minimaxi.com","api.minimax.io").contains(endpoint.getHost())) payload.put("reasoning_split",true);
+        return json.writeValueAsString(payload);
+    }
+    private static boolean safeAnswer(String content) {
+        String lower=content.toLowerCase(java.util.Locale.ROOT);
+        return !content.isBlank()&&content.length()<=1800&&!lower.contains("<think")&&!lower.contains("</think>");
     }
     private URI endpoint() {
         if(!verified||base.isBlank()||token.isBlank()||model.isBlank()||token.contains("\n")||token.contains("\r")) throw unconfigured();

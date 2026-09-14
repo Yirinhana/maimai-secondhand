@@ -31,7 +31,7 @@
     <div class="product-gallery__caption">
       <span>{{
         isDemoProductImage(currentImage?.path)
-          ? '演示示意图 · 非卖家实拍'
+          ? 'AI 生成演示图 · 非卖家实拍'
           : images.length
             ? '商品图片'
             : '卖家暂未上传图片'
@@ -46,11 +46,20 @@
           class="product-gallery__thumb"
           :class="{ 'is-active': index === currentIndex }"
           type="button"
-          :aria-label="`查看第 ${index + 1} 张图片`"
+          :aria-label="
+            demoImageView(item.path)
+              ? `查看${demoImageView(item.path)}图片`
+              : `查看第 ${index + 1} 张图片`
+          "
           :aria-pressed="index === currentIndex"
           @click="currentIndex = index"
         >
           <ItemImage :src="item.path" :alt="`${title} 缩略图 ${index + 1}`" />
+          <span
+            v-if="demoImageView(item.path)"
+            class="product-gallery__view-label"
+            >{{ demoImageView(item.path) }}</span
+          >
         </button>
       </li>
     </ul>
@@ -79,7 +88,10 @@
             ← 上一张
           </button>
           <p role="status">
-            第 {{ currentIndex + 1 }} 张，共 {{ images.length }} 张
+            {{
+              demoImageView(currentImage?.path) || `第 ${currentIndex + 1} 张`
+            }}
+            · 共 {{ images.length }} 张
           </p>
           <button
             v-if="images.length > 1"
@@ -100,7 +112,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { isDemoProductImage } from '../../../shared/demoImages';
+import { isDemoProductImage, demoImageView } from '../../../shared/demoImages';
 import ItemImage from '../../../shared/components/ItemImage.vue';
 import type { ProductImage } from '../../../shared/types';
 import CatalogDialog from './CatalogDialog.vue';
@@ -184,13 +196,25 @@ watch(
   flex-shrink: 0;
 }
 .product-gallery__thumb {
+  position: relative;
   display: block;
-  width: 68px;
-  height: 68px;
+  width: 88px;
+  height: 88px;
   padding: 3px;
   border: 1px solid var(--mm-border);
   border-radius: 7px;
   background: var(--mm-white);
+}
+.product-gallery__view-label {
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+  right: 5px;
+  padding: 3px;
+  border-radius: 3px;
+  background: #fffdf5ed;
+  color: #312c25;
+  font-size: 11px;
 }
 .product-gallery__thumb.is-active {
   border: 2px solid var(--mm-ink);
