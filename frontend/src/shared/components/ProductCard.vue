@@ -8,6 +8,9 @@
         loading="lazy"
       />
       <span v-else class="mm-product-card__no-cover">暂无图片</span>
+      <span class="mm-product-card__condition">{{
+        CONDITION_TEXT[product.condition]
+      }}</span>
       <span v-if="product.stockAvailable <= 0" class="mm-product-card__soldout"
         >已售罄</span
       >
@@ -16,12 +19,22 @@
       <h3 class="mm-product-card__title">{{ product.title }}</h3>
       <div class="mm-product-card__meta">
         <PriceText :cents="product.priceCents" />
-        <MmTag :text="CONDITION_TEXT[product.condition]" tone="primary" />
+        <span
+          v-if="product.deliveryMethods.includes('MEETUP')"
+          class="mm-product-card__meetup"
+          >可面交</span
+        >
       </div>
       <p class="mm-product-card__sub">
-        {{ product.region }} · {{ deliveryText }}
+        <MmIcon name="pin" />{{ product.region
+        }}<span class="mm-product-card__delivery">{{ deliveryText }}</span>
       </p>
-      <p class="mm-product-card__seller">{{ product.sellerNickname }}</p>
+      <p class="mm-product-card__seller">
+        <span class="mm-product-card__seller-mark" aria-hidden="true">{{
+          product.sellerNickname?.slice(0, 1) || '麦'
+        }}</span
+        >{{ product.sellerNickname }}
+      </p>
       <p
         v-if="
           product.distanceMeters !== null &&
@@ -43,7 +56,7 @@
 <script setup lang="ts">
 import ItemImage from './ItemImage.vue';
 import { computed } from 'vue';
-import MmTag from './MmTag.vue';
+import MmIcon from './MmIcon.vue';
 import PriceText from './PriceText.vue';
 import {
   CONDITION_TEXT,
@@ -82,6 +95,25 @@ const deliveryText = computed(() =>
   border-radius: 10px;
   border: 1px solid #e7e7df;
 }
+.mm-product-card__condition {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 3px 8px;
+  border: 1px solid #ffffff60;
+  border-radius: 5px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #3c4634;
+  background: #fbfcf6f2;
+}
+.mm-product-card__meetup {
+  color: #596a49;
+  background: #eef1e6;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 11px;
+}
 .mm-product-card__cover img {
   width: 100%;
   height: 100%;
@@ -108,7 +140,7 @@ const deliveryText = computed(() =>
   padding: 13px 2px 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 9px;
   overflow-wrap: anywhere;
 }
 .mm-product-card__title {
@@ -133,23 +165,43 @@ const deliveryText = computed(() =>
   color: var(--mm-ink);
   letter-spacing: -0.4px;
 }
-.mm-product-card__meta :deep(.mm-tag) {
-  font-size: 10px;
-  padding: 2px 6px;
-  border: 0;
-  font-weight: 500;
-  color: #717561;
-  background: #eceee5;
-}
 .mm-product-card__sub,
 .mm-product-card__seller {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--mm-muted);
+}
+.mm-product-card__sub {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+.mm-product-card__sub .mm-icon {
+  width: 13px;
+  height: 13px;
+}
+.mm-product-card__delivery {
+  margin-left: auto;
+  font-size: 11px;
 }
 .mm-product-card__seller {
   border-top: 1px solid var(--mm-border);
   padding-top: 8px;
   margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.mm-product-card__seller-mark {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #ecebe2;
+  color: #636852;
+  font-size: 10px;
+  flex-shrink: 0;
 }
 .mm-product-card__seller:empty {
   display: none;
@@ -167,11 +219,21 @@ const deliveryText = computed(() =>
   .mm-product-card__info {
     padding-top: 10px;
   }
+  .mm-product-card__condition {
+    top: 7px;
+    left: 7px;
+    padding: 2px 5px;
+    font-size: 10px;
+  }
+  .mm-product-card__delivery {
+    display: none;
+  }
+  .mm-product-card__sub,
+  .mm-product-card__seller {
+    font-size: 11px;
+  }
   .mm-product-card__meta :deep(.mm-price) {
     font-size: 17px;
-  }
-  .mm-product-card__meta :deep(.mm-tag) {
-    font-size: 10px;
   }
 }
 </style>

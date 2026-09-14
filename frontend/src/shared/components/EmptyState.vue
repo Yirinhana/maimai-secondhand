@@ -1,6 +1,6 @@
 <template>
   <div class="mm-empty">
-    <img class="mm-empty__icon" src="/brand/maimai-icon.svg" alt="" width="64" height="64" />
+    <div class="mm-empty__icon" aria-hidden="true"><MmIcon :name="icon" /></div>
     <p class="mm-empty__title">{{ title }}</p>
     <p v-if="description" class="mm-empty__desc">{{ description }}</p>
     <slot />
@@ -8,10 +8,11 @@
 </template>
 
 <script setup lang="ts">
+import MmIcon from './MmIcon.vue';
 withDefaults(
-  defineProps<{ title?: string; description?: string }>(),
-  { title: '这里还没有内容', description: '' },
-)
+  defineProps<{ title?: string; description?: string; icon?: string }>(),
+  { title: '这里还没有内容', description: '', icon: 'box' },
+);
 </script>
 
 <style scoped>
@@ -20,12 +21,28 @@ withDefaults(
   flex-direction: column;
   align-items: center;
   gap: var(--mm-space-2);
-  padding: var(--mm-space-6) var(--mm-space-4);
+  padding: 44px 20px;
   text-align: center;
 }
 
 .mm-empty__icon {
-  opacity: 0.6;
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 22px;
+  color: #849171;
+  background: #eef0e8;
+  margin-bottom: 9px;
+}
+.mm-empty__icon .mm-icon {
+  width: 34px;
+  height: 34px;
+  stroke-width: 1.25;
+}
+.mm-empty :deep(a),
+.mm-empty :deep(button) {
+  margin-top: 8px;
 }
 
 .mm-empty__title {
@@ -37,5 +54,7 @@ withDefaults(
 .mm-empty__desc {
   font-size: var(--mm-font-s);
   color: var(--mm-muted);
+  max-width: 380px;
+  line-height: 1.8;
 }
 </style>

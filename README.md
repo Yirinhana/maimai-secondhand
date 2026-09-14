@@ -6,6 +6,8 @@
 
 v0.2.0 本地验证已完成：后端 **191/191**，新版界面专项 **5/5**，原交易流程 **9/9** 全部通过，包含高德真实地点检索。网站改为暖白/炭黑/橙色，分区布局、顶部导航、头像上传与菜单、官方文章管理均可实际使用。证据、交付包和剩余条件见 [v0.2.0验收记录](docs/testing/interface-renewal.md)；[v0.1.0记录](docs/testing/local-validation.md)保留用于追溯。
 
+v0.2.1 继续打磨首页、发现、商品详情、账户和交易页面：手机高级筛选折叠、大图与键盘操作、密码显隐、失败重试、购物车与结算分区、浏览位置恢复。TypeScript/Vite 构建、4/4 独立账号交互用例及 21 个页面视口组合通过。支付方案保持原样。本轮范围与证据见 [v0.2.1验收记录](docs/testing/visual-ux-polish.md)；后端测试数量沿用上一版本记录，不计为本轮重新执行。
+
 GitHub 私有仓库 [Yirinhana/maimai-secondhand](https://github.com/Yirinhana/maimai-secondhand) 已建立，本地 origin 已确认直连正式 GitHub。CI 与 PR 模板已准备并通过本地 actionlint 静态检查，平台实际运行状态以 [GitHub Actions](https://github.com/Yirinhana/maimai-secondhand/actions) 为准；静态校验不能替代平台运行通过。远程推送遵循用户确认，流程见 [GitHub 协作说明](docs/development/github-workflow.md)。
 
 ## 目录
@@ -24,7 +26,7 @@ GitHub 私有仓库 [Yirinhana/maimai-secondhand](https://github.com/Yirinhana/m
 | `VERSION` | 产品版本唯一来源，Maven 构建时由脚本传入 |
 | `.local/` | 忽略的本地凭据、数据库、工具、日志、截图及构建包 |
 
-根目录四份课程 DOCX 是原始提交模板，保持原样。需求和条款 DOCX 保存在 `docs/requirements/`、`docs/policies/`；本轮实施与验收以 `docs/testing/interface-renewal.md` 为入口。
+根目录四份课程 DOCX 是原始提交模板，保持原样。需求和条款 DOCX 保存在 `docs/requirements/`、`docs/policies/`；本轮实施与验收以 `docs/testing/visual-ux-polish.md` 为入口。
 
 ## 本机启动
 
@@ -59,11 +61,14 @@ cd tests/e2e
 npm ci
 npm test
 npm run test:interface
+npm run test:ux
 ```
 
 测试使用系统 Chrome 的独立 headless 实例，会在本地演示库创建测试订单、消息及售后材料；不操作用户已有浏览器，不发送外部邮件，也不进行真实扣款。
 
 `npm test` 执行九项交易回归，含需要有效配置的真实高德地点搜索。`npm run test:interface` 执行新版分区、菜单、头像、官方内容权限及 360px 布局验收；只依赖本地演示账号和服务，会独立创建自己的资料、商品、模拟订单与售后，不读取历史截图作为输入。两套测试串行执行；界面套件结束后下架本次自己的测试商品，保留交易记录，官方测试文章通过页面撤回。结果与截图写入忽略的 `.local/screenshots/`。
+
+`npm run test:ux` 执行 036 外观交互回归，注册独立的本地账号并保存该账号的头像、昵称、地址及购物车，读取现有商品。结算提交被测试浏览器拦截为 503，用于验证错误恢复与重试幂等，不创建订单、修改公共商品或进行支付。它与其他套件同样串行执行，详情见对应验收记录。
 
 ## 核心约定
 

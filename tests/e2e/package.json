@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "test": "playwright test",
-    "test:interface": "playwright test --config playwright.035.config.cjs"
+    "test:interface": "playwright test --config playwright.035.config.cjs",
+    "test:ux": "playwright test --config playwright.036.config.cjs"
   },
   "devDependencies": {
     "@playwright/test": "1.63.0"

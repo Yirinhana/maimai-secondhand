@@ -2,7 +2,7 @@
   <div class="mm-app" :class="`mm-app--${section}`">
     <ConfirmationDialog />
     <a href="#main-content" class="mm-skip">跳到正文</a>
-    <header class="mm-header">
+    <header ref="headerRoot" class="mm-header">
       <div class="mm-header__inner">
         <RouterLink to="/" class="mm-brand" aria-label="麦麦二手首页"
           ><img src="/brand/maimai-symbol.svg" alt="" /><span
@@ -20,11 +20,13 @@
             >搜索商品</label
           ><input
             id="mm-header-search"
+            ref="searchInput"
             v-model="keyword"
             type="search"
             placeholder="找到你的下一件心头好"
             maxlength="50"
-          /><button type="submit" aria-label="搜索">搜索</button>
+          /><kbd class="mm-header__search-key" aria-hidden="true">/</kbd
+          ><button type="submit" aria-label="搜索">搜索</button>
         </form>
         <div class="mm-header__actions">
           <RouterLink to="/cart" class="mm-header__cart" aria-label="购物车"
@@ -97,19 +99,21 @@
             >登录 / 注册</RouterLink
           >
           <button
+            ref="navTrigger"
             class="mm-header__menu-toggle"
             :aria-expanded="menuOpen"
             aria-controls="mm-main-nav"
             aria-label="打开导航菜单"
-            @click="menuOpen = !menuOpen"
+            @click="toggleNavigation"
           >
-            <MmIcon name="menu" />
+            <MmIcon :name="menuOpen ? 'close' : 'menu'" />
           </button>
         </div>
       </div>
       <div class="mm-header__nav-wrap">
         <nav
           id="mm-main-nav"
+          ref="navRoot"
           class="mm-header__nav"
           :class="{ 'is-open': menuOpen }"
           aria-label="主导航"
@@ -151,12 +155,18 @@
             :key="link.to"
             :to="link.to"
             :class="{ 'is-active': isSectionLinkActive(link.to) }"
+            :aria-current="isSectionLinkActive(link.to) ? 'page' : undefined"
             >{{ link.label }}</RouterLink
           >
         </nav>
       </div>
     </div>
-    <main id="main-content" class="mm-main" :class="`mm-main--${section}`">
+    <main
+      id="main-content"
+      tabindex="-1"
+      class="mm-main"
+      :class="`mm-main--${section}`"
+    >
       <router-view />
     </main>
     <footer class="mm-footer">
@@ -176,6 +186,15 @@
         ><span>本地开发版本 · 模拟交易不产生真实资金流转</span>
       </div>
     </footer>
+    <button
+      v-if="showBackToTop"
+      class="mm-back-top"
+      type="button"
+      aria-label="回到顶部"
+      @click="backToTop"
+    >
+      <MmIcon name="arrow" /><span>顶部</span>
+    </button>
   </div>
 </template>
 <script setup lang="ts">
@@ -201,6 +220,31 @@ const keyword = ref(''),
   logoutError = ref('');
 const userRoot = ref<HTMLElement | null>(null),
   userTrigger = ref<HTMLButtonElement | null>(null);
+const headerRoot = ref<HTMLElement | null>(null),
+  navRoot = ref<HTMLElement | null>(null),
+  navTrigger = ref<HTMLButtonElement | null>(null),
+  searchInput = ref<HTMLInputElement | null>(null),
+  showBackToTop = ref(false);
+async function toggleNavigation() {
+  menuOpen.value = !menuOpen.value;
+  userOpen.value = false;
+  if (menuOpen.value) {
+    await nextTick();
+    navRoot.value?.querySelector<HTMLElement>('a')?.focus();
+  }
+}
+function updateScroll() {
+  showBackToTop.value = window.scrollY > 640;
+}
+function backToTop() {
+  window.scrollTo({
+    top: 0,
+    behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      ? 'instant'
+      : 'smooth',
+  });
+  searchInput.value?.focus({ preventScroll: true });
+}
 const info = computed(() => {
   const base = pageInfo[String(route.name)] ?? {
     title: String(route.meta.title ?? '页面'),
@@ -248,6 +292,8 @@ function toggleUser() {
 function outside(event: PointerEvent) {
   if (userRoot.value && !userRoot.value.contains(event.target as Node))
     userOpen.value = false;
+  if (menuOpen.value && !headerRoot.value?.contains(event.target as Node))
+    menuOpen.value = false;
 }
 function focusOutside(event: FocusEvent) {
   if (
@@ -256,14 +302,36 @@ function focusOutside(event: FocusEvent) {
     !userRoot.value.contains(event.target as Node)
   )
     userOpen.value = false;
+  if (menuOpen.value && !headerRoot.value?.contains(event.target as Node))
+    menuOpen.value = false;
 }
 function escape(event: KeyboardEvent) {
+  if (
+    event.key === '/' &&
+    !event.ctrlKey &&
+    !event.metaKey &&
+    !event.altKey &&
+    !(
+      event.target instanceof HTMLElement &&
+      event.target.closest(
+        'input,textarea,select,[contenteditable="true"],[role="textbox"]',
+      )
+    ) &&
+    !document.querySelector('dialog[open], [role="dialog"]')
+  ) {
+    event.preventDefault();
+    searchInput.value?.focus();
+    return;
+  }
   if (event.key === 'Escape') {
     if (userOpen.value) {
       userOpen.value = false;
       userTrigger.value?.focus();
     }
-    menuOpen.value = false;
+    if (menuOpen.value) {
+      menuOpen.value = false;
+      navTrigger.value?.focus();
+    }
   }
 }
 function menuKeydown(event: KeyboardEvent) {
@@ -283,7 +351,7 @@ function menuKeydown(event: KeyboardEvent) {
 }
 function onSearch() {
   const kw = keyword.value.trim();
-  if (kw) void router.push({ path: '/search', query: { keyword: kw } });
+  void router.push({ path: '/search', query: { keyword: kw || undefined } });
 }
 async function onLogout() {
   loggingOut.value = true;
@@ -303,12 +371,23 @@ onMounted(() => {
   document.addEventListener('pointerdown', outside);
   document.addEventListener('keydown', escape);
   document.addEventListener('focusin', focusOutside);
+  window.addEventListener('scroll', updateScroll, { passive: true });
+  updateScroll();
 });
 onUnmounted(() => {
   document.removeEventListener('pointerdown', outside);
   document.removeEventListener('keydown', escape);
   document.removeEventListener('focusin', focusOutside);
+  window.removeEventListener('scroll', updateScroll);
 });
+watch(
+  () => [route.path, route.query.keyword] as const,
+  ([, value]) => {
+    if (route.path === '/search')
+      keyword.value = typeof value === 'string' ? value : '';
+  },
+  { immediate: true },
+);
 watch(
   () => route.fullPath,
   () => {
@@ -394,6 +473,22 @@ watch(
   padding: 5px 6px 5px 15px;
   min-width: 0;
 }
+.mm-header__search:focus-within {
+  border-color: #b6bbae;
+  box-shadow: 0 0 0 3px #eceee7;
+}
+.mm-header__search-key {
+  border: 1px solid var(--mm-border);
+  border-radius: 4px;
+  min-width: 20px;
+  padding: 0 5px;
+  text-align: center;
+  font: 12px/22px inherit;
+  color: var(--mm-muted);
+}
+.mm-header__search:focus-within .mm-header__search-key {
+  visibility: hidden;
+}
 .mm-header__search > .mm-icon {
   width: 19px;
   color: var(--mm-muted);
@@ -428,6 +523,7 @@ watch(
   gap: 8px;
   color: var(--mm-ink);
   font-size: 14px;
+  min-height: 44px;
 }
 .mm-header__login {
   font-size: 14px;
@@ -497,6 +593,7 @@ watch(
   border: 0;
   padding: 0;
   background: transparent;
+  min-height: 44px;
 }
 .mm-user__trigger > .mm-icon {
   width: 14px;
@@ -610,6 +707,39 @@ watch(
   width: 100%;
   min-width: 0;
 }
+.mm-main:focus {
+  outline: none;
+}
+.mm-back-top {
+  position: fixed;
+  right: max(18px, calc((100vw - 1380px) / 2));
+  bottom: 26px;
+  z-index: 15;
+  width: 48px;
+  min-height: 58px;
+  border: 1px solid var(--mm-border);
+  border-radius: 10px;
+  background: white;
+  color: var(--mm-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  box-shadow: 0 3px 14px #2425220b;
+}
+.mm-back-top .mm-icon {
+  transform: rotate(-90deg);
+  width: 18px;
+  height: 18px;
+}
+.mm-back-top span {
+  font-size: 11px;
+}
+.mm-back-top:hover {
+  color: var(--mm-ink);
+  border-color: #b8bfb1;
+}
 .mm-main--messages {
   background: #eef1ef;
 }
@@ -684,14 +814,14 @@ watch(
 }
 @media (max-width: 760px) {
   .mm-header__inner {
-    padding: 14px 18px;
+    padding: 11px 16px;
     min-height: 0;
     flex-wrap: wrap;
-    gap: 16px;
+    gap: 10px;
   }
   .mm-header__actions {
     margin-left: auto;
-    gap: 13px;
+    gap: 6px;
   }
   .mm-brand {
     font-size: 21px;
@@ -701,7 +831,10 @@ watch(
     height: 33px;
   }
   .mm-header__menu-toggle {
-    display: block;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 44px;
   }
   .mm-header__search {
     order: 3;
@@ -733,7 +866,21 @@ watch(
     margin-left: 0;
   }
   .mm-header__cart {
+    display: flex;
+    justify-content: center;
+    width: 36px;
+  }
+  .mm-header__search-key {
     display: none;
+  }
+  .mm-header__login {
+    font-size: 12px;
+  }
+  .mm-back-top {
+    bottom: 104px;
+    right: 12px;
+    width: 42px;
+    min-height: 48px;
   }
   .mm-location__inner {
     padding: 13px 18px 0;

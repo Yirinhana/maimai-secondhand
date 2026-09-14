@@ -2,7 +2,9 @@
   <div class="mm-home">
     <section class="mm-home__hero" aria-labelledby="home-title">
       <div class="mm-home__story">
-        <p class="mm-eyebrow">闲置流转 · 日常新发现</p>
+        <p class="mm-eyebrow">
+          <span class="mm-home__dot" />闲置流转 · 日常新发现
+        </p>
         <h1 id="home-title">
           把喜欢的留下，<br />让闲置接着发光<span>。</span>
         </h1>
@@ -25,20 +27,32 @@
         <div class="mm-home__feature-heading">
           <span>NEW ARRIVAL</span><span>最近上架 ↗</span>
         </div>
+        <MmSkeleton
+          v-if="loading"
+          kind="rows"
+          :count="1"
+          label="正在寻找最近上架的好物"
+          class="mm-home__feature-loading"
+        />
         <RouterLink
-          v-if="featured"
+          v-else-if="featured"
           :to="`/products/${featured.id}`"
           class="mm-home__feature-product"
-          ><ItemImage :src="featured.coverImage" :alt="featured.title" />
+          ><ItemImage
+            :src="featured.coverImage"
+            :alt="featured.title"
+            loading="eager" />
           <div>
             <h2>{{ featured.title }}</h2>
-            <p>{{ featured.region }}</p>
+            <p><MmIcon name="pin" />{{ featured.region }}</p>
             <PriceText :cents="featured.priceCents" /></div
         ></RouterLink>
         <div v-else class="mm-home__feature-empty">
           <MmIcon name="bag" /><span>好物正在路上</span>
         </div>
-        <RouterLink to="/official" class="mm-home__guide"
+        <RouterLink
+          to="/official/buying-and-selling-guide"
+          class="mm-home__guide"
           ><span>第一次来到麦麦？</span
           ><strong>先看看交易指南 <MmIcon name="arrow" /></strong
         ></RouterLink>
@@ -52,23 +66,25 @@
         <h2 id="mm-home-categories">按分类找一找</h2>
         <RouterLink to="/search">全部分类 <MmIcon name="arrow" /></RouterLink>
       </div>
-      <p v-if="categoryError" class="mm-error" role="alert">
-        {{ categoryError }}
-      </p>
+      <div v-if="categoryError" class="mm-home__retry" role="alert">
+        <span>{{ categoryError }}</span
+        ><MmButton variant="ghost" @click="loadCategories"
+          >重新加载分类</MmButton
+        >
+      </div>
       <ul v-else-if="categories.length" class="mm-home__categories">
-        <li v-for="(category, index) in categories" :key="category.id">
+        <li v-for="category in categories" :key="category.id">
           <RouterLink
             :to="{ path: '/search', query: { categoryId: category.id } }"
             ><span class="mm-home__category-icon"
-              ><MmIcon
-                :name="
-                  categoryIcons[index % categoryIcons.length] ?? 'box'
-                " /></span
+              ><MmIcon :name="categoryIcon(category.name)" /></span
             ><span>{{ category.name }}</span></RouterLink
           >
         </li>
       </ul>
-      <p v-else class="mm-muted">分类加载中…</p>
+      <p v-else class="mm-muted">
+        {{ categoriesLoading ? '分类加载中…' : '暂无分类，可直接浏览全部闲置' }}
+      </p>
     </section>
     <section class="mm-home__latest" aria-labelledby="mm-home-latest">
       <div class="mm-home__section-head">
@@ -80,10 +96,11 @@
           >查看全部{{ total ? ` ${total} 件` : '' }} <MmIcon name="arrow"
         /></RouterLink>
       </div>
-      <p v-if="productError" class="mm-error" role="alert">
-        {{ productError }}
-      </p>
-      <p v-else-if="loading" class="mm-muted">好物加载中…</p>
+      <div v-if="productError" class="mm-home__retry" role="alert">
+        <span>{{ productError }}</span
+        ><MmButton variant="ghost" @click="loadProducts">重新加载商品</MmButton>
+      </div>
+      <MmSkeleton v-else-if="loading" :count="5" label="好物加载中" />
       <EmptyState
         v-else-if="products.length === 0"
         title="还没有在售商品"
@@ -116,35 +133,56 @@ import ItemImage from '../../shared/components/ItemImage.vue';
 import PriceText from '../../shared/components/PriceText.vue';
 import EmptyState from '../../shared/components/EmptyState.vue';
 import MmIcon from '../../shared/components/MmIcon.vue';
+import MmButton from '../../shared/components/MmButton.vue';
+import MmSkeleton from '../../shared/components/MmSkeleton.vue';
 const categories = ref<Category[]>([]),
   products = ref<ProductSummary[]>([]),
   total = ref(0),
   loading = ref(true),
+  categoriesLoading = ref(true),
   categoryError = ref(''),
   productError = ref('');
-const featured = computed(() => products.value[0]),
-  categoryIcons = ['box', 'bag', 'book', 'grid', 'pin', 'heart', 'box'];
+const featured = computed(() => products.value[0]);
+function categoryIcon(name: string) {
+  if (/数码|电子|手机/.test(name)) return 'phone';
+  if (/服饰|衣|鞋|包/.test(name)) return 'shirt';
+  if (/书|教材/.test(name)) return 'book';
+  if (/生活|家居/.test(name)) return 'home';
+  if (/运动|户外/.test(name)) return 'sport';
+  if (/美妆|个护/.test(name)) return 'heart';
+  return 'box';
+}
+async function loadCategories() {
+  categoriesLoading.value = true;
+  categoryError.value = '';
+  await get<Category[]>('/categories')
+    .then((r) => {
+      categories.value = r;
+    })
+    .catch((e) => {
+      categoryError.value = (e as ApiError).message || '分类加载失败';
+    })
+    .finally(() => {
+      categoriesLoading.value = false;
+    });
+}
+async function loadProducts() {
+  loading.value = true;
+  productError.value = '';
+  await get<Page<ProductSummary>>('/products', { size: 12 })
+    .then((r) => {
+      products.value = r.content;
+      total.value = r.totalElements;
+    })
+    .catch((e) => {
+      productError.value = (e as ApiError).message || '商品加载失败';
+    })
+    .finally(() => {
+      loading.value = false;
+    });
+}
 onMounted(async () => {
-  await Promise.all([
-    get<Category[]>('/categories')
-      .then((r) => {
-        categories.value = r;
-      })
-      .catch((e) => {
-        categoryError.value = (e as ApiError).message || '分类加载失败';
-      }),
-    get<Page<ProductSummary>>('/products', { size: 12 })
-      .then((r) => {
-        products.value = r.content;
-        total.value = r.totalElements;
-      })
-      .catch((e) => {
-        productError.value = (e as ApiError).message || '商品加载失败';
-      })
-      .finally(() => {
-        loading.value = false;
-      }),
-  ]);
+  await Promise.all([loadCategories(), loadProducts()]);
 });
 </script>
 <style scoped>
@@ -158,8 +196,38 @@ onMounted(async () => {
   grid-template-columns: 1.1fr 1fr;
   gap: 50px;
   align-items: center;
-  padding: 52px 0 48px;
+  padding: 42px 0 40px;
   border-bottom: 1px solid var(--mm-border);
+}
+.mm-home__dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #7c8c69;
+  margin-right: 8px;
+  vertical-align: 1px;
+}
+.mm-home__retry {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+  border: 1px solid var(--mm-border);
+  border-radius: 10px;
+  background: white;
+  padding: 24px;
+  color: var(--mm-muted);
+}
+.mm-home__feature-loading {
+  min-height: 250px;
+  align-content: center;
+}
+.mm-home__feature-loading :deep(.mm-skeleton__item) {
+  background: transparent;
+  border: 0;
+  padding: 0;
 }
 .mm-home__story h1 {
   font-size: clamp(32px, 3.6vw, 49px);
@@ -193,6 +261,16 @@ onMounted(async () => {
   padding: 13px 23px;
   font-weight: 650;
   font-size: 14px;
+}
+.mm-home__browse:hover {
+  text-decoration: none;
+  background: #3f4539;
+}
+.mm-home__browse .mm-icon {
+  transition: transform 0.18s;
+}
+.mm-home__browse:hover .mm-icon {
+  transform: translateX(3px);
 }
 .mm-home__sell {
   color: var(--mm-ink);
@@ -265,6 +343,19 @@ onMounted(async () => {
   color: var(--mm-muted);
   font-size: 12px;
   margin: 10px 0 15px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.mm-home__feature-product p .mm-icon {
+  width: 14px;
+  height: 14px;
+}
+.mm-home__feature-product:hover {
+  text-decoration: none;
+}
+.mm-home__feature-product:hover h2 {
+  color: var(--mm-primary);
 }
 .mm-home__feature-product :deep(.mm-price) {
   font-size: 21px;
@@ -340,19 +431,28 @@ onMounted(async () => {
   justify-content: center;
   background: #fff;
   border: 1px solid var(--mm-border);
-  padding: 15px 8px;
+  padding: 13px 8px;
   border-radius: 8px;
   font-size: 13px;
   color: var(--mm-ink);
-  transition: border-color 0.15s;
+  transition:
+    border-color 0.15s,
+    background-color 0.15s;
 }
 .mm-home__categories a:hover {
   border-color: var(--mm-primary);
   text-decoration: none;
+  background: #f5f5ed;
 }
 .mm-home__category-icon {
   display: flex;
   color: #676d5e;
+  width: 34px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  background: #f0f1e9;
+  border-radius: 8px;
 }
 .mm-home__category-icon .mm-icon {
   width: 20px;
@@ -415,12 +515,13 @@ onMounted(async () => {
   }
   .mm-home__hero {
     grid-template-columns: 1fr;
-    padding: 31px 0;
-    gap: 28px;
+    padding: 24px 0;
+    gap: 22px;
   }
   .mm-home__story h1 {
-    font-size: 35px;
-    margin: 15px 0;
+    font-size: 31px;
+    margin: 12px 0;
+    line-height: 1.3;
   }
   .mm-home__intro {
     font-size: 13px;
@@ -429,25 +530,48 @@ onMounted(async () => {
     padding: 16px 18px 0;
   }
   .mm-home__feature-product {
-    min-height: 210px;
-    grid-template-columns: 1fr 1fr;
+    min-height: 144px;
+    grid-template-columns: 106px minmax(0, 1fr);
+    gap: 22px;
   }
   .mm-home__feature-product img {
-    max-height: 160px;
+    max-height: 106px;
   }
   .mm-home__categories {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 9px;
+    display: flex;
+    overflow-x: auto;
+    gap: 10px;
+    padding-bottom: 8px;
+    scrollbar-width: thin;
+    scroll-snap-type: x proximity;
+  }
+  .mm-home__categories li {
+    flex: 0 0 86px;
+    scroll-snap-align: start;
   }
   .mm-home__categories a {
     flex-direction: column;
-    padding: 13px 5px;
+    padding: 10px 5px;
     gap: 7px;
     font-size: 12px;
   }
   .mm-home__grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 22px 13px;
+  }
+  .mm-home__categories-section {
+    padding: 24px 0 20px;
+  }
+  .mm-home__hero-actions {
+    margin-top: 20px;
+    gap: 18px;
+  }
+  .mm-home__note {
+    margin-top: 18px;
+    font-size: 10px;
+  }
+  .mm-home__feature-loading {
+    min-height: 144px;
   }
   .mm-home__section-head {
     margin-bottom: 19px;
@@ -469,6 +593,12 @@ onMounted(async () => {
   }
   .mm-home__guide {
     font-size: 11px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mm-home__browse .mm-icon,
+  .mm-home__categories a {
+    transition: none;
   }
 }
 </style>

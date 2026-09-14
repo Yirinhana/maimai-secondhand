@@ -14,7 +14,7 @@
         <p class="mm-account__eyebrow">我的麦麦</p>
         <h1 class="mm-account__heading">{{ currentTabTitle }}</h1>
         <p class="mm-account__meta">
-          {{ auth.me?.nickname }} · 管理你的资料、收货地址与消息通知
+          {{ tabDescriptions[activeTab] }}
         </p>
       </div>
       <RouterLink to="/orders" class="mm-account__orders"
@@ -26,6 +26,11 @@
       <button
         v-for="tab in tabs"
         :key="tab.key"
+        :id="`account-tab-${tab.key}`"
+        type="button"
+        :aria-controls="`account-panel-${tab.key}`"
+        :tabindex="activeTab === tab.key ? 0 : -1"
+        @keydown="onTabKeydown($event, tab.key)"
         class="mm-account__tab"
         :class="{ 'is-active': activeTab === tab.key }"
         role="tab"
@@ -43,7 +48,14 @@
     </div>
 
     <!-- 资料 -->
-    <MmCard v-show="activeTab === 'profile'" title="基本资料">
+    <MmCard
+      id="account-panel-profile"
+      role="tabpanel"
+      aria-labelledby="account-tab-profile"
+      tabindex="0"
+      v-show="activeTab === 'profile'"
+      title="基本资料"
+    >
       <div class="mm-account__profile">
         <section class="mm-account__avatar-settings">
           <div>
@@ -71,34 +83,80 @@
             头像已更新
           </p>
         </section>
-        <p class="mm-account__meta">邮箱：{{ auth.me?.email }}</p>
-        <form class="mm-account__form" @submit.prevent="onSaveNickname">
-          <MmInput
-            v-model="nicknameForm.nickname"
-            label="昵称"
-            maxlength="50"
-            placeholder="请输入昵称"
-            :error="nicknameForm.error"
-          />
-          <MmButton type="submit" :loading="nicknameForm.saving"
-            >保存昵称</MmButton
+        <section class="mm-account__profile-details">
+          <div class="mm-account__email">
+            <span>登录邮箱</span><strong>{{ auth.me?.email }}</strong>
+            <p>用于登录、接收验证码和找回密码。</p>
+          </div>
+          <form
+            ref="nicknameFormElement"
+            class="mm-account__form"
+            :aria-busy="nicknameForm.saving"
+            @submit.prevent="onSaveNickname"
           >
-          <p v-if="nicknameForm.done" class="mm-account__ok" role="status">
-            昵称已更新
-          </p>
-        </form>
+            <fieldset
+              :disabled="nicknameForm.saving"
+              class="mm-account__address-fields"
+            >
+              <MmInput
+                v-model="nicknameForm.nickname"
+                label="昵称"
+                maxlength="50"
+                placeholder="请输入昵称"
+                hint="显示在商品、私信与个人页面中，最多 50 个字符。"
+                @update:model-value="
+                  nicknameForm.done = false;
+                  nicknameForm.error = '';
+                "
+                :error="nicknameForm.error"
+              />
+              <MmButton
+                type="submit"
+                :loading="nicknameForm.saving"
+                :disabled="nicknameForm.saving"
+                >保存昵称</MmButton
+              >
+              <p v-if="nicknameForm.done" class="mm-account__ok" role="status">
+                昵称已更新
+              </p>
+            </fieldset>
+          </form>
+        </section>
       </div>
     </MmCard>
 
     <!-- 收货地址 -->
-    <MmCard v-show="activeTab === 'addresses'" title="收货地址">
+    <MmCard
+      id="account-panel-addresses"
+      role="tabpanel"
+      aria-labelledby="account-tab-addresses"
+      tabindex="0"
+      v-show="activeTab === 'addresses'"
+      title="收货地址"
+    >
       <template #extra>
-        <MmButton variant="ghost" @click="startAddAddress">新增地址</MmButton>
+        <MmButton
+          variant="ghost"
+          :disabled="addressForm.saving || deletingAddress !== null"
+          @click="startAddAddress"
+          >新增地址</MmButton
+        >
       </template>
       <p v-if="addressError" class="mm-account__error" role="alert">
         {{ addressError }}
+        <button type="button" @click="loadAddresses">重新加载地址</button>
       </p>
-      <EmptyState v-else-if="addresses.length === 0" title="还没有收货地址" />
+      <MmSkeleton
+        v-else-if="addressLoading"
+        kind="rows"
+        :count="2"
+        label="正在读取地址"
+      />
+      <EmptyState
+        v-else-if="addresses.length === 0"
+        title="还没有收货地址"
+        description="添加地址后，快递下单时可以直接选择。"
+      />
       <ul v-else class="mm-account__address-list">
         <li
           v-for="addr in addresses"
@@ -113,17 +171,29 @@
             <p class="mm-account__meta">{{ addr.region }} {{ addr.detail }}</p>
           </div>
           <div class="mm-account__address-actions">
-            <MmButton variant="ghost" @click="startEditAddress(addr)"
+            <MmButton
+              variant="ghost"
+              :disabled="addressForm.saving || deletingAddress !== null"
+              @click="startEditAddress(addr)"
               >编辑</MmButton
             >
-            <MmButton variant="danger" @click="onDeleteAddress(addr)"
+            <MmButton
+              variant="danger"
+              :loading="deletingAddress === addr.id"
+              :disabled="addressForm.saving || deletingAddress !== null"
+              @click="onDeleteAddress(addr)"
               >删除</MmButton
             >
           </div>
         </li>
       </ul>
 
+      <p v-if="addressDone" class="mm-account__ok" role="status">
+        {{ addressDone }}
+      </p>
       <form
+        ref="addressFormElement"
+        :aria-busy="addressForm.saving"
         v-if="addressForm.visible"
         class="mm-account__form mm-account__address-form"
         @submit.prevent="onSaveAddress"
@@ -131,39 +201,77 @@
         <h3 class="mm-account__subheading">
           {{ addressForm.id ? '编辑地址' : '新增地址' }}
         </h3>
-        <MmInput v-model="addressForm.receiver" label="收货人" maxlength="50" />
-        <MmInput v-model="addressForm.phone" label="手机号" maxlength="20" />
-        <MmInput
-          v-model="addressForm.region"
-          label="所在地区"
-          maxlength="100"
-          placeholder="省 / 市 / 区"
-        />
-        <MmInput
-          v-model="addressForm.detail"
-          label="详细地址"
-          maxlength="200"
-        />
-        <MapPicker @select="onAddressPicked" />
-        <label class="mm-account__checkbox">
-          <input v-model="addressForm.isDefault" type="checkbox" />
-          设为默认地址
-        </label>
-        <p v-if="addressForm.error" class="mm-account__error" role="alert">
-          {{ addressForm.error }}
-        </p>
-        <div class="mm-account__form-actions">
-          <MmButton type="submit" :loading="addressForm.saving">保存</MmButton>
-          <MmButton variant="ghost" @click="addressForm.visible = false"
-            >取消</MmButton
-          >
-        </div>
+        <fieldset
+          :disabled="addressForm.saving"
+          class="mm-account__address-fields"
+        >
+          <MmInput
+            v-model="addressForm.receiver"
+            label="收货人"
+            autocomplete="shipping name"
+            maxlength="50"
+          />
+          <MmInput
+            v-model="addressForm.phone"
+            label="手机号"
+            inputmode="tel"
+            autocomplete="shipping tel"
+            maxlength="20"
+          />
+          <MmInput
+            v-model="addressForm.region"
+            label="所在地区"
+            maxlength="100"
+            placeholder="省 / 市 / 区"
+          />
+          <MmInput
+            v-model="addressForm.detail"
+            label="详细地址"
+            maxlength="200"
+          />
+          <MapPicker @select="onAddressPicked" />
+          <label class="mm-account__checkbox">
+            <input v-model="addressForm.isDefault" type="checkbox" />
+            设为默认地址
+          </label>
+          <p v-if="addressForm.error" class="mm-account__error" role="alert">
+            {{ addressForm.error }}
+          </p>
+          <div class="mm-account__form-actions">
+            <MmButton type="submit" :loading="addressForm.saving"
+              >保存</MmButton
+            >
+            <MmButton
+              variant="ghost"
+              :disabled="addressForm.saving"
+              @click="addressForm.visible = false"
+              >取消</MmButton
+            >
+          </div>
+        </fieldset>
       </form>
     </MmCard>
 
     <!-- 卖家入驻 -->
-    <MmCard v-show="activeTab === 'seller'" title="卖家入驻申请">
-      <div v-if="sellerApp" class="mm-account__seller-status">
+    <MmCard
+      id="account-panel-seller"
+      role="tabpanel"
+      aria-labelledby="account-tab-seller"
+      tabindex="0"
+      v-show="activeTab === 'seller'"
+      title="卖家入驻申请"
+    >
+      <MmSkeleton
+        v-if="sellerLoading"
+        kind="rows"
+        :count="2"
+        label="正在读取入驻状态"
+      />
+      <p v-else-if="sellerLoadError" class="mm-account__error" role="alert">
+        {{ sellerLoadError }}
+        <button type="button" @click="loadSellerApp">重新加载入驻状态</button>
+      </p>
+      <div v-else-if="sellerApp" class="mm-account__seller-status">
         <p>
           人工审核：<MmTag
             :text="SELLER_STATUS_TEXT[sellerApp.status]"
@@ -189,8 +297,10 @@
 
       <form
         v-if="
-          !sellerApp ||
-          ['REJECTED', 'SUPPLEMENT', 'NONE'].includes(sellerApp.status)
+          !sellerLoading &&
+          !sellerLoadError &&
+          (!sellerApp ||
+            ['REJECTED', 'SUPPLEMENT', 'NONE'].includes(sellerApp.status))
         "
         class="mm-account__form"
         @submit.prevent="onApplySeller"
@@ -202,6 +312,7 @@
           <span>自我介绍 / 经营说明</span>
           <textarea
             v-model="sellerForm.intro"
+            :disabled="sellerForm.submitting"
             rows="4"
             maxlength="500"
             placeholder="介绍一下你想出售的闲置类型、交易方式等"
@@ -214,15 +325,26 @@
           >提交申请</MmButton
         >
       </form>
+      <p v-if="sellerDone" class="mm-account__ok" role="status">
+        入驻申请已提交，请留意审核结果。
+      </p>
     </MmCard>
 
     <!-- 站内通知 -->
-    <MmCard v-show="activeTab === 'notifications'" title="站内通知">
+    <MmCard
+      id="account-panel-notifications"
+      role="tabpanel"
+      aria-labelledby="account-tab-notifications"
+      tabindex="0"
+      v-show="activeTab === 'notifications'"
+      title="站内通知"
+    >
       <template #extra>
         <MmButton
           v-if="unreadCount > 0"
           variant="ghost"
           :loading="markingAll"
+          :disabled="markingAll || markingIds.length > 0"
           @click="onMarkAllRead"
         >
           本页全部已读
@@ -230,8 +352,14 @@
       </template>
       <p v-if="notificationError" class="mm-account__error" role="alert">
         {{ notificationError }}
+        <button type="button" @click="loadNotifications">重新加载通知</button>
       </p>
-      <p v-else-if="notificationLoading" class="mm-account__meta">加载中…</p>
+      <MmSkeleton
+        v-else-if="notificationLoading"
+        kind="rows"
+        :count="3"
+        label="正在读取通知"
+      />
       <EmptyState v-else-if="notifications.length === 0" title="暂无通知" />
       <template v-else>
         <ul class="mm-account__notification-list">
@@ -256,6 +384,8 @@
             <MmButton
               v-if="!item.read"
               variant="ghost"
+              :loading="markingIds.includes(item.id)"
+              :disabled="markingAll || markingIds.includes(item.id)"
               @click="onMarkRead(item.id)"
             >
               标记已读
@@ -277,54 +407,82 @@
 </template>
 
 <script setup lang="ts">
-import { askConfirmation } from '../../shared/confirm'
-import { computed, onMounted, reactive, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { del, get, post, put, upload } from '../../shared/api'
-import type { ApiError } from '../../shared/api'
-import { formatTime } from '../../shared/format'
-import { useAuthStore } from '../../shared/stores/auth'
+import { askConfirmation } from '../../shared/confirm';
+import { computed, nextTick, onUnmounted, reactive, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { del, get, post, put, upload } from '../../shared/api';
+import type { ApiError } from '../../shared/api';
+import { formatTime } from '../../shared/format';
+import { useAuthStore } from '../../shared/stores/auth';
 import type {
   Address,
+  Me,
   Notification,
   Page,
   SellerApplication,
-} from '../../shared/types'
-import { CHANNEL_STATUS_TEXT, SELLER_STATUS_TEXT } from '../../shared/types'
-import EmptyState from '../../shared/components/EmptyState.vue'
-import MmButton from '../../shared/components/MmButton.vue'
-import MmCard from '../../shared/components/MmCard.vue'
-import MmInput from '../../shared/components/MmInput.vue'
-import MmPagination from '../../shared/components/MmPagination.vue'
-import MmTag from '../../shared/components/MmTag.vue'
-import MapPicker from '../../shared/components/MapPicker.vue'
+} from '../../shared/types';
+import { CHANNEL_STATUS_TEXT, SELLER_STATUS_TEXT } from '../../shared/types';
+import EmptyState from '../../shared/components/EmptyState.vue';
+import MmButton from '../../shared/components/MmButton.vue';
+import MmCard from '../../shared/components/MmCard.vue';
+import MmInput from '../../shared/components/MmInput.vue';
+import MmPagination from '../../shared/components/MmPagination.vue';
+import MmTag from '../../shared/components/MmTag.vue';
+import MapPicker from '../../shared/components/MapPicker.vue';
+import MmSkeleton from '../../shared/components/MmSkeleton.vue';
 
-const auth = useAuthStore()
-const route = useRoute()
-const router = useRouter()
-
-function onAddressPicked(place: { region: string; detail: string }) {
-  addressForm.region = place.region
-  addressForm.detail = place.detail
+const auth = useAuthStore();
+const route = useRoute();
+const router = useRouter();
+let accountVersion = 0;
+let disposed = false;
+const current = (version: number) => !disposed && version === accountVersion;
+const nicknameFormElement = ref<HTMLFormElement | null>(null);
+const addressFormElement = ref<HTMLFormElement | null>(null);
+const tabDescriptions: Record<TabKey, string> = {
+  profile: '设置让大家认识你的头像与昵称。',
+  addresses: '管理快递收货信息，下单时轻松选择。',
+  seller: '查看入驻资格，准备发布你的闲置。',
+  notifications: '交易进展与平台消息，在这里查看。',
+};
+async function onTabKeydown(event: KeyboardEvent, key: TabKey) {
+  const index = tabs.findIndex((tab) => tab.key === key);
+  let next = index;
+  if (event.key === 'ArrowRight') next = (index + 1) % tabs.length;
+  else if (event.key === 'ArrowLeft')
+    next = (index - 1 + tabs.length) % tabs.length;
+  else if (event.key === 'Home') next = 0;
+  else if (event.key === 'End') next = tabs.length - 1;
+  else return;
+  event.preventDefault();
+  const tab = tabs[next]!;
+  await router.replace({ query: { ...route.query, tab: tab.key } });
+  await nextTick();
+  document.getElementById('account-tab-' + tab.key)?.focus();
 }
 
-type TabKey = 'profile' | 'addresses' | 'seller' | 'notifications'
+function onAddressPicked(place: { region: string; detail: string }) {
+  addressForm.region = place.region;
+  addressForm.detail = place.detail;
+}
+
+type TabKey = 'profile' | 'addresses' | 'seller' | 'notifications';
 
 const tabs: { key: TabKey; label: string }[] = [
   { key: 'profile', label: '基本资料' },
   { key: 'addresses', label: '收货地址' },
   { key: 'seller', label: '卖家入驻' },
   { key: 'notifications', label: '站内通知' },
-]
+];
 const activeTab = computed<TabKey>({
   get: () =>
     tabs.some((tab) => tab.key === route.query.tab)
       ? (route.query.tab as TabKey)
       : 'profile',
   set: (tab) => {
-    void router.replace({ query: { ...route.query, tab } })
+    void router.replace({ query: { ...route.query, tab } });
   },
-})
+});
 const currentTabTitle = computed(
   () =>
     ({
@@ -333,39 +491,42 @@ const currentTabTitle = computed(
       seller: '卖家入驻',
       notifications: '站内通知',
     })[activeTab.value],
-)
+);
 const avatarSaving = ref(false),
   avatarError = ref(''),
   avatarDone = ref(false),
-  avatarBroken = ref(false)
+  avatarBroken = ref(false);
 async function saveAvatar(event: Event) {
-  const input = event.target as HTMLInputElement
-  const file = input.files?.[0]
-  if (!file) return
-  avatarError.value = ''
-  avatarDone.value = false
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file || avatarSaving.value) return;
+  const version = accountVersion;
+  avatarError.value = '';
+  avatarDone.value = false;
   if (
     !['image/jpeg', 'image/png'].includes(file.type) ||
     file.size > 5 * 1024 * 1024
   ) {
-    avatarError.value = '请选择不超过 5MB 的 JPG 或 PNG 图片'
-    input.value = ''
-    return
+    avatarError.value = '请选择不超过 5MB 的 JPG 或 PNG 图片';
+    input.value = '';
+    return;
   }
-  avatarSaving.value = true
+  avatarSaving.value = true;
   try {
-    const body = new FormData()
-    body.append('file', file)
-    const saved = await upload<{ avatarUrl: string }>('/me/avatar', body)
-    if (auth.me) auth.me.avatarUrl = saved.avatarUrl
-    avatarBroken.value = false
-    avatarDone.value = true
+    const body = new FormData();
+    body.append('file', file);
+    const saved = await upload<{ avatarUrl: string }>('/me/avatar', body);
+    if (!current(version)) return;
+    if (auth.me) auth.me.avatarUrl = saved.avatarUrl;
+    avatarBroken.value = false;
+    avatarDone.value = true;
   } catch (error) {
+    if (!current(version)) return;
     avatarError.value =
-      (error as ApiError).message || '头像上传失败，请稍后重试'
+      (error as ApiError).message || '头像上传失败，请稍后重试';
   } finally {
-    avatarSaving.value = false
-    input.value = ''
+    if (current(version)) avatarSaving.value = false;
+    input.value = '';
   }
 }
 
@@ -376,32 +537,47 @@ const nicknameForm = reactive({
   saving: false,
   error: '',
   done: false,
-})
+});
 
 async function onSaveNickname() {
-  const nickname = nicknameForm.nickname.trim()
+  if (nicknameForm.saving) return;
+  const version = accountVersion;
+  const nickname = nicknameForm.nickname.trim();
   if (!nickname) {
-    nicknameForm.error = '昵称不能为空'
-    return
+    nicknameForm.error = '昵称不能为空';
+    nicknameForm.done = false;
+    await nextTick();
+    nicknameFormElement.value
+      ?.querySelector<HTMLInputElement>('input')
+      ?.focus();
+    return;
   }
-  nicknameForm.saving = true
-  nicknameForm.error = ''
-  nicknameForm.done = false
+  nicknameForm.saving = true;
+  nicknameForm.error = '';
+  nicknameForm.done = false;
   try {
-    await put('/me', { nickname })
-    await auth.fetchMe()
-    nicknameForm.done = true
+    const saved = await put<Me>('/me', { nickname });
+    if (!current(version) || auth.me?.id !== saved.id) return;
+    auth.me.nickname = saved.nickname;
+    if (nicknameForm.nickname.trim() === nickname)
+      nicknameForm.nickname = saved.nickname;
+    nicknameForm.done = true;
   } catch (e) {
-    nicknameForm.error = (e as ApiError).message || '保存失败，请稍后重试'
+    if (!current(version)) return;
+    nicknameForm.error = (e as ApiError).message || '保存失败，请稍后重试';
   } finally {
-    nicknameForm.saving = false
+    if (current(version)) nicknameForm.saving = false;
   }
 }
 
 /* ---------- 收货地址 ---------- */
 
-const addresses = ref<Address[]>([])
-const addressError = ref('')
+const addresses = ref<Address[]>([]);
+const addressError = ref('');
+const addressLoading = ref(false),
+  addressDone = ref(''),
+  deletingAddress = ref<number | null>(null);
+let addressSequence = 0;
 const addressForm = reactive({
   visible: false,
   id: 0,
@@ -412,18 +588,29 @@ const addressForm = reactive({
   isDefault: false,
   saving: false,
   error: '',
-})
+});
 
 async function loadAddresses() {
-  addressError.value = ''
+  const version = accountVersion,
+    sequence = ++addressSequence;
+  addressError.value = '';
+  addressLoading.value = true;
   try {
-    addresses.value = await get<Address[]>('/me/addresses')
+    const result = await get<Address[]>('/me/addresses');
+    if (current(version) && sequence === addressSequence)
+      addresses.value = result;
   } catch (e) {
-    addressError.value = (e as ApiError).message || '地址加载失败'
+    if (current(version) && sequence === addressSequence)
+      addressError.value = (e as ApiError).message || '地址加载失败';
+  } finally {
+    if (current(version) && sequence === addressSequence)
+      addressLoading.value = false;
   }
 }
 
 function startAddAddress() {
+  if (addressForm.saving || deletingAddress.value !== null) return;
+  addressDone.value = '';
   Object.assign(addressForm, {
     visible: true,
     id: 0,
@@ -433,10 +620,15 @@ function startAddAddress() {
     detail: '',
     isDefault: false,
     error: '',
-  })
+  });
+  void nextTick(() =>
+    addressFormElement.value?.querySelector<HTMLInputElement>('input')?.focus(),
+  );
 }
 
 function startEditAddress(addr: Address) {
+  if (addressForm.saving || deletingAddress.value !== null) return;
+  addressDone.value = '';
   Object.assign(addressForm, {
     visible: true,
     id: addr.id,
@@ -446,199 +638,316 @@ function startEditAddress(addr: Address) {
     detail: addr.detail,
     isDefault: addr.isDefault,
     error: '',
-  })
+  });
+  void nextTick(() =>
+    addressFormElement.value?.querySelector<HTMLInputElement>('input')?.focus(),
+  );
 }
 
 async function onSaveAddress() {
+  if (addressForm.saving || deletingAddress.value !== null) return;
+  const version = accountVersion;
   const payload = {
     receiver: addressForm.receiver.trim(),
     phone: addressForm.phone.trim(),
     region: addressForm.region.trim(),
     detail: addressForm.detail.trim(),
     isDefault: addressForm.isDefault,
-  }
+  };
   if (
     !payload.receiver ||
     !payload.phone ||
     !payload.region ||
     !payload.detail
   ) {
-    addressForm.error = '请完整填写收货人、手机号、地区与详细地址'
-    return
+    addressForm.error = '请完整填写收货人、手机号、地区与详细地址';
+    return;
   }
-  addressForm.saving = true
-  addressForm.error = ''
+  addressForm.saving = true;
+  addressForm.error = '';
+  addressDone.value = '';
   try {
     if (addressForm.id) {
-      await put(`/me/addresses/${addressForm.id}`, payload)
+      await put(`/me/addresses/${addressForm.id}`, payload);
     } else {
-      await post('/me/addresses', payload)
+      await post('/me/addresses', payload);
     }
-    addressForm.visible = false
-    await loadAddresses()
+    if (!current(version)) return;
+    addressForm.visible = false;
+    addressDone.value = '收货地址已保存';
+    await loadAddresses();
   } catch (e) {
-    addressForm.error = (e as ApiError).message || '保存失败，请稍后重试'
+    if (!current(version)) return;
+    addressForm.error = (e as ApiError).message || '保存失败，请稍后重试';
   } finally {
-    addressForm.saving = false
+    if (current(version)) addressForm.saving = false;
   }
 }
 
 async function onDeleteAddress(addr: Address) {
-  if (
-    !(await askConfirmation(
-      `确定删除收货地址「${addr.receiver} ${addr.region}」吗？`,
-    ))
-  )
-    return
+  if (addressForm.saving || deletingAddress.value !== null) return;
+  const version = accountVersion;
+  deletingAddress.value = addr.id;
+  addressDone.value = '';
   try {
-    await del(`/me/addresses/${addr.id}`)
-    await loadAddresses()
+    const accepted = await askConfirmation(
+      '确定删除收货地址「' + addr.receiver + ' ' + addr.region + '」吗？',
+    );
+    if (!accepted || !current(version)) return;
+    await del('/me/addresses/' + addr.id);
+    if (!current(version)) return;
+    addressDone.value = '收货地址已删除';
+    await loadAddresses();
   } catch (e) {
-    addressError.value = (e as ApiError).message || '删除失败，请稍后重试'
+    if (current(version))
+      addressError.value = (e as ApiError).message || '删除失败，请稍后重试';
+  } finally {
+    if (current(version)) deletingAddress.value = null;
   }
 }
 
 /* ---------- 卖家入驻 ---------- */
 
-const sellerApp = ref<SellerApplication | null>(null)
-const sellerForm = reactive({ intro: '', submitting: false, error: '' })
+const sellerApp = ref<SellerApplication | null>(null);
+const sellerLoading = ref(false),
+  sellerLoadError = ref(''),
+  sellerDone = ref(false);
+const sellerForm = reactive({ intro: '', submitting: false, error: '' });
 
 const sellerStatusTone = computed(() => {
   switch (sellerApp.value?.status) {
     case 'APPROVED':
-      return 'success'
+      return 'success';
     case 'PENDING':
-      return 'warning'
+      return 'warning';
     case 'SUPPLEMENT':
-      return 'info'
+      return 'info';
     case 'REJECTED':
     case 'SUSPENDED':
-      return 'danger'
+      return 'danger';
     default:
-      return 'neutral'
+      return 'neutral';
   }
-})
+});
 
 const channelStatusTone = computed(() => {
   switch (sellerApp.value?.channelStatus) {
     case 'QUALIFIED':
-      return 'success'
+      return 'success';
     case 'PENDING':
-      return 'warning'
+      return 'warning';
     case 'REJECTED':
-      return 'danger'
+      return 'danger';
     default:
-      return 'neutral'
+      return 'neutral';
   }
-})
+});
 
 async function loadSellerApp() {
+  const version = accountVersion;
+  sellerLoading.value = true;
+  sellerLoadError.value = '';
   try {
-    const result = await get<SellerApplication | null>('/me/seller-application')
-    sellerApp.value = result?.id ? result : null
-  } catch {
-    sellerApp.value = null
+    const result = await get<SellerApplication | null>(
+      '/me/seller-application',
+    );
+    if (current(version)) sellerApp.value = result?.id ? result : null;
+  } catch (e) {
+    if (current(version))
+      sellerLoadError.value = (e as ApiError).message || '入驻状态加载失败';
+  } finally {
+    if (current(version)) sellerLoading.value = false;
   }
 }
 
 async function onApplySeller() {
-  sellerForm.submitting = true
-  sellerForm.error = ''
+  if (sellerForm.submitting) return;
+  const version = accountVersion;
+  sellerForm.submitting = true;
+  sellerForm.error = '';
+  sellerDone.value = false;
   try {
-    sellerApp.value = await post<SellerApplication>('/me/seller-application', {
+    const result = await post<SellerApplication>('/me/seller-application', {
       intro: sellerForm.intro.trim(),
-    })
-    sellerForm.intro = ''
-    await auth.fetchMe()
+    });
+    if (!current(version)) return;
+    sellerApp.value = result;
+    sellerForm.intro = '';
+    sellerDone.value = true;
+    if (auth.me) auth.me.sellerStatus = result.status;
   } catch (e) {
-    sellerForm.error = (e as ApiError).message || '提交失败，请稍后重试'
+    if (!current(version)) return;
+    sellerForm.error = (e as ApiError).message || '提交失败，请稍后重试';
   } finally {
-    sellerForm.submitting = false
+    if (current(version)) sellerForm.submitting = false;
   }
 }
 
 /* ---------- 站内通知 ---------- */
 
-const NOTIFICATION_PAGE_SIZE = 10
-const notifications = ref<Notification[]>([])
-const notificationPage = ref(0)
-const notificationTotalPages = ref(1)
-const notificationLoading = ref(false)
-const notificationError = ref('')
-const unreadCount = ref(0)
-const markingAll = ref(false)
+const NOTIFICATION_PAGE_SIZE = 10;
+const notifications = ref<Notification[]>([]);
+const notificationPage = ref(0);
+const notificationTotalPages = ref(1);
+const notificationLoading = ref(false);
+const notificationError = ref('');
+const unreadCount = ref(0);
+const markingAll = ref(false);
+const markingIds = ref<number[]>([]);
+let notificationSequence = 0;
 
 async function loadUnreadCount() {
+  const version = accountVersion;
   try {
-    const data = await get<{ count: number }>('/me/notifications/unread-count')
-    unreadCount.value = data.count
+    const data = await get<{ count: number }>('/me/notifications/unread-count');
+    if (current(version)) unreadCount.value = data.count;
   } catch {
     /* 未读数失败不阻塞列表 */
   }
 }
 
 async function loadNotifications() {
-  notificationLoading.value = true
-  notificationError.value = ''
+  const version = accountVersion,
+    sequence = ++notificationSequence;
+  notificationLoading.value = true;
+  notificationError.value = '';
   try {
     const data = await get<Page<Notification>>('/me/notifications', {
       page: notificationPage.value,
       size: NOTIFICATION_PAGE_SIZE,
-    })
-    notifications.value = data.content
-    notificationTotalPages.value = Math.max(1, data.totalPages)
+    });
+    if (!current(version) || sequence !== notificationSequence) return;
+    notifications.value = data.content;
+    notificationTotalPages.value = Math.max(1, data.totalPages);
   } catch (e) {
-    notificationError.value = (e as ApiError).message || '通知加载失败'
+    if (current(version) && sequence === notificationSequence)
+      notificationError.value = (e as ApiError).message || '通知加载失败';
   } finally {
-    notificationLoading.value = false
+    if (current(version) && sequence === notificationSequence)
+      notificationLoading.value = false;
   }
 }
 
 function onNotificationPage(next: number) {
-  notificationPage.value = next
-  loadNotifications()
+  notificationPage.value = next;
+  loadNotifications();
 }
 
 async function onMarkRead(id: number) {
+  if (markingAll.value || markingIds.value.includes(id)) return;
+  const version = accountVersion;
+  markingIds.value.push(id);
   try {
-    await post('/me/notifications/read', { ids: [id] })
-    const item = notifications.value.find((n) => n.id === id)
-    if (item) item.read = true
-    unreadCount.value = Math.max(0, unreadCount.value - 1)
+    await post('/me/notifications/read', { ids: [id] });
+    if (!current(version)) return;
+    const item = notifications.value.find((n) => n.id === id);
+    if (item) item.read = true;
+    unreadCount.value = Math.max(0, unreadCount.value - 1);
   } catch (e) {
-    notificationError.value = (e as ApiError).message || '操作失败'
+    if (current(version))
+      notificationError.value = (e as ApiError).message || '操作失败';
+  } finally {
+    if (current(version))
+      markingIds.value = markingIds.value.filter((item) => item !== id);
   }
 }
 
 async function onMarkAllRead() {
-  const ids = notifications.value.filter((n) => !n.read).map((n) => n.id)
-  if (ids.length === 0) return
-  markingAll.value = true
+  if (markingAll.value || markingIds.value.length > 0) return;
+  const version = accountVersion;
+  const ids = notifications.value.filter((n) => !n.read).map((n) => n.id);
+  if (ids.length === 0) return;
+  markingAll.value = true;
   try {
-    await post('/me/notifications/read', { ids })
-    await Promise.all([loadNotifications(), loadUnreadCount()])
+    await post('/me/notifications/read', { ids });
+    if (!current(version)) return;
+    await Promise.all([loadNotifications(), loadUnreadCount()]);
   } catch (e) {
-    notificationError.value = (e as ApiError).message || '操作失败'
+    if (current(version))
+      notificationError.value = (e as ApiError).message || '操作失败';
   } finally {
-    markingAll.value = false
+    if (current(version)) markingAll.value = false;
   }
 }
 
-onMounted(() => {
-  loadAddresses()
-  loadSellerApp()
-  loadNotifications()
-  loadUnreadCount()
-})
+watch(
+  () => auth.me?.id,
+  (id) => {
+    accountVersion++;
+    addresses.value = [];
+    notifications.value = [];
+    sellerApp.value = null;
+    avatarBroken.value = false;
+    avatarDone.value = false;
+    avatarError.value = '';
+    avatarSaving.value = false;
+    Object.assign(nicknameForm, {
+      nickname: auth.me?.nickname ?? '',
+      error: '',
+      done: false,
+      saving: false,
+    });
+    Object.assign(addressForm, {
+      visible: false,
+      id: 0,
+      receiver: '',
+      phone: '',
+      region: '',
+      detail: '',
+      isDefault: false,
+      saving: false,
+      error: '',
+    });
+    Object.assign(sellerForm, { intro: '', submitting: false, error: '' });
+    addressDone.value = '';
+    addressError.value = '';
+    deletingAddress.value = null;
+    notificationPage.value = 0;
+    notificationTotalPages.value = 1;
+    unreadCount.value = 0;
+    notificationError.value = '';
+    markingAll.value = false;
+    markingIds.value = [];
+    sellerDone.value = false;
+    sellerLoadError.value = '';
+    if (id) {
+      void loadAddresses();
+      void loadSellerApp();
+      void loadNotifications();
+      void loadUnreadCount();
+    }
+  },
+  { immediate: true, flush: 'sync' },
+);
+watch(
+  () => auth.me?.avatarUrl,
+  () => {
+    avatarBroken.value = false;
+  },
+);
+onUnmounted(() => {
+  disposed = true;
+  accountVersion++;
+});
 </script>
 
 <style scoped>
+.mm-account {
+  width: 100%;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 32px 24px;
+  display: grid;
+  gap: 24px;
+}
 .mm-account__identity {
   display: flex;
   gap: 22px;
   align-items: center;
-  padding: 18px 0 28px;
-  border-bottom: 1px solid var(--mm-border);
+  padding: 8px 0 28px;
+}
+.mm-account__identity > div:nth-child(2) {
+  min-width: 0;
 }
 .mm-account__portrait {
   width: 88px;
@@ -659,31 +968,98 @@ onMounted(() => {
 }
 .mm-account__eyebrow {
   font-size: 12px;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   color: var(--mm-muted);
   margin-bottom: 6px;
+}
+.mm-account__heading {
+  font-size: 28px;
+  margin-bottom: 8px;
 }
 .mm-account__orders {
   margin-left: auto;
   white-space: nowrap;
   font-size: 14px;
 }
-.mm-account__avatar-settings {
-  padding-bottom: 24px;
-  margin-bottom: 20px;
-  border-bottom: 1px solid var(--mm-border);
+.mm-account__tabs {
   display: grid;
-  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-bottom: 1px solid var(--mm-border);
+  gap: 8px;
+}
+.mm-account__tab {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 8px;
+  min-height: 48px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: var(--mm-muted);
+  font-size: 15px;
+}
+.mm-account__tab.is-active {
+  color: var(--mm-primary);
+  border-bottom-color: var(--mm-primary);
+  font-weight: 700;
+}
+.mm-account__tab:focus-visible {
+  outline: 2px solid var(--mm-primary);
+  outline-offset: -2px;
+}
+.mm-account__badge {
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--mm-danger);
+  color: var(--mm-white);
+  font-size: 11px;
+  text-align: center;
+}
+.mm-account :deep(.mm-card) {
+  box-shadow: none;
+  border-radius: 10px;
+}
+.mm-account :deep(.mm-card__header) {
+  padding: 24px 28px 0;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.mm-account :deep(.mm-card__body) {
+  padding: 24px 28px 28px;
+}
+.mm-account__profile {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+  gap: 32px;
+}
+.mm-account__avatar-settings {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  padding-right: 32px;
+  border-right: 1px solid var(--mm-border);
+}
+.mm-account__avatar-settings h3 {
+  font-size: 18px;
+  margin-bottom: 8px;
 }
 .mm-account__avatar-upload {
   width: max-content;
+  max-width: 100%;
+  min-height: 44px;
   position: relative;
   padding: 10px 16px;
   border: 1px solid var(--mm-border);
   border-radius: 6px;
   cursor: pointer;
+  font-size: 14px;
   font-weight: 600;
   overflow: hidden;
+  background: var(--mm-canvas);
 }
 .mm-account__avatar-upload input {
   position: absolute;
@@ -696,228 +1072,240 @@ onMounted(() => {
   outline: 2px solid var(--mm-primary);
   outline-offset: 2px;
 }
-.mm-account__privacy {
+.mm-account__profile-details {
+  min-width: 0;
+}
+.mm-account__email {
+  display: grid;
+  gap: 6px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--mm-border);
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.mm-account__email > span {
+  color: var(--mm-muted);
+  font-size: 12px;
+}
+.mm-account__email > strong {
+  font-weight: 600;
+}
+.mm-account__email > p {
+  color: var(--mm-muted);
+  font-size: 13px;
+}
+.mm-account__form,
+.mm-account__address-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.mm-account__form {
+  margin-top: 20px;
+}
+.mm-account__profile-details .mm-button {
+  align-self: flex-start;
+  min-width: 128px;
+}
+.mm-account__address-fields {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.mm-account__form-actions,
+.mm-account__address-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.mm-account__meta {
+  font-size: 14px;
+  color: var(--mm-muted);
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+.mm-account__error {
+  color: var(--mm-danger);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.mm-account__error button {
+  margin-left: 8px;
+  text-decoration: underline;
+  background: none;
+  border: 0;
+  color: inherit;
+  padding: 4px;
+}
+.mm-account__ok {
+  color: var(--mm-success);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.mm-account__subheading {
+  font-size: 17px;
+  font-weight: 600;
+}
+.mm-account__address-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.mm-account__address {
   display: flex;
   justify-content: space-between;
-  font-size: 12px;
-  padding-top: 16px;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--mm-border);
+}
+.mm-account__address:first-child {
+  padding-top: 0;
+}
+.mm-account__address > div:first-child {
+  min-width: 0;
+}
+.mm-account__address strong {
+  display: inline-block;
+  margin-right: 8px;
+}
+.mm-account__address-actions {
+  flex-shrink: 0;
+}
+.mm-account__address-form {
+  border-top: 1px solid var(--mm-border);
+  padding-top: 24px;
+}
+.mm-account__checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  min-height: 36px;
+}
+.mm-account__seller-status {
+  display: grid;
+  gap: 14px;
+}
+.mm-account__field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.mm-account__field textarea {
+  padding: 12px;
+  border: 1px solid var(--mm-border);
+  border-radius: 6px;
+  resize: vertical;
+  font: inherit;
+  font-weight: 400;
+}
+.mm-account__notification-list {
+  display: grid;
+}
+.mm-account__notification {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 20px 16px;
+  border-bottom: 1px solid var(--mm-border);
+}
+.mm-account__notification > div {
+  min-width: 0;
+}
+.mm-account__notification.is-unread {
+  background: var(--mm-canvas);
+}
+.mm-account__notification-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.mm-account__unread-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--mm-primary);
+  flex-shrink: 0;
+}
+.mm-account__notification-content {
+  font-size: 14px;
+  margin: 8px 0;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.mm-account__privacy {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 13px;
   color: var(--mm-muted);
 }
-.mm-account :deep(.mm-card) {
-  box-shadow: none;
-  border-radius: 8px;
-}
-@media (max-width: 600px) {
+@media (max-width: 700px) {
+  .mm-account {
+    padding: 24px 16px;
+    gap: 20px;
+  }
   .mm-account__identity {
     flex-wrap: wrap;
     gap: 14px;
+    padding: 0 0 8px;
   }
   .mm-account__portrait {
     width: 64px;
     height: 64px;
+    font-size: 26px;
   }
   .mm-account__identity > div:nth-child(2) {
     flex: 1;
-    min-width: 0;
+  }
+  .mm-account__heading {
+    font-size: 25px;
   }
   .mm-account__orders {
     margin: 0;
     flex-basis: 100%;
     padding-left: 78px;
   }
-  .mm-account__heading {
-    font-size: 24px !important;
+  .mm-account__tabs {
+    gap: 0;
   }
-}
-.mm-account {
-  display: flex;
-  flex-direction: column;
-  gap: var(--mm-space-4);
-  width: 100%;
-  max-width: 960px;
-  margin: 0 auto;
-  padding: var(--mm-space-5) var(--mm-space-4);
-}
-
-.mm-account__heading {
-  font-size: var(--mm-font-xl);
-}
-
-.mm-account__tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--mm-space-2);
-}
-
-.mm-account__tab {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--mm-space-1);
-  padding: var(--mm-space-2) var(--mm-space-4);
-  border: 1px solid var(--mm-border);
-  border-radius: var(--mm-radius-m);
-  background-color: var(--mm-white);
-  color: var(--mm-ink);
-  font-size: var(--mm-font-base);
-}
-
-.mm-account__tab.is-active {
-  background-color: var(--mm-primary);
-  border-color: var(--mm-primary);
-  color: var(--mm-white);
-  font-weight: 600;
-}
-
-.mm-account__badge {
-  min-width: 18px;
-  padding: 0 5px;
-  border-radius: 9px;
-  background-color: var(--mm-danger);
-  color: var(--mm-white);
-  font-size: 12px;
-  text-align: center;
-}
-
-.mm-account__form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--mm-space-3);
-  max-width: 480px;
-  margin-top: var(--mm-space-3);
-}
-
-.mm-account__form-actions {
-  display: flex;
-  gap: var(--mm-space-2);
-}
-
-.mm-account__profile {
-  display: flex;
-  flex-direction: column;
-  gap: var(--mm-space-2);
-}
-
-.mm-account__meta {
-  font-size: var(--mm-font-s);
-  color: var(--mm-muted);
-}
-
-.mm-account__error {
-  color: var(--mm-danger);
-  font-size: var(--mm-font-s);
-}
-
-.mm-account__ok {
-  color: var(--mm-success);
-  font-size: var(--mm-font-s);
-}
-
-.mm-account__subheading {
-  font-size: var(--mm-font-base);
-  font-weight: 600;
-}
-
-.mm-account__address-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--mm-space-3);
-}
-
-.mm-account__address {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--mm-space-3);
-  padding: var(--mm-space-3);
-  border: 1px solid var(--mm-border);
-  border-radius: var(--mm-radius-m);
-}
-
-.mm-account__address-actions {
-  display: flex;
-  gap: var(--mm-space-2);
-  flex-shrink: 0;
-}
-
-.mm-account__address-form {
-  border-top: 1px solid var(--mm-border);
-  padding-top: var(--mm-space-4);
-}
-
-.mm-account__checkbox {
-  display: flex;
-  align-items: center;
-  gap: var(--mm-space-2);
-  font-size: var(--mm-font-s);
-}
-
-.mm-account__seller-status {
-  display: flex;
-  flex-direction: column;
-  gap: var(--mm-space-2);
-}
-
-.mm-account__field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--mm-space-1);
-  font-size: var(--mm-font-s);
-  font-weight: 600;
-}
-
-.mm-account__field textarea {
-  padding: var(--mm-space-2) var(--mm-space-3);
-  border: 1px solid var(--mm-border);
-  border-radius: var(--mm-radius-m);
-  resize: vertical;
-  font-weight: 400;
-}
-
-.mm-account__notification-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--mm-space-3);
-}
-
-.mm-account__notification {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--mm-space-3);
-  padding: var(--mm-space-3);
-  border: 1px solid var(--mm-border);
-  border-radius: var(--mm-radius-m);
-}
-
-.mm-account__notification.is-unread {
-  border-color: var(--mm-primary);
-  background-color: var(--mm-canvas);
-}
-
-.mm-account__notification-title {
-  display: flex;
-  align-items: center;
-  gap: var(--mm-space-2);
-  font-weight: 600;
-}
-
-.mm-account__unread-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: var(--mm-danger);
-  flex-shrink: 0;
-}
-
-.mm-account__notification-content {
-  font-size: var(--mm-font-s);
-  margin-top: var(--mm-space-1);
-}
-
-@media (max-width: 768px) {
+  .mm-account__tab {
+    font-size: 13px;
+    padding: 12px 2px;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .mm-account :deep(.mm-card__header) {
+    padding: 20px 20px 0;
+  }
+  .mm-account :deep(.mm-card__body) {
+    padding: 20px;
+  }
+  .mm-account__profile {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+  .mm-account__avatar-settings {
+    border-right: 0;
+    border-bottom: 1px solid var(--mm-border);
+    padding: 0 0 24px;
+  }
   .mm-account__address,
   .mm-account__notification {
     flex-direction: column;
+    gap: 14px;
+  }
+  .mm-account__profile-details .mm-button {
+    align-self: stretch;
   }
 }
 </style>
