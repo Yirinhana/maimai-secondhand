@@ -93,6 +93,7 @@ public class SecurityConfig {
                         .permitAll();
                 auth.requestMatchers(HttpMethod.GET,
                         "/api/v1/categories", "/api/v1/products", "/api/v1/products/*",
+                        "/api/v1/products/*/comments", "/api/v1/products/*/ratings",
                         "/api/v1/sellers/*", "/api/v1/sellers/*/products",
                         "/api/v1/policies/current", "/api/v1/shipping-provinces", "/api/v1/support/faq", "/api/v1/support/assistant",
                         "/api/v1/avatars/*", "/api/v1/official/articles", "/api/v1/official/articles/*",

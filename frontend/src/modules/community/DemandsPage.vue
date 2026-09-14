@@ -11,6 +11,7 @@ import MmPagination from '../../shared/components/MmPagination.vue';
 import PriceText from '../../shared/components/PriceText.vue';
 import DemandReplies from './DemandReplies.vue';
 import ReportButton from './ReportButton.vue';
+import UserAvatar from '../../shared/components/UserAvatar.vue';
 const route = useRoute(),
   router = useRouter(),
   auth = useAuthStore(),
@@ -197,9 +198,7 @@ onMounted(async () => {
         预算 <PriceText :cents="d.budgetMinCents" /> —
         <PriceText :cents="d.budgetMaxCents" /> · {{ d.region || '不限地区' }}
       </p>
-      <p class="mm-muted">
-        {{ d.authorNickname }} · {{ formatTime(d.createdAt) }}
-      </p>
+      <div class="mm-demand-author"><UserAvatar :nickname="d.authorNickname" :size="32"/><strong>{{d.authorNickname}}</strong><time>{{formatTime(d.createdAt)}}</time></div>
       <p v-if="mine && d.reviewReason">审核说明：{{ d.reviewReason }}</p>
       <div class="mm-actions">
         <MmButton
@@ -240,6 +239,8 @@ onMounted(async () => {
   </section>
 </template>
 <style scoped>
+.mm-demand-author{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--mm-muted);margin:18px 0}.mm-demand-author strong{color:var(--mm-ink);font-weight:500}.mm-demand-author time{margin-left:auto;font-size:11px}
+
 .mm-demand-board {
   max-width: 1130px;
   padding-top: 32px;

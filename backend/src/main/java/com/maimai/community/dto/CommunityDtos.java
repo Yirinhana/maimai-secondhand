@@ -140,6 +140,7 @@ public final class CommunityDtos {
 
     public enum ResourceType {
         PRODUCT,
+        PRODUCT_COMMENT,
         DEMAND_POST,
         DEMAND_REPLY,
         ORDER_REVIEW

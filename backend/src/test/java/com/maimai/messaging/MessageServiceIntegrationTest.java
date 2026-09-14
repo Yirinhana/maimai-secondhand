@@ -53,6 +53,25 @@ class MessageServiceIntegrationTest {
         assertThat(service.inboxOverview(outsider)).isEqualTo(new InboxOverview(0,0,0));
     }
 
+    @Test void productCardKeepsSnapshotAndRetryAndRejectsAnotherSeller() {
+        String title="咨询卡片-"+UUID.randomUUID();
+        db.update("INSERT INTO categories(name) VALUES(?)",title);
+        long category=db.queryForObject("SELECT id FROM categories WHERE name=?",Long.class,title);
+        db.update("INSERT INTO products(seller_id,category_id,title,item_condition,price_cents,region,delivery_methods,status) VALUES(?,?,?,'GOOD',18000,'上海','EXPRESS','ON_SALE')",bob,category,title);
+        long product=db.queryForObject("SELECT id FROM products WHERE title=?",Long.class,title);
+        var request=new SendMessage(UUID.randomUUID(),null,null,product);
+        var first=service.send(alice,conversation,request);
+        assertThat(first.product().title()).isEqualTo(title);
+        assertThat(service.conversations(bob,0,10).getFirst().lastMessage()).contains(title);
+        db.update("UPDATE products SET title='修改后的标题',status='OFF_SHELF' WHERE id=?",product);
+        assertThat(service.send(alice,conversation,request).id()).isEqualTo(first.id());
+        assertThat(service.history(bob,conversation,null,10).items().getFirst().product().title()).isEqualTo(title);
+        assertThatThrownBy(()->service.send(alice,conversation,new SendMessage(UUID.randomUUID(),null,null,product))).isInstanceOf(BizException.class);
+        db.update("UPDATE products SET status='ON_SALE',seller_id=? WHERE id=?",outsider,product);
+        assertThatThrownBy(()->service.send(alice,conversation,new SendMessage(UUID.randomUUID(),null,null,product))).isInstanceOf(BizException.class);
+        assertThatThrownBy(()->service.send(alice,conversation,new SendMessage(request.clientId(),null,null,product+1))).isInstanceOf(BizException.class);
+    }
+
     @Test void inboxFiltersBeforePaginationAndScopesSearchToMember() {
         long first=user("目标商家一"),second=user("目标商家二"),unrelated=user("普通商家");
         long c1=service.open(alice,new OpenConversation(first,null));

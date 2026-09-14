@@ -591,6 +591,7 @@ export interface ConversationSummary {
 
 /** 消息 DTO：GET 会话消息 items 与发送响应同构 */
 export interface MessageItem {
+  product?: {id:number;title:string;coverImage:string|null;priceCents:number} | null
   id: number
   conversationId: number
   senderId: number

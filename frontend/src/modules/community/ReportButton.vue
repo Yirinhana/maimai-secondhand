@@ -2,7 +2,7 @@
 import {ref} from 'vue'
 import {post,type ApiError} from '../../shared/api'
 import MmButton from '../../shared/components/MmButton.vue'
-const props=defineProps<{resourceType:'PRODUCT'|'DEMAND_POST'|'DEMAND_REPLY'|'ORDER_REVIEW';resourceId:number}>()
+const props=defineProps<{resourceType:'PRODUCT'|'PRODUCT_COMMENT'|'DEMAND_POST'|'DEMAND_REPLY'|'ORDER_REVIEW';resourceId:number}>()
 const open=ref(false),reason=ref(''),busy=ref(false),feedback=ref('')
 async function submit(){if(busy.value)return;busy.value=true;feedback.value='';try{await post('/community/reports',{resourceType:props.resourceType,resourceId:props.resourceId,reason:reason.value.trim()});feedback.value='举报已提交，可在个人社区查看处理进度';open.value=false;reason.value=''}catch(e){feedback.value=(e as ApiError).message}finally{busy.value=false}}
 </script>

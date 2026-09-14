@@ -12,6 +12,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.assertj.core.api.Assertions.*;
 
 class HermesAiGatewayTest {
+    @Test void markdownAnswerIsStoredAsReadablePlainText() {
+        var gateway=new HermesAiGateway("http://127.0.0.1:8643","test","tina-readonly",true,(u,t,b)->
+            "{\"choices\":[{\"message\":{\"content\":\"## 费用说明\\n**服务费**为0.03元。\\n- [查看规则](/policies)\\n`无需运费`\"}}]}");
+        assertThat(gateway.chat(java.util.List.of(new SupportAiGateway.ChatMessage("user","费用"))))
+            .isEqualTo("费用说明\n服务费为0.03元。\n• 查看规则（/policies）\n无需运费");
+    }
     @Test void minimaxSeparatesReasoningAndReturnsOnlyFinalAnswer() {
         var gateway=new HermesAiGateway("https://api.minimaxi.com/v1","test","MiniMax-M3",true,(uri,token,body)->{
             var request=JsonMapper.builder().build().readTree(body);

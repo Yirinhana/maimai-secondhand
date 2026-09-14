@@ -63,6 +63,11 @@ public class RatingService {
         var rows = repo.query(SELECT + "WHERE " + filter + " ORDER BY r.created_at DESC, r.id DESC LIMIT ? OFFSET ?", CommunityRows.RATING, id, p.size(), p.offset());
         return p.result(rows, repo.count("SELECT COUNT(*)" + JOIN + "WHERE " + filter, id));
     }
+    public PageResult<PublicRatingItem> product(Long productId,Integer page,Integer size) {
+        support.publicProduct(productId);
+        var result=list("r.is_hidden=0 AND r.rater_id=o.buyer_id AND r.ratee_id=o.seller_id AND o.fulfillment_status='COMPLETED' AND u.status='ACTIVE' AND EXISTS (SELECT 1 FROM order_items oi WHERE oi.order_id=o.id AND oi.product_id=?)",productId,page,size);
+        return new PageResult<>(result.items().stream().map(r->new PublicRatingItem(r.id(),r.reviewerId(),r.rateeId(),r.reviewerNickname(),r.rating(),r.comment(),r.refundStatus(),r.createdAt())).toList(),result.total(),result.page(),result.size(),result.totalPages());
+    }
     private Order order(Long id, boolean lock) {
         var result = repo.queryOne("SELECT buyer_id, seller_id, fulfillment_status, completed_at FROM orders WHERE id = ?" + (lock ? " FOR UPDATE" : ""),
                 (rs, n) -> new Order(rs.getLong("buyer_id"), rs.getLong("seller_id"), rs.getString("fulfillment_status"), CommunityRows.instant(rs, "completed_at")), id);

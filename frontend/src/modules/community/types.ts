@@ -6,4 +6,4 @@ export interface Demand {id:number;authorId:number;authorNickname:string;title:s
 export interface DemandReply {id:number;demandId:number;authorId:number;authorNickname:string;content:string;status:string;createdAt:string;reviewReason:string|null}
 export interface Rating {id:number;orderId:number;reviewerId:number;rateeId:number;reviewerNickname:string;rating:number;comment:string|null;refundStatus:string;createdAt:string}
 export interface Report {id:number;reporterId:number;resourceType:string;resourceId:number;reason:string;status:string;processAction:string|null;processNote:string|null;createdAt:string}
-export const moderationText:Record<string,string>={PENDING:'等待审核',APPROVED:'已通过',REJECTED:'未通过',HIDDEN:'已隐藏',CLOSED:'已关闭',PENDING_REVIEW:'等待审核',RESOLVED:'已处理',OPEN:'待处理'}
+export const moderationText:Record<string,string>={PENDING:'等待审核',PUBLISHED:'已发布',APPROVED:'已通过',REJECTED:'未通过',HIDDEN:'已隐藏',CLOSED:'已关闭',PENDING_REVIEW:'等待审核',RESOLVED:'已处理',OPEN:'待处理'}

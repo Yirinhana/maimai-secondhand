@@ -90,7 +90,7 @@ public class MessageService {
             SELECT c.id, c.product_id, c.updated_at,
               CASE WHEN c.user_low=? THEN c.user_high ELSE c.user_low END other_id,
               u.nickname,CONCAT('/api/v1/avatars/',a.filename) avatar_url,p.title product_title,
-              (SELECT COALESCE(m.body,'[图片]') FROM direct_messages m WHERE m.conversation_id=c.id ORDER BY m.id DESC LIMIT 1) last_message,
+              (SELECT COALESCE(m.body,CASE WHEN m.product_id IS NOT NULL THEN CONCAT('[商品] ',m.product_title) ELSE '[图片]' END) FROM direct_messages m WHERE m.conversation_id=c.id ORDER BY m.id DESC LIMIT 1) last_message,
               (SELECT COUNT(*) FROM direct_messages m WHERE m.conversation_id=c.id AND m.sender_id<>?
                  AND m.id>COALESCE((SELECT last_read_id FROM message_read_positions r WHERE r.conversation_id=c.id AND r.user_id=?),0)) unread
             FROM message_conversations c
@@ -126,13 +126,13 @@ public class MessageService {
         requireCanSend(actor, conversation);
         String body = request.body()==null?null:request.body().strip();
         if (body!=null && body.isEmpty()) body=null;
-        if (request.clientId()==null || body==null && request.attachmentId()==null || body!=null && body.length()>2000)
+        if (request.clientId()==null || body==null && request.attachmentId()==null && request.productId()==null || body!=null && body.length()>2000)
             throw BizException.badRequest("MESSAGE_CONTENT", "请填写不超过2000字的消息或上传图片");
         String attachment=request.attachmentId()==null?null:request.attachmentId().toString();
         List<Message> prior=db.query("SELECT * FROM direct_messages WHERE sender_id=? AND client_id=?",messageMapper(),actor,request.clientId().toString());
         if (!prior.isEmpty()) {
             Message old=prior.getFirst();
-            if (old.conversationId()!=conversation || !Objects.equals(old.body(),body) || !Objects.equals(old.attachmentUrl(),attachmentUrl(attachment)))
+            if (old.conversationId()!=conversation || !Objects.equals(old.body(),body) || !Objects.equals(old.attachmentUrl(),attachmentUrl(attachment)) || !Objects.equals(old.product()==null?null:old.product().id(),request.productId()))
                 throw BizException.conflict("MESSAGE_RETRY_CONFLICT","重试编号已用于其他消息");
             return old;
         }
@@ -141,7 +141,15 @@ public class MessageService {
         if (attachment!=null && (count("SELECT COUNT(*) FROM message_attachments WHERE id=? AND conversation_id=? AND uploaded_by=?",attachment,conversation,actor)!=1
             || count("SELECT COUNT(*) FROM direct_messages WHERE attachment_id=?",attachment)>0))
             throw BizException.badRequest("MESSAGE_ATTACHMENT", "图片不可用于此消息");
-        db.update("INSERT INTO direct_messages(conversation_id,sender_id,client_id,body,attachment_id) VALUES(?,?,?,?,?)",conversation,actor,request.clientId().toString(),body,attachment);
+        ProductCard card=null;
+        if(request.productId()!=null){
+            var members=memberIds(conversation);
+            var products=db.query("SELECT p.id,p.title,p.price_cents,(SELECT path FROM product_images WHERE product_id=p.id ORDER BY sort,id LIMIT 1) cover FROM products p WHERE p.id=? AND p.status='ON_SALE' AND p.seller_id IN (?,?)",
+                (rs,n)->new ProductCard(rs.getLong("id"),rs.getString("title"),rs.getString("cover"),rs.getLong("price_cents")),request.productId(),members.getFirst(),members.getLast());
+            if(products.isEmpty())throw BizException.notFound("这件商品不可用于当前会话");
+            card=products.getFirst();
+        }
+        db.update("INSERT INTO direct_messages(conversation_id,sender_id,client_id,body,attachment_id,product_id,product_title,product_cover,product_price_cents) VALUES(?,?,?,?,?,?,?,?,?)",conversation,actor,request.clientId().toString(),body,attachment,card==null?null:card.id(),card==null?null:card.title(),card==null?null:card.coverImage(),card==null?null:card.priceCents());
         db.update("UPDATE message_conversations SET updated_at=UTC_TIMESTAMP(6) WHERE id=?",conversation);
         Message result=db.queryForObject("SELECT * FROM direct_messages WHERE sender_id=? AND client_id=?",messageMapper(),actor,request.clientId().toString());
         memberIds(conversation).forEach(id -> events.publishEvent(new Changed(id,conversation)));
@@ -213,6 +221,7 @@ public class MessageService {
     public static String attachmentUrl(String id) { return id==null?null:"/api/v1/messages/attachments/"+id; }
     private static RowMapper<Message> messageMapper() {
         return (rs,n) -> new Message(rs.getLong("id"),rs.getLong("conversation_id"),rs.getLong("sender_id"),
-            UUID.fromString(rs.getString("client_id")),rs.getString("body"),attachmentUrl(rs.getString("attachment_id")),rs.getTimestamp("created_at").toInstant());
+            UUID.fromString(rs.getString("client_id")),rs.getString("body"),attachmentUrl(rs.getString("attachment_id")),rs.getTimestamp("created_at").toInstant(),
+            rs.getObject("product_id",Long.class)==null?null:new ProductCard(rs.getLong("product_id"),rs.getString("product_title"),rs.getString("product_cover"),rs.getLong("product_price_cents")));
     }
 }

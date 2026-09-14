@@ -100,7 +100,7 @@
               >我已阅读并同意
               <RouterLink to="/policies" target="_blank" rel="noopener"
                 >用户协议与交易售后规则</RouterLink
-              >（本地演示草案）</span
+              >（条款草案）</span
             >
           </label>
           <p v-if="policyLoading" class="mm-auth__hint" role="status">

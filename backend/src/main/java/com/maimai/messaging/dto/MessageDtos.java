@@ -11,14 +11,17 @@ import java.util.UUID;
 public final class MessageDtos {
     private MessageDtos() {}
     public record OpenConversation(@NotNull @Positive Long recipientId, @Positive Long productId) {}
-    public record SendMessage(@NotNull UUID clientId, @Size(max=2000) String body, UUID attachmentId) {}
+    public record SendMessage(@NotNull UUID clientId, @Size(max=2000) String body, UUID attachmentId, @Positive Long productId) {
+        public SendMessage(UUID clientId,String body,UUID attachmentId){this(clientId,body,attachmentId,null);}
+    }
     public record ReadMessages(@PositiveOrZero long throughId) {}
     public record Conversation(long id, long otherUserId, String otherNickname, Long productId,
                                String lastMessage, Instant updatedAt, long unread,
                                String otherAvatarUrl, String productTitle) {}
     public record InboxOverview(long conversations, long unreadConversations, long unreadMessages) {}
     public record Message(long id, long conversationId, long senderId, UUID clientId,
-                          String body, String attachmentUrl, Instant createdAt) {}
+                          String body, String attachmentUrl, Instant createdAt, ProductCard product) {}
+    public record ProductCard(long id,String title,String coverImage,long priceCents) {}
     public record History(List<Message> items, boolean hasMore, Long nextBeforeId) {}
     public record UploadedImage(UUID id, String url, long byteSize) {}
     public record SetBlock(@NotNull Boolean blocked) {}

@@ -31,7 +31,7 @@
     <div class="product-gallery__caption">
       <span>{{
         isDemoProductImage(currentImage?.path)
-          ? 'AI 生成演示图 · 非卖家实拍'
+          ? '图片来源：AI 生成'
           : images.length
             ? '商品图片'
             : '卖家暂未上传图片'

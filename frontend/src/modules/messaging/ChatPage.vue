@@ -39,8 +39,33 @@
           </div>
         </details>
       </div>
+      <div v-if="contextProduct" class="mm-chat__context">
+        <RouterLink
+          :to="`/products/${contextProduct.id}`"
+          class="mm-chat__product-card"
+        >
+          <ItemImage
+            :src="contextProduct.images[0]?.path"
+            :alt="contextProduct.title"
+          />
+          <span
+            ><small>正在咨询这件商品</small
+            ><strong>{{ contextProduct.title }}</strong
+            ><b>{{ formatPrice(contextProduct.priceCents) }}</b></span
+          >
+        </RouterLink>
+        <MmButton
+          variant="ghost"
+          :disabled="cardSending || blockState?.blockedEitherDirection"
+          @click="sendProduct"
+          >{{ cardSending ? '正在发送…' : '发送商品卡片' }}</MmButton
+        >
+      </div>
+      <p v-if="contextError" class="mm-chat__error" role="status">
+        {{ contextError }}
+      </p>
       <RouterLink
-        v-if="otherUser?.productId"
+        v-if="!route.query.productId && otherUser?.productId"
         :to="`/products/${otherUser.productId}`"
         class="mm-chat__product"
         ><MmIcon name="box" /><span
@@ -101,6 +126,18 @@
               loading="lazy"
             />
             <p v-if="m.body" class="mm-chat__text">{{ m.body }}</p>
+            <RouterLink
+              v-if="m.product"
+              :to="`/products/${m.product.id}`"
+              class="mm-chat__product-card"
+            >
+              <ItemImage :src="m.product.coverImage" :alt="m.product.title" />
+              <span
+                ><small>商品详情 · 点击查看</small
+                ><strong>{{ m.product.title }}</strong
+                ><b>{{ formatPrice(m.product.priceCents) }}</b></span
+              >
+            </RouterLink>
             <time class="mm-chat__time">{{ formatTime(m.createdAt) }}</time>
           </div>
         </div>
@@ -186,11 +223,12 @@ import MmButton from '../../shared/components/MmButton.vue';
 import MmCard from '../../shared/components/MmCard.vue';
 import MmIcon from '../../shared/components/MmIcon.vue';
 import UserAvatar from '../../shared/components/UserAvatar.vue';
+import ItemImage from '../../shared/components/ItemImage.vue';
 import EmptyState from '../../shared/components/EmptyState.vue';
 import { get, post, put, upload } from '../../shared/api';
 import { askConfirmation } from '../../shared/confirm';
 import type { ApiError } from '../../shared/api';
-import { formatTime } from '../../shared/format';
+import { formatTime, formatPrice } from '../../shared/format';
 import { useAuthStore } from '../../shared/stores/auth';
 import type {
   ImageUploadResponse,
@@ -198,6 +236,7 @@ import type {
   MessageItem,
   MessagePage,
   SendMessageResponse,
+  ProductDetail,
 } from '../../shared/types';
 import { useMessageSocket } from './socket';
 
@@ -210,6 +249,42 @@ const auth = useAuthStore();
 
 const conversationId = computed(() => Number(route.params.id));
 const myId = computed(() => auth.me?.id ?? 0);
+const contextProduct = ref<ProductDetail | null>(null),
+  contextError = ref(''),
+  cardSending = ref(false);
+let contextGeneration = 0;
+let pendingCard: { clientId: string; productId: number } | null = null;
+async function sendProduct() {
+  if (
+    !contextProduct.value ||
+    cardSending.value ||
+    blockState.value?.blockedEitherDirection
+  )
+    return;
+  const run = contextGeneration,
+    cid = conversationId.value;
+  cardSending.value = true;
+  contextError.value = '';
+  pendingCard ??= {
+    clientId: crypto.randomUUID(),
+    productId: contextProduct.value.id,
+  };
+  try {
+    const result = await post<MessageItem>(
+      `/messages/conversations/${cid}`,
+      pendingCard,
+    );
+    if (run !== contextGeneration) return;
+    appendMessage(result);
+    pendingCard = null;
+  } catch (e) {
+    if (run === contextGeneration)
+      contextError.value =
+        ((e as ApiError).message || '发送失败') + '，可再次点击重试';
+  } finally {
+    if (run === contextGeneration) cardSending.value = false;
+  }
+}
 const otherUser = ref<ConversationSummary | null>(null),
   blockState = ref<{
     blockedByMe: boolean;
@@ -217,6 +292,38 @@ const otherUser = ref<ConversationSummary | null>(null),
   } | null>(null),
   blockBusy = ref(false),
   blockError = ref('');
+watch(
+  () => [
+    route.query.productId,
+    conversationId.value,
+    otherUser.value?.otherUserId,
+    myId.value,
+  ],
+  async () => {
+    const run = ++contextGeneration;
+    contextProduct.value = null;
+    contextError.value = '';
+    pendingCard = null;
+    cardSending.value = false;
+    const id = Number(route.query.productId);
+    if (!Number.isSafeInteger(id) || id <= 0 || !otherUser.value) return;
+    try {
+      const product = await get<ProductDetail>(`/products/${id}`);
+      if (run !== contextGeneration) return;
+      if (
+        product.seller.id !== otherUser.value?.otherUserId &&
+        product.seller.id !== myId.value
+      ) {
+        contextError.value = '这件商品不属于当前会话的卖家';
+        return;
+      }
+      contextProduct.value = product;
+    } catch (e) {
+      if (run === contextGeneration)
+        contextError.value = (e as ApiError).message || '商品暂不可见';
+    }
+  },
+);
 const reportLink = computed(() => ({
   path: '/support',
   query: {
@@ -283,7 +390,11 @@ const draft = ref('');
 const sending = ref(false);
 const sendError = ref('');
 /** 文字发送失败重试时保留同一 clientId（服务端按 senderId+clientId 幂等去重） */
-const pendingText = ref<{ clientId: string; body: string } | null>(null);
+const pendingText = ref<{
+  clientId: string;
+  body: string;
+  productId?: number;
+} | null>(null);
 
 const imageInput = ref<HTMLInputElement | null>(null);
 const uploadingImage = ref(false);
@@ -462,13 +573,18 @@ async function sendText() {
   sending.value = true;
   sendError.value = '';
   if (!pendingText.value)
-    pendingText.value = { clientId: crypto.randomUUID(), body };
+    pendingText.value = {
+      clientId: crypto.randomUUID(),
+      body,
+      productId: contextProduct.value?.id,
+    };
   try {
     const msg = await post<SendMessageResponse>(
       `/messages/conversations/${conversationId.value}`,
       {
         clientId: pendingText.value.clientId,
         body,
+        productId: pendingText.value.productId,
       },
     );
     if (requestedId !== conversationId.value) return;
@@ -603,6 +719,7 @@ onMounted(() => {
   window.addEventListener('resize', markRead);
 });
 onBeforeUnmount(() => {
+  contextGeneration++;
   document.removeEventListener('visibilitychange', handleVisibility);
   window.removeEventListener('scroll', markRead);
   window.removeEventListener('resize', markRead);
@@ -610,6 +727,65 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+.mm-chat__context {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  background: #faf8f2;
+  border-bottom: 1px solid var(--mm-border);
+}
+.mm-chat__product-card {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  color: var(--mm-ink);
+  min-width: 0;
+  text-decoration: none;
+}
+.mm-chat__product-card > img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+.mm-chat__product-card > span {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+.mm-chat__product-card small {
+  font-size: 10px;
+  color: var(--mm-muted);
+}
+.mm-chat__product-card strong {
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.mm-chat__product-card b {
+  font-size: 14px;
+  color: var(--mm-primary);
+}
+.mm-chat__bubble .mm-chat__product-card {
+  margin: 8px 0;
+  padding: 10px;
+  border: 1px solid #e7e0d5;
+  border-radius: 10px;
+  background: #fff;
+  max-width: 320px;
+}
+@media (max-width: 600px) {
+  .mm-chat__context {
+    flex-wrap: wrap;
+    padding: 12px;
+  }
+  .mm-chat__context > :last-child {
+    margin-left: auto;
+  }
+}
 .mm-chat {
   max-width: 1040px;
   margin: 0 auto;

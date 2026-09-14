@@ -33,6 +33,8 @@ import static org.assertj.core.api.Assertions.*;
 class CommunityServiceIT {
     @Autowired CommunityService service;
     @Autowired JdbcTemplate jdbc;
+    @Autowired com.maimai.community.service.ProductDiscussionService discussions;
+    @Autowired com.maimai.community.service.RatingService ratings;
     long buyer, seller, operator, support, stranger, category, product, order;
     final List<Long> users = new ArrayList<>();
 
@@ -59,6 +61,9 @@ class CommunityServiceIT {
         if (users.isEmpty()) return;
         String placeholders = String.join(",", java.util.Collections.nCopies(users.size(), "?"));
         Object[] args = users.toArray();
+        jdbc.update("UPDATE product_comments SET reply_to_id=NULL WHERE product_id=?",product);
+        jdbc.update("DELETE FROM product_comments WHERE product_id=?",product);
+        jdbc.update("DELETE FROM order_items WHERE order_id=?",order);
         jdbc.update("DELETE FROM community_action_logs WHERE actor_id IN (" + placeholders + ")", args);
         jdbc.update("DELETE FROM community_reports WHERE reporter_id IN (" + placeholders + ")", args);
         jdbc.update("DELETE FROM community_order_ratings WHERE rater_id IN (" + placeholders + ")", args);
@@ -89,6 +94,48 @@ class CommunityServiceIT {
         code("NOT_FOUND", () -> service.addFavorite(buyer, product));
         service.removeFavorite(buyer, product); service.removeFavorite(buyer, product);
         assertThat(service.listMyFavorites(buyer, 0, 20).items()).isEmpty();
+    }
+
+    @Test void productDiscussionPersistsRepliesAndGuardsOwnershipAndModeration() {
+        var question=discussions.create(buyer,product,new com.maimai.community.service.ProductDiscussionService.CreateComment("配件还在吗？",null));
+        login(seller,"SELLER");
+        var answer=discussions.create(seller,product,new com.maimai.community.service.ProductDiscussionService.CreateComment("可在私信中确认配件清单",question.id()));
+        assertThat(answer.seller()).isTrue();
+        assertThat(answer.replyPreview()).isEqualTo("配件还在吗？");
+        forbidden(()->discussions.delete(seller,product,question.id()));
+        code("NOT_FOUND",()->discussions.create(seller,product,new com.maimai.community.service.ProductDiscussionService.CreateComment("无效引用",Long.MAX_VALUE)));
+        login(buyer,"USER");
+        var report=service.createReport(buyer,new ReportCreateRequest("PRODUCT_COMMENT",answer.id(),"需要核实的留言内容"),"买家");
+        login(operator,"OPERATOR");service.processReport(operator,report.id(),ReportAction.HIDE,"运营核实后隐藏");
+        assertThat(discussions.list(product,0,10).items()).extracting(x->x.id()).containsExactly(question.id());
+        login(buyer,"USER");discussions.delete(buyer,product,question.id());
+        assertThat(discussions.list(product,0,10).total()).isZero();
+    }
+
+    @Test void discussionMasksDeletedParentAndRejectsInvisibleProductsAndExcessPosts() {
+        var parent=discussions.create(buyer,product,new com.maimai.community.service.ProductDiscussionService.CreateComment("原问题",null));
+        login(seller,"SELLER");discussions.create(seller,product,new com.maimai.community.service.ProductDiscussionService.CreateComment("回复",parent.id()));
+        login(buyer,"USER");discussions.delete(buyer,product,parent.id());
+        assertThat(discussions.list(product,0,10).items().getFirst().replyPreview()).isNull();
+        for(int i=0;i<4;i++)discussions.create(buyer,product,new com.maimai.community.service.ProductDiscussionService.CreateComment("留言"+i,null));
+        assertThatThrownBy(()->discussions.create(buyer,product,new com.maimai.community.service.ProductDiscussionService.CreateComment("超频",null))).isInstanceOf(BizException.class);
+        jdbc.update("UPDATE products SET status='PENDING' WHERE id=?",product);
+        code("NOT_FOUND",()->discussions.list(product,0,10));
+        login(stranger,"USER");code("NOT_FOUND",()->discussions.create(stranger,product,new com.maimai.community.service.ProductDiscussionService.CreateComment("不能查看",null)));
+    }
+
+    @Test void productRatingsOnlyIncludePurchasersCompletedMatchingOrders() {
+        service.createOrderRating(buyer,order,new RatingRequest(5,"购买评价"),"买家");
+        assertThat(ratings.product(product,0,10).total()).isZero();
+        jdbc.update("INSERT INTO order_items(order_id,product_id,title,item_condition,price_cents,quantity) VALUES(?,?,'测试快照','GOOD',1999,1)",order,product);
+        assertThat(ratings.product(product,0,10).total()).isEqualTo(1);
+        login(seller,"SELLER");service.createOrderRating(seller,order,new RatingRequest(5,"卖家评价买家"),"卖家");
+        assertThat(ratings.product(product,0,10).total()).isEqualTo(1);
+        jdbc.update("UPDATE orders SET fulfillment_status='SHIPPED' WHERE id=?",order);
+        assertThat(ratings.product(product,0,10).total()).isZero();
+        jdbc.update("UPDATE orders SET fulfillment_status='COMPLETED' WHERE id=?",order);
+        jdbc.update("UPDATE community_order_ratings SET is_hidden=1 WHERE rater_id=?",buyer);
+        assertThat(ratings.product(product,0,10).total()).isZero();
     }
 
     @Test

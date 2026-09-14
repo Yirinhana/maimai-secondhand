@@ -59,8 +59,15 @@ export function useTinaChat() {
       error.value = '客服状态暂时读取失败，请重试。';
     }
     if (results[1].status === 'fulfilled') faqs.value = results[1].value;
-    if (results[2].status === 'fulfilled') turns.value = results[2].value;
-    else error.value = '对话记录暂时读取失败，请重试。';
+    if (results[2].status === 'fulfilled') {
+      const remote = results[2].value;
+      const unsent = turns.value.filter(
+        (turn) =>
+          turn.id < 0 &&
+          !remote.some((item) => item.requestId === turn.requestId),
+      );
+      turns.value = [...remote, ...unsent].slice(-20);
+    } else error.value = '对话记录暂时读取失败，请重试。';
     loading.value = false;
   }
   async function send(retry?: TinaTurn) {
@@ -79,20 +86,48 @@ export function useTinaChat() {
     const account = generation;
     sending.value = true;
     error.value = '';
+    const optimistic: TinaTurn = {
+      id: retry?.id ?? -Date.now(),
+      requestId: request.requestId,
+      question: message,
+      answer: null,
+      status: 'PENDING',
+      errorCode: null,
+      createdAt: retry?.createdAt ?? new Date().toISOString(),
+    };
+    const existing = turns.value.findIndex(
+      (item) => item.requestId === request.requestId,
+    );
+    if (existing < 0) turns.value = [...turns.value, optimistic].slice(-20);
+    else
+      turns.value = turns.value.map((item, index) =>
+        index === existing ? optimistic : item,
+      );
+    if (!retry) draft.value = '';
     try {
       const turn = await post<TinaTurn>('/support/chat', request);
       if (account !== generation) return;
       const index = turns.value.findIndex(
         (item) => item.requestId === turn.requestId,
       );
-      if (index < 0) turns.value.push(turn);
-      else turns.value[index] = turn;
-      turns.value = turns.value.slice(-20);
-      if (!retry) draft.value = '';
+      turns.value = (
+        index < 0
+          ? [...turns.value, turn]
+          : turns.value.map((item, i) => (i === index ? turn : item))
+      ).slice(-20);
       pendingRequest.value = null;
     } catch (cause) {
       if (account !== generation) return;
       error.value = (cause as ApiError).message || '消息发送失败，可以重试。';
+      const failed = turns.value.findIndex(
+        (item) => item.requestId === request.requestId,
+      );
+      if (failed >= 0)
+        turns.value = turns.value.map((item, i) =>
+          i === failed
+            ? { ...item, status: 'FAILED', errorCode: 'SEND_UNCONFIRMED' }
+            : item,
+        );
       // A timed-out request may have reached the server. Retrying keeps its ID.
     } finally {
       if (account === generation) sending.value = false;

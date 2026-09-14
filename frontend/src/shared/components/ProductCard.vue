@@ -8,20 +8,15 @@
         loading="lazy"
       />
       <span v-else class="mm-product-card__no-cover">暂无图片</span>
-      <span
-        v-if="isDemoProductImage(product.coverImage)"
-        class="mm-product-card__demo"
-        >演示示意图</span
-      >
       <span class="mm-product-card__condition">{{
         CONDITION_TEXT[product.condition]
       }}</span>
       <span
         v-if="
-          product.stockAvailable <= 0 && !isDemoProductImage(product.coverImage)
+          product.stockAvailable <= 0
         "
         class="mm-product-card__soldout"
-        >已售罄</span
+        >暂时无货</span
       >
     </div>
     <div class="mm-product-card__info">
@@ -65,7 +60,6 @@
 <script setup lang="ts">
 import ItemImage from './ItemImage.vue';
 import { computed } from 'vue';
-import { isDemoProductImage } from '../demoImages';
 import MmIcon from './MmIcon.vue';
 import PriceText from './PriceText.vue';
 import {

@@ -3,6 +3,7 @@ import { nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { askConfirmation } from '../../shared/confirm';
 import { useTinaChat } from './useTinaChat';
+import { plainReply } from './plainText';
 const route = useRoute();
 const {
   auth,
@@ -205,7 +206,7 @@ onBeforeUnmount(() => dialog.value?.close());
         role="tabpanel"
         aria-labelledby="tina-chat-tab"
       >
-        <div class="tina-welcome">
+        <div v-if="!turns.length" class="tina-welcome">
           <span class="tina-eyebrow">你好，我是缇娜</span>
           <h3>关于麦麦，有什么想问的？</h3>
           <p>
@@ -231,7 +232,7 @@ onBeforeUnmount(() => dialog.value?.close());
           最近 {{ turns.length }} 条提问 · 当前账号的私密对话
         </p>
         <ol class="tina-messages" aria-label="与缇娜的对话记录">
-          <li v-for="turn in turns" :key="turn.id">
+          <li v-for="turn in turns" :key="turn.requestId">
             <div class="tina-message tina-message--user">
               <span class="tina-author">你</span>
               <p>{{ turn.question }}</p>
@@ -241,7 +242,7 @@ onBeforeUnmount(() => dialog.value?.close());
               class="tina-message tina-message--assistant"
             >
               <span class="tina-author">缇娜 · AI</span>
-              <p>{{ turn.answer }}</p>
+              <p>{{ plainReply(turn.answer) }}</p>
             </div>
             <div v-else-if="turn.status === 'FAILED'" class="tina-failure">
               <p>这条问题暂时没能得到回复，你可以重试或转人工。</p>
@@ -253,14 +254,18 @@ onBeforeUnmount(() => dialog.value?.close());
                 重试这条问题
               </button>
             </div>
-            <p v-else class="tina-caption">
-              这条问题正在处理中，请稍后刷新查看。
-            </p>
+            <div v-else class="tina-thinking" role="status">
+              <span class="tina-face" aria-hidden="true">T</span>
+              <div>
+                <span>缇娜正在思考</span
+                ><span class="tina-dots" aria-hidden="true"
+                  ><i></i><i></i><i></i
+                ></span>
+                <small>正在整理答案，请稍候</small>
+              </div>
+            </div>
           </li>
         </ol>
-        <p v-if="sending" class="tina-typing" role="status">
-          缇娜正在处理，请稍候<span>•••</span>
-        </p>
       </section>
       <p v-if="error" class="tina-error" role="alert">{{ error }}</p>
       <form
@@ -277,13 +282,19 @@ onBeforeUnmount(() => dialog.value?.close());
           v-model="draft"
           rows="2"
           maxlength="1000"
-          :disabled="!enabled || sending || pending"
+          :disabled="!enabled"
           :placeholder="enabled ? '说说你遇到的问题…' : 'AI 接通后即可提问'"
+          @keydown.enter.exact="
+            if (!$event.isComposing) {
+              $event.preventDefault();
+              submit();
+            }
+          "
           @keydown.ctrl.enter.prevent="submit"
           @keydown.meta.enter.prevent="submit"
         ></textarea>
         <div>
-          <small>请勿发送密码、验证码或完整地址</small
+          <small>Enter 发送 · Shift + Enter 换行</small
           ><button
             type="submit"
             :disabled="!enabled || sending || pending || !draft.trim()"
@@ -383,17 +394,30 @@ onBeforeUnmount(() => dialog.value?.close());
   position: fixed;
   inset: auto max(18px, calc((100vw - 1380px) / 2))
     max(18px, env(safe-area-inset-bottom)) auto;
-  width: min(410px, calc(100vw - 28px));
+  width: min(450px, calc(100vw - 28px));
   height: min(690px, calc(100dvh - 40px));
   max-height: calc(100dvh - 24px);
   margin: 0;
   padding: 0;
   border: 1px solid #ded7cd;
   border-radius: 20px;
-  background: #fffdf9;
+  background: #f7f6f2;
   color: var(--mm-ink);
   box-shadow: 0 18px 70px #25241f40;
   overflow: hidden;
+}
+.tina-dialog[open] {
+  animation: tina-open 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes tina-open {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 .tina-dialog::backdrop {
   background: #24252222;
@@ -409,7 +433,7 @@ onBeforeUnmount(() => dialog.value?.close());
   align-items: center;
   gap: 12px;
   padding: 20px 18px 16px;
-  background: #f2eee6;
+  background: #fffdf9;
   flex: none;
 }
 .tina-header h2 {
@@ -522,10 +546,11 @@ onBeforeUnmount(() => dialog.value?.close());
 .tina-message {
   max-width: 94%;
   margin: 0 0 12px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  font-size: 13px;
-  line-height: 1.7;
+  padding: 14px 16px;
+  border-radius: 18px;
+  font-size: 14px;
+  line-height: 1.85;
+  animation: tina-message-in 180ms ease-out;
   overflow-wrap: anywhere;
 }
 .tina-message p {
@@ -538,13 +563,81 @@ onBeforeUnmount(() => dialog.value?.close());
 }
 .tina-message--user {
   margin-left: auto;
-  background: #eee9de;
+  background: #eee2d3;
+  width: fit-content;
   border-bottom-right-radius: 3px;
 }
 .tina-message--assistant {
   background: white;
   border: 1px solid #e6e2d9;
   border-bottom-left-radius: 3px;
+  box-shadow: 0 2px 5px #322d2005;
+}
+.tina-thinking {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin: 18px 0;
+  font-size: 13px;
+  color: #75634e;
+}
+.tina-thinking .tina-face {
+  width: 30px;
+  height: 30px;
+  font-size: 20px;
+}
+.tina-thinking small {
+  display: block;
+  font-size: 11px;
+  color: #8b857b;
+  margin-top: 5px;
+}
+.tina-dots {
+  display: inline-flex;
+  gap: 4px;
+  margin-left: 10px;
+}
+.tina-dots i {
+  width: 4px;
+  height: 4px;
+  background: #b57642;
+  border-radius: 50%;
+  animation: tina-dot 1.2s ease-in-out infinite;
+}
+.tina-dots i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.tina-dots i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+@keyframes tina-dot {
+  0%,
+  70%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  35% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+@keyframes tina-message-in {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tina-dialog[open],
+  .tina-message,
+  .tina-dots i {
+    animation: none;
+  }
 }
 .tina-failure {
   font-size: 12px;

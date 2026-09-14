@@ -8,6 +8,8 @@
       </div>
     </header>
 
+    <CategoryBrowser :categories="categoryTree" :selected="applied.categoryId" @select="navigate({ ...applied, categoryId: $event })" />
+    <p v-if="categoryError" role="status" class="mm-muted">{{ categoryError }} <button type="button" @click="loadCategories">重新加载分类</button></p>
     <form
       class="mm-search__filters"
       aria-label="筛选条件"
@@ -251,6 +253,7 @@ import {
   watch,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import CategoryBrowser from './components/CategoryBrowser.vue';
 import { get, type ApiError } from '../../shared/api';
 import EmptyState from '../../shared/components/EmptyState.vue';
 import MmButton from '../../shared/components/MmButton.vue';
@@ -306,6 +309,7 @@ const nearbyOrigin = ref<{
   label: string;
 } | null>(null);
 const categoryOptions = ref<{ id: number; name: string }[]>([]);
+const categoryTree = ref<Category[]>([]);
 const categoryError = ref('');
 const products = ref<ProductSummary[]>([]);
 const totalElements = ref(0);
@@ -518,6 +522,7 @@ async function loadCategories() {
   try {
     const tree = await get<Category[]>('/categories');
     if (disposed) return;
+    categoryTree.value = tree;
     const options: { id: number; name: string }[] = [];
     const flatten = (nodes: Category[], prefix = '') => {
       for (const node of nodes) {

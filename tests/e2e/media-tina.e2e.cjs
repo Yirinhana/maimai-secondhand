@@ -84,7 +84,7 @@ async function layout(page) {
         expect(matches.length).toBe(1);
         const detail = await (await owner.request.get(BASE + `/api/v1/products/${matches[0].id}`)).json();
         expect(detail.images.map(i => i.path)).toEqual(item.images.map(i => '/uploads/products/' + i.file));
-        expect(detail.description).toContain('AI 生成');
+        expect(detail.description.split('\n\n').length).toBeGreaterThanOrEqual(3);
         if (item.key >= 'item-006') expect(detail.priceCents).toBe(item.priceCents);
         for (const image of item.images) {
           const response = await owner.request.get(BASE + '/uploads/products/' + image.file);

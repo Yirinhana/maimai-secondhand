@@ -31,6 +31,11 @@ public class ReportService {
         if (target == null || target < 1) throw BizException.badRequest("REPORT_RESOURCE_INVALID", "举报对象ID无效");
         switch (type) {
             case PRODUCT -> support.publicProduct(target);
+            case PRODUCT_COMMENT -> {
+                Long product=repo.queryOne("SELECT product_id FROM product_comments WHERE id=? AND status='PUBLISHED'",(rs,n)->rs.getLong(1),target);
+                if(product==null)throw BizException.notFound("留言不存在或暂不可见");
+                support.publicProduct(product);
+            }
             case DEMAND_POST -> DemandService.visible(demands.demand(target, false));
             case DEMAND_REPLY -> {
                 var reply = demands.reply(target, false);
@@ -81,6 +86,11 @@ public class ReportService {
         Long id = report.resourceId();
         String before;
         switch (report.resourceType()) {
+            case "PRODUCT_COMMENT" -> {
+                before=repo.queryOne("SELECT status FROM product_comments WHERE id=? FOR UPDATE",(rs,n)->rs.getString(1),id);
+                if(before==null)throw BizException.notFound("留言不存在");
+                repo.update("UPDATE product_comments SET status='HIDDEN',updated_at=UTC_TIMESTAMP(6) WHERE id=?",id);
+            }
             case "DEMAND_POST" -> {
                 var demand = demands.demand(id, true);
                 before = demand.status();

@@ -49,7 +49,7 @@ public class HermesAiGateway implements SupportAiGateway {
             var content=message.path("content");
             if(message.hasNonNull("tool_calls")||message.hasNonNull("function_call")||!content.isString()
                     ||!safeAnswer(content.asString())) throw invalidResponse();
-            return content.asString().strip();
+            return cleanedAnswer(content.asString());
         } catch(BizException error) { throw error; }
         catch(RuntimeException error) { throw invalidResponse(); }
         finally { slot.release(); }
@@ -68,7 +68,7 @@ public class HermesAiGateway implements SupportAiGateway {
             var content=message.path("content");
             if(message.hasNonNull("tool_calls")||message.hasNonNull("function_call")||!content.isString()
                     ||!safeAnswer(content.asString())) throw invalidResponse();
-            return content.asString().strip();
+            return cleanedAnswer(content.asString());
         } catch(BizException ex) { throw ex; }
         catch(RuntimeException ex) { throw invalidResponse(); }
         finally { slot.release(); }
@@ -84,6 +84,11 @@ public class HermesAiGateway implements SupportAiGateway {
     private static boolean safeAnswer(String content) {
         String lower=content.toLowerCase(java.util.Locale.ROOT);
         return !content.isBlank()&&content.length()<=1800&&!lower.contains("<think")&&!lower.contains("</think>");
+    }
+    private static String cleanedAnswer(String content) {
+        String answer=PlainReply.clean(content);
+        if(answer.isBlank()) throw invalidResponse();
+        return answer;
     }
     private URI endpoint() {
         if(!verified||base.isBlank()||token.isBlank()||model.isBlank()||token.contains("\n")||token.contains("\r")) throw unconfigured();

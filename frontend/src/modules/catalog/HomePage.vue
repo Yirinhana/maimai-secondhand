@@ -44,11 +44,6 @@
             loading="eager" />
           <div>
             <h2>{{ featured.title }}</h2>
-            <small
-              v-if="isDemoProductImage(featured.coverImage)"
-              class="mm-home__demo"
-              >演示示意图</small
-            >
             <p><MmIcon name="pin" />{{ featured.region }}</p>
             <PriceText :cents="featured.priceCents" /></div
         ></RouterLink>
@@ -130,7 +125,6 @@
   </div>
 </template>
 <script setup lang="ts">
-import { isDemoProductImage } from '../../shared/demoImages';
 import { computed, onMounted, ref } from 'vue';
 import { get, type ApiError } from '../../shared/api';
 import type { Category, Page, ProductSummary } from '../../shared/types';

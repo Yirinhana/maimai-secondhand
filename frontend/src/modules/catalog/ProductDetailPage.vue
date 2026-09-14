@@ -55,9 +55,7 @@
             <span class="mm-detail__stock">{{
               product.stockAvailable > 0
                 ? `库存 ${product.stockAvailable} 件`
-                : isDemoPreview
-                  ? '展示商品'
-                  : '已售罄'
+                : '暂时无货'
             }}</span>
           </div>
           <div class="mm-detail__defects">
@@ -116,9 +114,7 @@
               class="mm-detail__unavailable"
             >
               {{
-                isDemoPreview
-                  ? '这件商品仅用于页面展示，不接受购买或议价。'
-                  : '这件商品已售罄，暂不能购买或议价。'
+                '这件商品暂时无货，可以联系卖家了解情况。'
               }}<RouterLink to="/search">看看其他闲置</RouterLink>
             </p>
             <template v-else>
@@ -199,6 +195,7 @@
         </section>
       </div>
 
+      <nav class="mm-detail__section-nav" aria-label="商品详情导航"><a href="#product-description-title">物品详情</a><a href="#product-ratings">买家评价</a><a href="#product-discussion">留言讨论</a></nav>
       <div class="mm-detail__about">
         <section
           class="mm-detail__description-section"
@@ -206,9 +203,7 @@
         >
           <p class="mm-eyebrow">ABOUT THIS ITEM</p>
           <h2 id="product-description-title">商品描述</h2>
-          <p class="mm-detail__description">
-            {{ product.description || '卖家还没有填写描述。' }}
-          </p>
+          <p v-for="(paragraph,index) in (product.description || '卖家还没有填写描述。').split(/\n\s*\n/)" :key="index" class="mm-detail__description">{{paragraph}}</p>
         </section>
         <aside class="mm-seller" aria-label="卖家信息">
           <p class="mm-seller__label">来自这位卖家</p>
@@ -230,6 +225,7 @@
           </div>
         </aside>
       </div>
+      <ProductConversation :key="product.id" :product-id="product.id" />
     </template>
 
     <CatalogDialog
@@ -289,6 +285,7 @@
 import { computed, onScopeDispose, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import ProductSocialActions from '../community/ProductSocialActions.vue';
+import ProductConversation from '../community/ProductConversation.vue';
 import ProductGallery from './components/ProductGallery.vue';
 import CatalogDialog from './components/CatalogDialog.vue';
 import { get, post, type ApiError } from '../../shared/api';
@@ -299,7 +296,6 @@ import MmTag from '../../shared/components/MmTag.vue';
 import PriceText from '../../shared/components/PriceText.vue';
 import { useAuthStore } from '../../shared/stores/auth';
 import { formatPrice, formatTime } from '../../shared/format';
-import { isDemoProductImage } from '../../shared/demoImages';
 import {
   CONDITION_TEXT,
   DELIVERY_METHOD_TEXT,
@@ -313,12 +309,6 @@ const route = useRoute();
 const router = useRouter();
 const auth = useAuthStore();
 const product = ref<ProductDetail | null>(null);
-const isDemoPreview = computed(
-  () =>
-    !!product.value &&
-    product.value.stockAvailable === 0 &&
-    product.value.images.some((image) => isDemoProductImage(image.path)),
-);
 const loading = ref(true);
 const error = ref('');
 const quantity = ref(1);
@@ -773,6 +763,10 @@ async function submitBargain() {
   border-top: 1px solid var(--mm-border);
   padding-top: 34px;
 }
+.mm-detail__section-nav {display:flex;gap:30px;margin:34px 0 24px;border-bottom:1px solid var(--mm-border);padding:0 4px 16px;font-size:14px;font-weight:600;}
+.mm-detail__section-nav a:hover {color:var(--mm-primary);}
+.mm-detail__description-section {scroll-margin-top:150px;}
+.mm-detail__description p+p {margin-top:18px;}
 .mm-detail__description-section h2 {
   font-size: 22px;
   margin: 8px 0 22px;
