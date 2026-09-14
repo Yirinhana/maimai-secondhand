@@ -1,24 +1,51 @@
-# 候选：按用户报告的 www 域名与证书目录填写，尚未独立核验或部署。
-# 根域 example.com 的证书覆盖及重定向需另外核对。
+# 腾讯云实例配置；证书已核实同时覆盖根域与 www。
+# 保留旧 /shenlun 路由及现有 ACME challenge 根目录。
 map $http_upgrade $maimai_connection_upgrade {
     default upgrade;
     '' close;
 }
 server {
     listen 80;
-    server_name market.example.com;
-    return 301 https://$host$request_uri;
+    listen [::]:80;
+    server_name market.example.com example.com;
+    location /.well-known/acme-challenge/ { root /var/www/html; }
+    location / { return 301 https://market.example.com$request_uri; }
 }
 server {
     listen 443 ssl;
+    listen [::]:443 ssl;
+    server_name example.com;
+    ssl_certificate /etc/letsencrypt/live/market.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/market.example.com/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+    return 301 https://market.example.com$request_uri;
+}
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
     server_name market.example.com;
     ssl_certificate /etc/letsencrypt/live/market.example.com/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/market.example.com/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
     root /opt/maimai/current/frontend;
     index index.html;
     client_max_body_size 25m;
     add_header X-Content-Type-Options nosniff always;
     add_header Referrer-Policy strict-origin-when-cross-origin always;
+
+    location = /shenlun { return 301 /shenlun/; }
+    location /shenlun/ {
+        proxy_pass http://127.0.0.1:8910/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 60s;
+        expires -1;
+    }
 
     location /api/v1/dev/ { return 404; }
     location /api/ {
@@ -67,6 +94,6 @@ server {
     }
     location / {
         try_files $uri $uri/ /index.html;
-        add_header Cache-Control no-cache;
+        expires -1;
     }
 }

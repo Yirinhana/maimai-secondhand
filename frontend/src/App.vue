@@ -183,7 +183,7 @@
       </div>
       <div class="mm-footer__bottom">
         <span>© 2026 麦麦二手</span
-        ><span>本地开发版本 · 模拟交易不产生真实资金流转</span>
+        ><span>课程项目体验版 · 真实支付暂未接通</span>
       </div>
     </footer>
     <button

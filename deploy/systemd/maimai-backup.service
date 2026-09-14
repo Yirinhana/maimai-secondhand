@@ -1,0 +1,14 @@
+[Unit]
+Description=Maimai database and uploaded images backup
+After=maimai-mysql.service
+Requires=maimai-mysql.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/maimai/current/deploy/backup.sh
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/backups/maimai /run/lock

@@ -16,7 +16,11 @@
       <span class="mm-product-card__condition">{{
         CONDITION_TEXT[product.condition]
       }}</span>
-      <span v-if="product.stockAvailable <= 0" class="mm-product-card__soldout"
+      <span
+        v-if="
+          product.stockAvailable <= 0 && !isDemoProductImage(product.coverImage)
+        "
+        class="mm-product-card__soldout"
         >已售罄</span
       >
     </div>

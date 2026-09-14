@@ -1,0 +1,26 @@
+[Unit]
+Description=Maimai isolated MySQL database
+After=network.target
+
+[Service]
+Type=simple
+User=maimai-db
+Group=maimai-db
+ExecStart=/opt/maimai/runtime/mysql/usr/sbin/mysqld --defaults-file=/etc/maimai/mysql.cnf
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=120
+RuntimeDirectory=maimai-mysql
+RuntimeDirectoryMode=0750
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/maimai/mysql
+MemoryHigh=384M
+MemoryMax=512M
+LimitNOFILE=10000
+
+[Install]
+WantedBy=multi-user.target

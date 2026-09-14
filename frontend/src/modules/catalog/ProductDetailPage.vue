@@ -55,7 +55,9 @@
             <span class="mm-detail__stock">{{
               product.stockAvailable > 0
                 ? `库存 ${product.stockAvailable} 件`
-                : '已售罄'
+                : isDemoPreview
+                  ? '展示商品'
+                  : '已售罄'
             }}</span>
           </div>
           <div class="mm-detail__defects">
@@ -113,9 +115,11 @@
               v-if="product.stockAvailable <= 0"
               class="mm-detail__unavailable"
             >
-              这件商品已售罄，暂不能购买或议价。<RouterLink to="/search"
-                >看看其他闲置</RouterLink
-              >
+              {{
+                isDemoPreview
+                  ? '这件商品仅用于页面展示，不接受购买或议价。'
+                  : '这件商品已售罄，暂不能购买或议价。'
+              }}<RouterLink to="/search">看看其他闲置</RouterLink>
             </p>
             <template v-else>
               <div class="mm-detail__controls">
@@ -295,6 +299,7 @@ import MmTag from '../../shared/components/MmTag.vue';
 import PriceText from '../../shared/components/PriceText.vue';
 import { useAuthStore } from '../../shared/stores/auth';
 import { formatPrice, formatTime } from '../../shared/format';
+import { isDemoProductImage } from '../../shared/demoImages';
 import {
   CONDITION_TEXT,
   DELIVERY_METHOD_TEXT,
@@ -308,6 +313,12 @@ const route = useRoute();
 const router = useRouter();
 const auth = useAuthStore();
 const product = ref<ProductDetail | null>(null);
+const isDemoPreview = computed(
+  () =>
+    !!product.value &&
+    product.value.stockAvailable === 0 &&
+    product.value.images.some((image) => isDemoProductImage(image.path)),
+);
 const loading = ref(true);
 const error = ref('');
 const quantity = ref(1);

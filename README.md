@@ -2,13 +2,15 @@
 
 面向通用二手实物交易的课程项目，采用 Vue 3、TypeScript、Spring Boot、Java 21 和 MySQL。用户端与管理后台在同一个响应式网站中，商品、订单、社区、私信和客服按业务模块组织。
 
-当前交付目标是可运行的**本地开发版本**。微信真实付款、退款和分账尚未开通，物流、SMTP 邮件及 Hermes 仍需各自配置后验收；没有部署到腾讯云。开发页面中的付款和物流会明确显示模拟状态，内部财务预期不代表卖家已收到钱。
+当前已部署为腾讯云 **HTTPS 课程体验版**：[麦麦二手](https://market.example.com/)。示范商品仅供浏览，不接受真实下单。微信付款、退款和分账尚未开通，物流、SMTP 邮件及专用 Hermes 客服仍需各自配置后验收；公网不开启本地模拟支付或开发邮件入口。
 
 v0.2.0 本地验证已完成：后端 **191/191**，新版界面专项 **5/5**，原交易流程 **9/9** 全部通过，包含高德真实地点检索。网站改为暖白/炭黑/橙色，分区布局、顶部导航、头像上传与菜单、官方文章管理均可实际使用。证据、交付包和剩余条件见 [v0.2.0验收记录](docs/testing/interface-renewal.md)；[v0.1.0记录](docs/testing/local-validation.md)保留用于追溯。
 
 v0.2.1 继续打磨首页、发现、商品详情、账户和交易页面：手机高级筛选折叠、大图与键盘操作、密码显隐、失败重试、购物车与结算分区、浏览位置恢复。TypeScript/Vite 构建、4/4 独立账号交互用例及 21 个页面视口组合通过。支付方案保持原样。本轮范围与证据见 [v0.2.1验收记录](docs/testing/visual-ux-polish.md)；后端测试数量沿用上一版本记录，不计为本轮重新执行。
 
-v0.2.2 为五件示范商品配置图片，注册页加入独立生活场景配图，并明确标注商品图片为演示示意。后端 **193/193**、前端构建、12 个页面视口组合和候选包校验通过。当前本地实例的五张示范图已经备份后更新，其他上传图保持。用户已授权腾讯云部署，正在等待实际 SSH 接入信息，尚未上线；详见 [v0.2.2 验收与部署进度](docs/testing/demo-imagery.md)。
+v0.2.2 为五件示范商品配置图片，注册页加入独立生活场景配图，并明确标注商品图片为演示示意。后端 **193/193**、前端构建、12 个页面视口组合和候选包校验通过。本地五张示范图已备份后更新，其他上传图保持；当时的记录见 [v0.2.2 验收](docs/testing/demo-imagery.md)。
+
+v0.2.3 已完成腾讯云部署：独立 MySQL、Java 和受限运行用户，保留原 Hermes 与 MariaDB 客户端；随机密码管理员及零库存展示商品与本地开发数据分开。后端 **193/193**、前端构建、公网 **15 个页面视口组合**、真实高德搜索与逆地理编码、登录退出、开发接口隔离和备份恢复通过。每日本机备份已启用，另保存一份本机私密副本；注册邮件仍待配置。详见 [部署验收记录](docs/testing/tencent-preview.md)。本次版本仅本地提交和标签，未推送远程。
 
 GitHub 私有仓库 [Yirinhana/maimai-secondhand](https://github.com/Yirinhana/maimai-secondhand) 已建立，本地 origin 已确认直连正式 GitHub。CI 与 PR 模板已准备并通过本地 actionlint 静态检查，平台实际运行状态以 [GitHub Actions](https://github.com/Yirinhana/maimai-secondhand/actions) 为准；静态校验不能替代平台运行通过。远程推送遵循用户确认，流程见 [GitHub 协作说明](docs/development/github-workflow.md)。
 
@@ -28,7 +30,7 @@ GitHub 私有仓库 [Yirinhana/maimai-secondhand](https://github.com/Yirinhana/m
 | `VERSION` | 产品版本唯一来源，Maven 构建时由脚本传入 |
 | `.local/` | 忽略的本地凭据、数据库、工具、日志、截图及构建包 |
 
-根目录四份课程 DOCX 是原始提交模板，保持原样。需求和条款 DOCX 保存在 `docs/requirements/`、`docs/policies/`；本轮实施与验收以 `docs/testing/demo-imagery.md` 为入口。
+根目录四份课程 DOCX 是原始提交模板，保持原样。需求和条款 DOCX 保存在 `docs/requirements/`、`docs/policies/`；本轮实施与验收以 `docs/testing/tencent-preview.md` 为入口。
 
 ## 本机启动
 
@@ -80,4 +82,4 @@ npm run test:ux
 - 高德 JavaScript API 的公开 Key 供浏览器加载 SDK，安全码仅由后端代理追加。它与后端 Web 服务 Key 是不同配置。
 - `local` 仅监听回环地址；生产不能启用 `local/test`。所有凭据通过环境变量或忽略的本地文件提供。
 
-正式部署步骤、容量假设和外部条件见 [部署说明](deploy/README.md)。用户最新提供的服务器、Hermes、`market.example.com` 备案与证书资料记录在 [服务器待核验清单](docs/development/server-readiness.md)，目前属于用户转述；尚未独立检查目标服务器或部署应用。
+部署步骤、资源初值和外部条件见 [部署说明](deploy/README.md)。SSH、服务、域名、TLS 与资源的独立检查结果见 [服务器实测记录](docs/development/server-readiness.md)；备案资料仍未作为本轮独立验证结论。
