@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 
-/** FAQ-only gateway. No ticket text, identifiers, order data, tools or arbitrary prompts cross this boundary. */
+/** Read-only model gateway. No ticket records, identifiers, order data or tools cross this boundary. */
 @Component
 public class HermesAiGateway implements SupportAiGateway {
     private final String base,token,model;
@@ -23,6 +23,36 @@ public class HermesAiGateway implements SupportAiGateway {
     public HermesAiGateway(@Value("${MAIMAI_HERMES_BASE_URL:}") String base,@Value("${MAIMAI_HERMES_TOKEN:}") String token,
                            @Value("${MAIMAI_HERMES_MODEL:}") String model,@Value("${MAIMAI_HERMES_READONLY_VERIFIED:false}") boolean verified,HermesTransport transport) {
         this.base=base; this.token=token; this.model=model; this.verified=verified; this.transport=transport;
+    }
+    @Override public boolean configured() {
+        try { endpoint(); return true; } catch (BizException error) { return false; }
+    }
+    @Override public String chat(List<ChatMessage> history) {
+        URI endpoint=endpoint();
+        if(history==null||history.isEmpty()||history.size()>13) throw BizException.badRequest("AI_CHAT_INVALID","对话内容无效");
+        int length=0;
+        var messages=new java.util.ArrayList<Map<String,String>>();
+        messages.add(Map.of("role","system","content",TinaPersona.SYSTEM));
+        for(int i=0;i<history.size();i++) {
+            var message=history.get(i);
+            String expected=i%2==0?"user":"assistant";
+            if(message==null||!expected.equals(message.role())||message.content()==null||message.content().isBlank()
+                    ||message.content().length()>("user".equals(expected)?1000:1800)) throw BizException.badRequest("AI_CHAT_INVALID","对话内容无效");
+            length+=message.content().length();
+            messages.add(Map.of("role",expected,"content",message.content()));
+        }
+        if(history.size()%2==0||length>18000) throw BizException.badRequest("AI_CHAT_INVALID","对话内容过长");
+        if(!slot.tryAcquire()) throw BizException.tooMany("缇娜正在回复其他问题，请稍后重试");
+        try {
+            String body=json.writeValueAsString(Map.of("model",model,"stream",false,"max_tokens",600,"tool_choice","none","messages",messages));
+            var message=json.readTree(transport.post(endpoint,token,body)).path("choices").path(0).path("message");
+            var content=message.path("content");
+            if(message.hasNonNull("tool_calls")||message.hasNonNull("function_call")||!content.isString()
+                    ||content.asString().isBlank()||content.asString().length()>1800) throw invalidResponse();
+            return content.asString().strip();
+        } catch(BizException error) { throw error; }
+        catch(RuntimeException error) { throw invalidResponse(); }
+        finally { slot.release(); }
     }
     @Override
     public String explain(SupportFaq.Topic topic) {

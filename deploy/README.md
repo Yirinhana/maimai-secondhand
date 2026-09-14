@@ -1,5 +1,7 @@
 # 腾讯云体验版部署
 
+网站缇娜与邮件接入的候选变更见 [039验证记录](../docs/testing/tina-support.md) 和 [人设/接口设计](../docs/design/tina-support.md)。QQ/Foxmail采用 `smtp.qq.com:465`、隐式TLS；发件地址和用户名使用专用邮箱，密码填SMTP授权码。只把已授权的邮件字段合并入 `/etc/maimai/maimai.env` 并保持0600，先备份原配置，保留数据库、地图及其他既有字段；不整份覆盖成示例，不把授权码放进命令行或Git。本地仍默认捕获邮件，避免开发测试触发外发。
+
 目标环境为 Ubuntu 24.04、Nginx、Java 21 和独立 MySQL 8。域名为 `https://market.example.com`；根域重定向到 www。部署需要用户授权，执行前核对目标主机指纹、现有服务与端口；本轮授权和实际结果见 `docs/tasks/038-tencent-preview-deploy.md` 及 `docs/testing/tencent-preview.md`。
 
 前端与 JAR 在本地构建，服务器不运行 npm/Maven。目录：`/opt/maimai/releases/<版本及时间>/` 保存完整交付物，`/opt/maimai/current` 指向当前版本；`/etc/maimai/maimai.env` 为 root 0600 凭据文件；`/var/lib/maimai/` 保存数据库与各类图片。保留旧交付物和配置备份，不自动清理。

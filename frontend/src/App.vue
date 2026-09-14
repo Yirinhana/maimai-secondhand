@@ -1,6 +1,7 @@
 <template>
   <div class="mm-app" :class="`mm-app--${section}`">
     <ConfirmationDialog />
+    <TinaSupportDock />
     <a href="#main-content" class="mm-skip">跳到正文</a>
     <header ref="headerRoot" class="mm-header">
       <div class="mm-header__inner">
@@ -202,6 +203,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from './shared/stores/auth';
 import ConfirmationDialog from './shared/components/ConfirmationDialog.vue';
+import TinaSupportDock from './modules/support/TinaSupportDock.vue';
 import UserAvatar from './shared/components/UserAvatar.vue';
 import MmIcon from './shared/components/MmIcon.vue';
 import { answerConfirmation } from './shared/confirm';
@@ -713,7 +715,7 @@ watch(
 .mm-back-top {
   position: fixed;
   right: max(18px, calc((100vw - 1380px) / 2));
-  bottom: 26px;
+  bottom: 106px;
   z-index: 15;
   width: 48px;
   min-height: 58px;

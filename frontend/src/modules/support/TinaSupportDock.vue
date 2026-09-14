@@ -1,0 +1,717 @@
+<script setup lang="ts">
+import { nextTick, onBeforeUnmount, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import { askConfirmation } from '../../shared/confirm';
+import { useTinaChat } from './useTinaChat';
+const route = useRoute();
+const {
+  auth,
+  assistant,
+  faqs,
+  turns,
+  loading,
+  sending,
+  error,
+  draft,
+  enabled,
+  pending,
+  load,
+  send,
+  clear,
+} = useTinaChat();
+const dialog = ref<HTMLDialogElement | null>(null),
+  launcher = ref<HTMLButtonElement | null>(null);
+const transcript = ref<HTMLElement | null>(null),
+  input = ref<HTMLTextAreaElement | null>(null);
+const opened = ref(false),
+  tab = ref<'chat' | 'faq'>('chat'),
+  unread = ref(false);
+let previousFocus: HTMLElement | null = null;
+async function open() {
+  previousFocus = document.activeElement as HTMLElement | null;
+  opened.value = true;
+  unread.value = false;
+  await nextTick();
+  dialog.value?.showModal();
+  void load();
+}
+function close() {
+  if (!opened.value) return;
+  dialog.value?.close();
+  opened.value = false;
+  if (previousFocus?.isConnected) previousFocus.focus();
+  else launcher.value?.focus();
+}
+async function submit() {
+  await send();
+  await nextTick();
+  if (opened.value) input.value?.focus();
+}
+function navigateTab(event: KeyboardEvent) {
+  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+  event.preventDefault();
+  tab.value =
+    event.key === 'Home'
+      ? 'chat'
+      : event.key === 'End'
+        ? 'faq'
+        : tab.value === 'chat'
+          ? 'faq'
+          : 'chat';
+  void nextTick(() =>
+    document.getElementById(`tina-${tab.value}-tab`)?.focus(),
+  );
+}
+async function clearHistory() {
+  if (sending.value || !turns.value.length) return;
+  const owner = auth.me?.id;
+  if (await askConfirmation('清空你与缇娜的全部对话记录？人工工单不受影响。')) {
+    if (owner && owner === auth.me?.id) await clear();
+  }
+}
+function handoff() {
+  close();
+}
+watch(
+  () => turns.value,
+  async (value, old) => {
+    if (
+      !opened.value &&
+      value.some(
+        (turn) =>
+          turn.status === 'COMPLETE' &&
+          !old?.some(
+            (previous) =>
+              previous.id === turn.id && previous.status === 'COMPLETE',
+          ),
+      )
+    )
+      unread.value = true;
+    await nextTick();
+    transcript.value?.scrollTo({ top: transcript.value.scrollHeight });
+  },
+  { deep: true },
+);
+watch(
+  () => auth.me?.id,
+  () => {
+    unread.value = false;
+    if (opened.value) void load();
+  },
+);
+onBeforeUnmount(() => dialog.value?.close());
+</script>
+
+<template>
+  <button
+    ref="launcher"
+    type="button"
+    class="tina-launcher"
+    aria-label="打开缇娜客服"
+    aria-haspopup="dialog"
+    :aria-expanded="opened"
+    aria-controls="tina-dialog"
+    @click="open"
+  >
+    <span class="tina-face" aria-hidden="true"
+      >T<span class="tina-face__spark">✦</span></span
+    >
+    <span>缇娜客服<small>有问题，来聊聊</small></span
+    ><span v-if="unread" class="tina-unread" aria-label="有新回复"></span>
+  </button>
+  <dialog
+    id="tina-dialog"
+    ref="dialog"
+    class="tina-dialog"
+    aria-labelledby="tina-heading"
+    @cancel.prevent="close"
+    @click="$event.target === dialog && close()"
+  >
+    <div class="tina-panel">
+      <header class="tina-header">
+        <span class="tina-face tina-face--large" aria-hidden="true"
+          >T<span class="tina-face__spark">✦</span></span
+        >
+        <div>
+          <h2 id="tina-heading">缇娜 <span>AI 客服</span></h2>
+          <p>麦麦二手 · 问清楚，再做决定</p>
+        </div>
+        <button
+          type="button"
+          class="tina-icon-button"
+          aria-label="关闭缇娜客服"
+          autofocus
+          @click="close"
+        >
+          ×
+        </button>
+      </header>
+      <div class="tina-tabs" role="tablist" aria-label="客服内容">
+        <button
+          id="tina-chat-tab"
+          type="button"
+          role="tab"
+          aria-controls="tina-chat-panel"
+          :aria-selected="tab === 'chat'"
+          :tabindex="tab === 'chat' ? 0 : -1"
+          @keydown="navigateTab"
+          @click="tab = 'chat'"
+        >
+          问缇娜
+        </button>
+        <button
+          id="tina-faq-tab"
+          type="button"
+          role="tab"
+          aria-controls="tina-faq-panel"
+          :aria-selected="tab === 'faq'"
+          :tabindex="tab === 'faq' ? 0 : -1"
+          @keydown="navigateTab"
+          @click="tab = 'faq'"
+        >
+          常见问题
+        </button>
+        <button
+          type="button"
+          class="tina-refresh"
+          :disabled="loading || sending"
+          @click="load"
+        >
+          刷新
+        </button>
+      </div>
+      <section
+        v-if="tab === 'faq'"
+        id="tina-faq-panel"
+        class="tina-body"
+        role="tabpanel"
+        aria-labelledby="tina-faq-tab"
+      >
+        <p class="tina-caption">以下为平台规则说明，可直接查看。</p>
+        <p v-if="loading && !faqs.length" role="status">正在读取常见问题…</p>
+        <details v-for="faq in faqs" :key="faq.topic" class="tina-faq">
+          <summary>{{ faq.title }}</summary>
+          <p>{{ faq.answer }}</p>
+        </details>
+        <p v-if="!loading && !faqs.length" class="tina-caption">
+          常见问题暂时没有加载成功，请点击刷新。
+        </p>
+      </section>
+      <section
+        v-else
+        id="tina-chat-panel"
+        ref="transcript"
+        class="tina-body tina-transcript"
+        role="tabpanel"
+        aria-labelledby="tina-chat-tab"
+      >
+        <div class="tina-welcome">
+          <span class="tina-eyebrow">你好，我是缇娜</span>
+          <h3>关于麦麦，有什么想问的？</h3>
+          <p>
+            我可以解释交易规则、指引页面操作。涉及具体订单的处理，可以转人工工单。
+          </p>
+        </div>
+        <div v-if="!auth.me" class="tina-state">
+          <strong>登录后与缇娜对话</strong>
+          <p>你的对话记录仅在自己的账号中显示，常见问题无需登录。</p>
+          <RouterLink
+            :to="{ path: '/login', query: { redirect: route.fullPath } }"
+            @click="close"
+            >去登录 →</RouterLink
+          >
+        </div>
+        <div v-else-if="assistant && !assistant.enabled" class="tina-state">
+          <strong>缇娜暂未接通</strong>
+          <p>你可以先查看常见问题，或提交人工工单。接通后即可在这里交流。</p>
+          <button type="button" @click="tab = 'faq'">查看常见问题 →</button>
+        </div>
+        <p v-if="loading" class="tina-caption" role="status">正在读取对话…</p>
+        <p v-if="turns.length" class="tina-history-note">
+          最近 {{ turns.length }} 条提问 · 当前账号的私密对话
+        </p>
+        <ol class="tina-messages" aria-label="与缇娜的对话记录">
+          <li v-for="turn in turns" :key="turn.id">
+            <div class="tina-message tina-message--user">
+              <span class="tina-author">你</span>
+              <p>{{ turn.question }}</p>
+            </div>
+            <div
+              v-if="turn.status === 'COMPLETE'"
+              class="tina-message tina-message--assistant"
+            >
+              <span class="tina-author">缇娜 · AI</span>
+              <p>{{ turn.answer }}</p>
+            </div>
+            <div v-else-if="turn.status === 'FAILED'" class="tina-failure">
+              <p>这条问题暂时没能得到回复，你可以重试或转人工。</p>
+              <button
+                type="button"
+                :disabled="sending || !enabled || pending"
+                @click="send(turn)"
+              >
+                重试这条问题
+              </button>
+            </div>
+            <p v-else class="tina-caption">
+              这条问题正在处理中，请稍后刷新查看。
+            </p>
+          </li>
+        </ol>
+        <p v-if="sending" class="tina-typing" role="status">
+          缇娜正在处理，请稍候<span>•••</span>
+        </p>
+      </section>
+      <p v-if="error" class="tina-error" role="alert">{{ error }}</p>
+      <form
+        v-if="tab === 'chat' && auth.me"
+        class="tina-compose"
+        @submit.prevent="submit"
+      >
+        <label for="tina-question" class="mm-visually-hidden"
+          >给缇娜的问题</label
+        >
+        <textarea
+          id="tina-question"
+          ref="input"
+          v-model="draft"
+          rows="2"
+          maxlength="1000"
+          :disabled="!enabled || sending || pending"
+          :placeholder="enabled ? '说说你遇到的问题…' : 'AI 接通后即可提问'"
+          @keydown.ctrl.enter.prevent="submit"
+          @keydown.meta.enter.prevent="submit"
+        ></textarea>
+        <div>
+          <small>请勿发送密码、验证码或完整地址</small
+          ><button
+            type="submit"
+            :disabled="!enabled || sending || pending || !draft.trim()"
+          >
+            {{ sending ? '回复中…' : '发送' }}
+          </button>
+        </div>
+      </form>
+      <footer class="tina-footer">
+        <RouterLink to="/support" @click="handoff">帮助与人工工单 ↗</RouterLink
+        ><button
+          v-if="auth.me && turns.length"
+          type="button"
+          :disabled="sending || loading"
+          @click="clearHistory"
+        >
+          清空对话
+        </button>
+        <p>
+          {{
+            assistant?.notice ||
+            'AI 回复仅供参考，订单处理以平台流程和人工结果为准。'
+          }}
+        </p>
+      </footer>
+    </div>
+  </dialog>
+</template>
+
+<style scoped>
+.tina-launcher {
+  position: fixed;
+  right: max(18px, calc((100vw - 1380px) / 2));
+  bottom: max(22px, env(safe-area-inset-bottom));
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #d8cfc2;
+  border-radius: 16px;
+  background: #fffdf9;
+  color: var(--mm-ink);
+  padding: 10px 15px 10px 10px;
+  box-shadow: 0 7px 25px #24252220;
+  font-weight: 700;
+  cursor: pointer;
+}
+.tina-launcher:hover {
+  border-color: var(--mm-primary);
+  transform: translateY(-2px);
+}
+.tina-launcher small {
+  display: block;
+  margin-top: 2px;
+  color: var(--mm-muted);
+  font-size: 10px;
+  font-weight: 400;
+}
+.tina-face {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  border-radius: 12px 12px 12px 3px;
+  background: #c4531a;
+  color: #fff8ef;
+  display: grid;
+  place-items: center;
+  font:
+    700 23px Georgia,
+    serif;
+  flex: none;
+}
+.tina-face__spark {
+  position: absolute;
+  right: -3px;
+  top: -6px;
+  color: #d4a86c;
+  font: 17px sans-serif;
+  text-shadow: 0 1px #fff;
+}
+.tina-face--large {
+  width: 42px;
+  height: 42px;
+  font-size: 29px;
+}
+.tina-unread {
+  position: absolute;
+  right: 7px;
+  top: 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--mm-primary);
+}
+.tina-dialog {
+  max-width: none;
+  position: fixed;
+  inset: auto max(18px, calc((100vw - 1380px) / 2))
+    max(18px, env(safe-area-inset-bottom)) auto;
+  width: min(410px, calc(100vw - 28px));
+  height: min(690px, calc(100dvh - 40px));
+  max-height: calc(100dvh - 24px);
+  margin: 0;
+  padding: 0;
+  border: 1px solid #ded7cd;
+  border-radius: 20px;
+  background: #fffdf9;
+  color: var(--mm-ink);
+  box-shadow: 0 18px 70px #25241f40;
+  overflow: hidden;
+}
+.tina-dialog::backdrop {
+  background: #24252222;
+}
+.tina-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+.tina-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 18px 16px;
+  background: #f2eee6;
+  flex: none;
+}
+.tina-header h2 {
+  margin: 0;
+  font-size: 20px;
+}
+.tina-header h2 span {
+  font-size: 11px;
+  font-weight: 400;
+  margin-left: 6px;
+  color: #73695a;
+}
+.tina-header p {
+  font-size: 11px;
+  color: #73695a;
+  margin: 4px 0 0;
+}
+.tina-icon-button {
+  margin-left: auto;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  background: transparent;
+  font-size: 27px;
+  color: #5d5d50;
+  cursor: pointer;
+}
+.tina-tabs {
+  display: flex;
+  padding: 0 18px;
+  border-bottom: 1px solid var(--mm-border);
+  gap: 20px;
+  flex: none;
+}
+.tina-tabs button {
+  padding: 13px 0 11px;
+  color: var(--mm-muted);
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  font-size: 13px;
+  cursor: pointer;
+}
+.tina-tabs button[aria-selected='true'] {
+  border-color: var(--mm-primary);
+  color: var(--mm-primary);
+  font-weight: 700;
+}
+.tina-tabs .tina-refresh {
+  margin-left: auto;
+  font-size: 11px;
+}
+.tina-body {
+  overscroll-behavior: contain;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 20px 18px;
+  overscroll-behavior: contain;
+}
+.tina-welcome {
+  margin: 0 0 18px;
+}
+.tina-eyebrow {
+  color: #8b744f;
+  font-size: 11px;
+}
+.tina-welcome h3 {
+  font-size: 19px;
+  margin: 8px 0;
+}
+.tina-welcome p,
+.tina-state p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--mm-muted);
+}
+.tina-state {
+  padding: 15px;
+  background: #f1f1e9;
+  border-radius: 10px;
+  font-size: 13px;
+}
+.tina-state button {
+  border: 0;
+  background: none;
+  color: var(--mm-primary);
+  padding: 0;
+  cursor: pointer;
+}
+.tina-caption,
+.tina-history-note {
+  font-size: 12px;
+  color: var(--mm-muted);
+  line-height: 1.6;
+}
+.tina-history-note {
+  text-align: center;
+  font-size: 10px;
+  margin: 18px 0;
+}
+.tina-messages {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.tina-messages li {
+  margin: 0 0 20px;
+}
+.tina-message {
+  max-width: 94%;
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.tina-message p {
+  margin: 4px 0 0;
+  white-space: pre-wrap;
+}
+.tina-author {
+  font-size: 10px;
+  color: #786e60;
+}
+.tina-message--user {
+  margin-left: auto;
+  background: #eee9de;
+  border-bottom-right-radius: 3px;
+}
+.tina-message--assistant {
+  background: white;
+  border: 1px solid #e6e2d9;
+  border-bottom-left-radius: 3px;
+}
+.tina-failure {
+  font-size: 12px;
+  color: #875132;
+}
+.tina-failure button {
+  background: transparent;
+  color: var(--mm-primary);
+  border: 1px solid #dac1b0;
+  border-radius: 6px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+.tina-typing {
+  font-size: 12px;
+  color: var(--mm-muted);
+}
+.tina-typing span {
+  margin-left: 8px;
+  letter-spacing: 3px;
+}
+.tina-faq {
+  border-bottom: 1px solid var(--mm-border);
+  padding: 13px 0;
+  font-size: 13px;
+}
+.tina-faq summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.tina-faq p {
+  color: var(--mm-muted);
+  line-height: 1.8;
+  white-space: pre-wrap;
+}
+.tina-error {
+  margin: 0;
+  padding: 8px 18px;
+  background: #fff0e7;
+  color: #9a3c1a;
+  font-size: 12px;
+  flex: none;
+}
+.tina-compose {
+  padding: 12px 18px 8px;
+  border-top: 1px solid var(--mm-border);
+  background: white;
+  flex: none;
+}
+.tina-compose textarea {
+  display: block;
+  resize: none;
+  width: 100%;
+  min-height: 58px;
+  max-height: 120px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--mm-ink);
+}
+.tina-compose textarea:focus {
+  outline: none;
+}
+.tina-compose:focus-within {
+  box-shadow: inset 0 2px #bd5019;
+}
+.tina-compose div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.tina-compose small {
+  font-size: 10px;
+  color: var(--mm-muted);
+}
+.tina-compose button {
+  padding: 7px 17px;
+  background: var(--mm-primary);
+  color: white;
+  border: 0;
+  border-radius: 7px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.tina-footer {
+  padding: 10px 18px 13px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 7px;
+}
+.tina-footer a,
+.tina-footer button {
+  font-size: 11px;
+}
+.tina-footer button {
+  border: 0;
+  background: transparent;
+  color: var(--mm-muted);
+  cursor: pointer;
+}
+.tina-footer p {
+  flex-basis: 100%;
+  margin: 0;
+  color: #857f73;
+  font-size: 9px;
+  line-height: 1.5;
+}
+.tina-panel button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.tina-panel button:focus-visible,
+.tina-launcher:focus-visible {
+  outline: 2px solid var(--mm-primary);
+  outline-offset: 3px;
+}
+@media (max-width: 600px) {
+  .tina-launcher {
+    right: 12px;
+    bottom: max(18px, env(safe-area-inset-bottom));
+    padding: 9px 11px;
+    gap: 8px;
+    border-radius: 14px;
+    font-size: 12px;
+  }
+  .tina-launcher small {
+    display: none;
+  }
+  .tina-face {
+    width: 29px;
+    height: 29px;
+    font-size: 20px;
+  }
+  .tina-dialog {
+    left: 10px;
+    right: 10px;
+    bottom: max(10px, env(safe-area-inset-bottom));
+    width: calc(100% - 20px);
+    height: min(720px, calc(100dvh - 24px));
+    max-height: calc(100dvh - 24px);
+    border-radius: 18px;
+  }
+  .tina-header {
+    padding: 15px;
+  }
+  .tina-header .tina-face {
+    width: 38px;
+    height: 38px;
+    font-size: 26px;
+  }
+  .tina-body {
+    padding: 16px;
+  }
+  .tina-compose {
+    padding: 10px 16px 7px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tina-launcher:hover {
+    transform: none;
+  }
+}
+</style>

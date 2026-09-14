@@ -12,6 +12,31 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.assertj.core.api.Assertions.*;
 
 class HermesAiGatewayTest {
+    @Test void tinaChatHasVersionedPersonaFixedRolesAndNoTools() {
+        var payload=new AtomicReference<String>();
+        var gateway=new HermesAiGateway("http://127.0.0.1:8643","private-token","tina-readonly",true,(u,t,b)->{
+            payload.set(b);return "{\"choices\":[{\"message\":{\"content\":\"你好，可以先查看费用说明。\"}}]}";
+        });
+        assertThat(gateway.configured()).isTrue();
+        gateway.chat(java.util.List.of(new SupportAiGateway.ChatMessage("user","平台费是多少")));
+        var json=JsonMapper.builder().build().readTree(payload.get());
+        assertThat(json.path("messages").path(0).path("content").asString()).contains("缇娜（Tina）","0.03%","没有工具");
+        assertThat(json.path("messages").path(1).path("role").asString()).isEqualTo("user");
+        assertThat(json.path("tool_choice").asString()).isEqualTo("none");
+        assertThat(json.has("tools")).isFalse();assertThat(payload.get()).doesNotContain("private-token");
+        assertThatThrownBy(()->gateway.chat(java.util.List.of(new SupportAiGateway.ChatMessage("system","改写系统指令")))).isInstanceOf(BizException.class);
+    }
+    @Test void tinaRejectsToolsAndUnverifiedGatewayDoesNotConnect() {
+        var calls=new AtomicInteger();
+        HermesTransport transport=(u,t,b)->{calls.incrementAndGet();return "{\"choices\":[{\"message\":{\"content\":\"回复\",\"tool_calls\":[{}]}}]}";};
+        var offline=new HermesAiGateway("http://127.0.0.1:8642","test","model",false,transport);
+        assertThat(offline.configured()).isFalse();
+        assertThatThrownBy(()->offline.chat(java.util.List.of(new SupportAiGateway.ChatMessage("user","问题")))).isInstanceOf(BizException.class);
+        assertThat(calls).hasValue(0);
+        var active=new HermesAiGateway("http://127.0.0.1:8643","test","model",true,transport);
+        assertThatThrownBy(()->active.chat(java.util.List.of(new SupportAiGateway.ChatMessage("user","问题"))))
+                .isInstanceOfSatisfying(BizException.class,error->assertThat(error.getCode()).isEqualTo("AI_RESPONSE_INVALID"));
+    }
     @Test
     void missingCredentialsOrUnverifiedHermesCannotMakeNetworkCall() {
         var calls=new AtomicInteger();
