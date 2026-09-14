@@ -136,6 +136,7 @@ select {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  box-shadow: 0 3px 12px #24252204;
 }
 .mm-muted {
   color: var(--mm-muted);
@@ -172,7 +173,7 @@ select {
   width: 100%;
   min-height: 42px;
   padding: 9px 12px;
-  border: 1px solid var(--mm-border);
+  border: 1px solid #c8cdc5;
   border-radius: 8px;
   background: white;
 }
@@ -290,6 +291,11 @@ select {
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
+  padding: 15px 18px;
+  background: white;
+  border: 1px solid var(--mm-border);
+  border-left: 4px solid var(--mm-zone-accent);
+  border-radius: 8px;
 }
 .mm-workspace__toolbar label {
   display: flex;
@@ -299,7 +305,7 @@ select {
 }
 .mm-workspace__toolbar select {
   padding: 8px 34px 8px 12px;
-  border: 1px solid var(--mm-border);
+  border: 1px solid #bcc7bc;
   border-radius: 6px;
   background: white;
   max-width: 100%;
@@ -307,16 +313,31 @@ select {
 .mm-summary-strip {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  background: white;
-  border: 1px solid var(--mm-border);
-  border-radius: 8px;
+  gap: 16px;
 }
 .mm-summary-strip > div {
-  padding: 20px 24px;
-  border-right: 1px solid var(--mm-border);
+  padding: 20px 22px;
+  background: white;
+  border: 1px solid var(--mm-zone-border);
+  border-radius: 12px;
+  position: relative;
+  box-shadow: 0 4px 12px #233a2e05;
 }
-.mm-summary-strip > div:last-child {
-  border: 0;
+.mm-summary-strip > div:first-child {
+  background: var(--mm-zone-soft);
+  border-top: 3px solid var(--mm-zone-accent);
+  padding-top: 18px;
+}
+.mm-summary-strip > div > .mm-icon {
+  position: absolute;
+  right: 20px;
+  bottom: 24px;
+  width: 36px;
+  height: 36px;
+  padding: 8px;
+  color: var(--mm-zone-accent);
+  background: var(--mm-zone-soft);
+  border-radius: 10px;
 }
 .mm-summary-strip span {
   font-size: 12px;
@@ -330,7 +351,7 @@ select {
   margin-top: 5px;
 }
 .mm-main--admin .mm-panel {
-  border-radius: 5px;
+  border-radius: 10px;
   box-shadow: none;
 }
 .mm-main--admin .mm-button {
@@ -362,6 +383,15 @@ select {
   }
   .mm-summary-strip > div {
     padding: 14px 11px;
+  }
+  .mm-summary-strip {
+    gap: 8px;
+  }
+  .mm-summary-strip > div:first-child {
+    padding-top: 12px;
+  }
+  .mm-summary-strip > div > .mm-icon {
+    display: none;
   }
   .mm-summary-strip strong {
     font-size: 24px;

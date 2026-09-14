@@ -803,7 +803,7 @@ onMounted(load);
 }
 .mm-checkout__address.is-selected {
   border-color: var(--mm-primary);
-  background: #fff9f3;
+  background: var(--mm-zone-soft);
 }
 .mm-checkout__address input {
   width: 17px;

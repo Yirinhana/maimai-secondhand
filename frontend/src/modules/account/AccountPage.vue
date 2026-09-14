@@ -11,7 +11,7 @@
         <span v-else>{{ auth.me?.nickname?.slice(0, 1) || '麦' }}</span>
       </div>
       <div>
-        <p class="mm-account__eyebrow">我的麦麦</p>
+        <p class="mm-account__eyebrow">{{ auth.me?.nickname }} · 我的麦麦</p>
         <h1 class="mm-account__heading">{{ currentTabTitle }}</h1>
         <p class="mm-account__meta">
           {{ tabDescriptions[activeTab] }}
@@ -944,7 +944,11 @@ onUnmounted(() => {
   display: flex;
   gap: 22px;
   align-items: center;
-  padding: 8px 0 28px;
+  padding: 26px;
+  background: #f4ecdf;
+  border: 1px solid #e2d4be;
+  border-radius: 16px;
+  border-top: 4px solid #a0825a;
 }
 .mm-account__identity > div:nth-child(2) {
   min-width: 0;
@@ -954,7 +958,9 @@ onUnmounted(() => {
   height: 88px;
   flex-shrink: 0;
   border-radius: 50%;
-  background: var(--mm-ink);
+  background: #705737;
+  border: 5px solid #fffaf2;
+  box-shadow: 0 3px 10px #54402815;
   color: var(--mm-white);
   display: grid;
   place-items: center;
@@ -971,6 +977,7 @@ onUnmounted(() => {
   letter-spacing: 0.1em;
   color: var(--mm-muted);
   margin-bottom: 6px;
+  overflow-wrap: anywhere;
 }
 .mm-account__heading {
   font-size: 28px;
@@ -980,12 +987,20 @@ onUnmounted(() => {
   margin-left: auto;
   white-space: nowrap;
   font-size: 14px;
+  background: white;
+  border: 1px solid #d5c5ac;
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: #634f34;
 }
 .mm-account__tabs {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  border-bottom: 1px solid var(--mm-border);
-  gap: 8px;
+  border: 1px solid #ded5c7;
+  background: #eee8dd;
+  border-radius: 11px;
+  padding: 5px;
+  gap: 4px;
 }
 .mm-account__tab {
   display: flex;
@@ -995,14 +1010,15 @@ onUnmounted(() => {
   padding: 14px 8px;
   min-height: 48px;
   border: 0;
-  border-bottom: 3px solid transparent;
+  border-radius: 7px;
   background: transparent;
   color: var(--mm-muted);
   font-size: 15px;
 }
 .mm-account__tab.is-active {
-  color: var(--mm-primary);
-  border-bottom-color: var(--mm-primary);
+  color: #63492f;
+  background: white;
+  box-shadow: 0 2px 5px #3e2d1a12;
   font-weight: 700;
 }
 .mm-account__tab:focus-visible {
@@ -1023,7 +1039,7 @@ onUnmounted(() => {
   border-radius: 10px;
 }
 .mm-account :deep(.mm-card__header) {
-  padding: 24px 28px 0;
+  padding: 18px 28px;
   gap: 16px;
   flex-wrap: wrap;
 }
@@ -1078,8 +1094,10 @@ onUnmounted(() => {
 .mm-account__email {
   display: grid;
   gap: 6px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--mm-border);
+  padding: 16px 18px;
+  background: #f7f8f5;
+  border: 1px solid var(--mm-border);
+  border-radius: 9px;
   font-size: 14px;
   overflow-wrap: anywhere;
 }
@@ -1257,7 +1275,7 @@ onUnmounted(() => {
   .mm-account__identity {
     flex-wrap: wrap;
     gap: 14px;
-    padding: 0 0 8px;
+    padding: 18px 16px;
   }
   .mm-account__portrait {
     width: 64px;
@@ -1273,7 +1291,7 @@ onUnmounted(() => {
   .mm-account__orders {
     margin: 0;
     flex-basis: 100%;
-    padding-left: 78px;
+    text-align: center;
   }
   .mm-account__tabs {
     gap: 0;
@@ -1285,7 +1303,7 @@ onUnmounted(() => {
     gap: 4px;
   }
   .mm-account :deep(.mm-card__header) {
-    padding: 20px 20px 0;
+    padding: 16px 20px;
   }
   .mm-account :deep(.mm-card__body) {
     padding: 20px;

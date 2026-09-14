@@ -1095,9 +1095,9 @@ watch(
 }
 .mm-order-detail__payment {
   padding: 16px;
-  border: 1px dashed #d9ae92;
+  border: 1px dashed var(--mm-zone-border);
   border-radius: 8px;
-  background: #fff9f3;
+  background: var(--mm-zone-soft);
   display: flex;
   flex-direction: column;
   gap: 12px;

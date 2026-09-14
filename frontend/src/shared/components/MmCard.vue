@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{ title?: string }>()
+defineProps<{ title?: string }>();
 </script>
 
 <style scoped>
@@ -26,7 +26,12 @@ defineProps<{ title?: string }>()
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--mm-space-4) var(--mm-space-5) 0;
+  padding: 17px var(--mm-space-5);
+  gap: 12px;
+  flex-wrap: wrap;
+  background: var(--mm-zone-soft, var(--mm-canvas));
+  border-bottom: 1px solid var(--mm-border);
+  border-radius: var(--mm-radius-l) var(--mm-radius-l) 0 0;
 }
 
 .mm-card__title {
@@ -35,6 +40,6 @@ defineProps<{ title?: string }>()
 }
 
 .mm-card__body {
-  padding: var(--mm-space-4) var(--mm-space-5);
+  padding: var(--mm-space-5);
 }
 </style>

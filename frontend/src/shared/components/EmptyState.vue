@@ -23,6 +23,9 @@ withDefaults(
   gap: var(--mm-space-2);
   padding: 44px 20px;
   text-align: center;
+  background: white;
+  border: 1px dashed var(--mm-zone-border, var(--mm-border));
+  border-radius: 12px;
 }
 
 .mm-empty__icon {
@@ -31,8 +34,8 @@ withDefaults(
   width: 72px;
   height: 72px;
   border-radius: 22px;
-  color: #849171;
-  background: #eef0e8;
+  color: var(--mm-zone-accent, var(--mm-muted));
+  background: var(--mm-zone-soft, var(--mm-canvas));
   margin-bottom: 9px;
 }
 .mm-empty__icon .mm-icon {

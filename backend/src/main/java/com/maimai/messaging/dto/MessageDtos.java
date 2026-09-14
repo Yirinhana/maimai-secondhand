@@ -14,7 +14,9 @@ public final class MessageDtos {
     public record SendMessage(@NotNull UUID clientId, @Size(max=2000) String body, UUID attachmentId) {}
     public record ReadMessages(@PositiveOrZero long throughId) {}
     public record Conversation(long id, long otherUserId, String otherNickname, Long productId,
-                               String lastMessage, Instant updatedAt, long unread) {}
+                               String lastMessage, Instant updatedAt, long unread,
+                               String otherAvatarUrl, String productTitle) {}
+    public record InboxOverview(long conversations, long unreadConversations, long unreadMessages) {}
     public record Message(long id, long conversationId, long senderId, UUID clientId,
                           String body, String attachmentUrl, Instant createdAt) {}
     public record History(List<Message> items, boolean hasMore, Long nextBeforeId) {}

@@ -12,15 +12,18 @@
     </header>
     <div class="mm-summary-strip">
       <div>
+        <MmIcon name="grid" />
         <span>当前筛选商品</span><strong>{{ total }}</strong>
       </div>
       <div>
+        <MmIcon name="box" />
         <span>本页可售库存</span
         ><strong>{{
           items.reduce((sum, item) => sum + item.stockAvailable, 0)
         }}</strong>
       </div>
       <div>
+        <MmIcon name="bag" />
         <span>本页已售件数</span
         ><strong>{{
           items.reduce((sum, item) => sum + item.stockSold, 0)
@@ -61,7 +64,11 @@
           <div>
             <h2>{{ p.title }}</h2>
             <PriceText :cents="p.priceCents" />
-            <p v-if="p.reviewReason" class="mm-inventory__review">
+            <p
+              v-if="p.reviewReason"
+              class="mm-inventory__review"
+              :class="{ 'is-rejected': p.status === 'REJECTED' }"
+            >
               审核说明：{{ p.reviewReason }}
             </p>
           </div>
@@ -81,7 +88,8 @@
           "
         />
         <div class="mm-inventory__actions">
-          <RouterLink :to="`/publish/${p.id}`">编辑 / 图片 / 库存</RouterLink
+          <RouterLink :to="`/publish/${p.id}`" class="mm-inventory__edit"
+            >编辑商品</RouterLink
           ><RouterLink v-if="p.status === 'ON_SALE'" :to="`/products/${p.id}`"
             >查看商品</RouterLink
           ><MmButton
@@ -102,8 +110,12 @@
     </div>
     <EmptyState
       v-else
-      title="暂无商品"
-      description="先申请卖家，审核后即可发布闲置"
+      :title="status ? '当前状态下暂无商品' : '还没有发布商品'"
+      :description="
+        status
+          ? '试试切换到全部状态，查看你的其他闲置。'
+          : '在个人中心完成卖家申请后，就可以发布你的第一件闲置。'
+      "
     /><MmPagination
       :page="page"
       :total-pages="totalPages"
@@ -173,11 +185,16 @@ onMounted(load);
   display: flex;
   align-items: center;
   gap: 8px;
-  background: var(--mm-ink);
+  background: var(--mm-zone-accent);
   padding: 11px 18px;
   color: white;
   border-radius: 6px;
   font-size: 13px;
+  box-shadow: 0 3px 8px #234c4020;
+}
+.mm-inventory__publish:hover {
+  background: #234c40;
+  text-decoration: none;
 }
 .mm-inventory__publish .mm-icon {
   width: 17px;
@@ -192,22 +209,25 @@ onMounted(load);
 .mm-inventory__heading,
 .mm-inventory__row {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(110px, 0.7fr) minmax(
-      90px,
-      0.6fr
-    ) minmax(150px, 1fr);
+  grid-template-columns:
+    minmax(0, 2fr) minmax(110px, 0.7fr) minmax(90px, 0.6fr)
+    minmax(150px, 1fr);
   gap: 22px;
   align-items: center;
 }
 .mm-inventory__heading {
-  background: #f0f1eb;
+  background: #e8efea;
   padding: 13px 20px;
   font-size: 12px;
-  color: var(--mm-muted);
+  color: #41594a;
+  font-weight: 650;
 }
 .mm-inventory__row {
   padding: 22px 20px;
   border-top: 1px solid var(--mm-border);
+}
+.mm-inventory__row:hover {
+  background: #fcfdfb;
 }
 .mm-inventory__product {
   display: flex;
@@ -234,9 +254,12 @@ onMounted(load);
 }
 .mm-inventory__review {
   font-size: 11px;
-  color: var(--mm-danger);
+  color: var(--mm-muted);
   margin-top: 5px;
   overflow-wrap: anywhere;
+}
+.mm-inventory__review.is-rejected {
+  color: var(--mm-danger);
 }
 .mm-inventory__stock {
   font-size: 12px;
@@ -261,9 +284,22 @@ onMounted(load);
   font-size: 12px;
 }
 .mm-inventory__actions .mm-button {
-  font-size: 11px;
-  min-height: 30px;
+  font-size: 12px;
+  min-height: 38px;
   padding: 0 10px;
+}
+.mm-inventory__actions > a {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--mm-zone-accent);
+}
+.mm-inventory__actions > .mm-inventory__edit {
+  padding: 0 11px;
+  border: 1px solid var(--mm-zone-border);
+  background: var(--mm-zone-soft);
+  border-radius: 7px;
+  font-weight: 650;
 }
 @media (max-width: 850px) {
   .mm-inventory__heading {

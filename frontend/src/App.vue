@@ -125,43 +125,24 @@
             :to="item.to"
             :class="{ 'is-active': section === item.section }"
             :aria-current="section === item.section ? 'page' : undefined"
-            >{{ item.label }}</RouterLink
+            ><MmIcon :name="item.icon" />{{ item.label }}</RouterLink
           ><RouterLink
             v-if="auth.isAdmin"
             to="/admin"
             :class="{ 'is-active': section === 'admin' }"
-            >管理后台</RouterLink
+            :aria-current="section === 'admin' ? 'page' : undefined"
+            ><MmIcon name="shield" />管理后台</RouterLink
           ><RouterLink to="/publish" class="mm-header__publish"
             ><MmIcon name="plus" />发布闲置</RouterLink
           >
         </nav>
       </div>
     </header>
-    <div v-if="route.name !== 'home' && section !== 'auth'" class="mm-location">
-      <div class="mm-location__inner">
-        <nav aria-label="当前位置" class="mm-breadcrumb">
-          <RouterLink to="/">首页</RouterLink><span>/</span
-          ><span>{{ sectionConfig.label }}</span
-          ><template v-if="title !== sectionConfig.label"
-            ><span>/</span><strong>{{ title }}</strong></template
-          >
-        </nav>
-        <nav
-          v-if="sectionConfig.links.length"
-          aria-label="分区导航"
-          class="mm-section-nav"
-        >
-          <RouterLink
-            v-for="link in sectionConfig.links"
-            :key="link.to"
-            :to="link.to"
-            :class="{ 'is-active': isSectionLinkActive(link.to) }"
-            :aria-current="isSectionLinkActive(link.to) ? 'page' : undefined"
-            >{{ link.label }}</RouterLink
-          >
-        </nav>
-      </div>
-    </div>
+    <SectionNavigation
+      v-if="route.name !== 'home' && section !== 'auth'"
+      :section="section"
+      :title="title"
+    />
     <main
       id="main-content"
       tabindex="-1"
@@ -206,12 +187,9 @@ import ConfirmationDialog from './shared/components/ConfirmationDialog.vue';
 import TinaSupportDock from './modules/support/TinaSupportDock.vue';
 import UserAvatar from './shared/components/UserAvatar.vue';
 import MmIcon from './shared/components/MmIcon.vue';
+import SectionNavigation from './shared/components/SectionNavigation.vue';
 import { answerConfirmation } from './shared/confirm';
-import {
-  activeDetailNavigation,
-  pageInfo,
-  sectionInfo,
-} from './shared/navigation';
+import { activeDetailNavigation, pageInfo } from './shared/navigation';
 const route = useRoute(),
   router = useRouter(),
   auth = useAuthStore();
@@ -262,25 +240,25 @@ const info = computed(() => {
   return base;
 });
 const section = computed(() => info.value.section),
-  title = computed(() => info.value.title),
-  sectionConfig = computed(
-    () => sectionInfo[section.value] ?? sectionInfo.market!,
-  );
+  title = computed(() => info.value.title);
 const primaryNav = [
-  { to: '/', label: '逛逛闲置', section: 'market' },
-  { to: '/community/demands', label: '求购社区', section: 'community' },
-  { to: '/orders', label: '买家交易', section: 'buyer' },
-  { to: '/seller/products', label: '卖家工作台', section: 'seller' },
-  { to: '/messages', label: '消息', section: 'messages' },
-  { to: '/official', label: '麦麦官方', section: 'official' },
+  { to: '/', label: '逛逛闲置', section: 'market', icon: 'bag' },
+  {
+    to: '/community/demands',
+    label: '求购社区',
+    section: 'community',
+    icon: 'heart',
+  },
+  { to: '/orders', label: '买家交易', section: 'buyer', icon: 'cart' },
+  {
+    to: '/seller/products',
+    label: '卖家工作台',
+    section: 'seller',
+    icon: 'box',
+  },
+  { to: '/messages', label: '消息', section: 'messages', icon: 'message' },
+  { to: '/official', label: '麦麦官方', section: 'official', icon: 'book' },
 ];
-function isSectionLinkActive(to: string) {
-  const target = router.resolve(to);
-  return (
-    target.path === route.path &&
-    (target.query.mine ?? '') === (route.query.mine ?? '')
-  );
-}
 async function openUser() {
   userOpen.value = true;
   menuOpen.value = false;
@@ -547,33 +525,36 @@ watch(
   margin: auto;
   display: flex;
   align-items: center;
-  gap: 33px;
-  padding: 0 28px;
-  min-height: 50px;
+  gap: 7px;
+  padding: 8px 28px;
+  min-height: 60px;
 }
 .mm-header__nav > a {
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   color: var(--mm-muted);
   font-weight: 600;
   font-size: 14px;
-  padding: 14px 0;
+  padding: 10px 13px;
+  border-radius: 7px;
   white-space: nowrap;
 }
 .mm-header__nav > a:hover {
   text-decoration: none;
   color: var(--mm-ink);
+  background: #f5f5f1;
 }
 .mm-header__nav > a.is-active {
-  color: var(--mm-ink);
+  color: var(--mm-zone-accent);
+  background: var(--mm-zone-soft);
+  box-shadow: inset 0 -2px var(--mm-zone-accent);
 }
-.mm-header__nav > a.is-active::after {
-  content: '';
-  position: absolute;
-  height: 3px;
-  background: var(--mm-primary);
-  left: 0;
-  right: 0;
-  bottom: -1px;
+.mm-header__nav > a > .mm-icon {
+  width: 17px;
+  height: 17px;
+  flex: none;
 }
 .mm-header__nav .mm-header__publish {
   margin-left: auto;
@@ -663,47 +644,6 @@ watch(
   color: var(--mm-danger);
   border-radius: 0;
 }
-.mm-location {
-  background: #fff;
-  border-bottom: 1px solid var(--mm-border);
-}
-.mm-location__inner {
-  max-width: 1280px;
-  margin: auto;
-  padding: 14px 28px 0;
-}
-.mm-breadcrumb {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-  font-size: 12px;
-  color: var(--mm-muted);
-  padding-bottom: 14px;
-}
-.mm-breadcrumb a {
-  color: var(--mm-muted);
-}
-.mm-breadcrumb strong {
-  font-weight: 500;
-  color: var(--mm-ink);
-}
-.mm-section-nav {
-  display: flex;
-  gap: 25px;
-  overflow-x: auto;
-  padding: 0 0 1px;
-}
-.mm-section-nav > a {
-  white-space: nowrap;
-  color: var(--mm-muted);
-  font-size: 13px;
-  padding: 8px 0 12px;
-}
-.mm-section-nav > a.is-active {
-  color: var(--mm-primary);
-  font-weight: 700;
-}
 .mm-main {
   flex: 1;
   width: 100%;
@@ -742,14 +682,8 @@ watch(
   color: var(--mm-ink);
   border-color: #b8bfb1;
 }
-.mm-main--messages {
-  background: #eef1ef;
-}
-.mm-main--admin {
-  background: #f0f1f2;
-}
-.mm-main--market {
-  background: #faf9f6;
+.mm-main {
+  background: var(--mm-zone-canvas);
 }
 .mm-main--auth {
   background: #f4f0e8;
@@ -798,7 +732,13 @@ watch(
     gap: 24px;
   }
   .mm-header__nav {
-    gap: 23px;
+    gap: 3px;
+    flex-wrap: wrap;
+  }
+  .mm-header__nav > a {
+    padding: 10px 9px;
+    font-size: 13px;
+    gap: 5px;
   }
   .mm-header__actions {
     gap: 15px;
@@ -856,13 +796,10 @@ watch(
     padding: 12px 10px;
     font-size: 14px;
   }
-  .mm-header__nav > a.is-active::after {
-    display: none;
-  }
   .mm-header__nav > a.is-active {
-    background: var(--mm-accent-soft);
+    background: var(--mm-zone-soft);
     border-radius: 6px;
-    color: var(--mm-primary);
+    color: var(--mm-zone-accent);
   }
   .mm-header__nav .mm-header__publish {
     margin-left: 0;
@@ -883,12 +820,6 @@ watch(
     right: 12px;
     width: 42px;
     min-height: 48px;
-  }
-  .mm-location__inner {
-    padding: 13px 18px 0;
-  }
-  .mm-section-nav {
-    gap: 23px;
   }
   .mm-footer {
     padding: 27px 18px;

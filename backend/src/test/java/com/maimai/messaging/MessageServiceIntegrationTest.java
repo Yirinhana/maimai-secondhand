@@ -49,6 +49,61 @@ class MessageServiceIntegrationTest {
         assertThatThrownBy(()->service.send(outsider,conversation,new SendMessage(UUID.randomUUID(),"越权",null))).isInstanceOf(BizException.class);
         assertThatThrownBy(()->service.read(outsider,conversation,0)).isInstanceOf(BizException.class);
         assertThat(service.conversations(outsider,0,20)).isEmpty();
+        assertThatThrownBy(()->service.conversation(outsider,conversation)).isInstanceOf(BizException.class);
+        assertThat(service.inboxOverview(outsider)).isEqualTo(new InboxOverview(0,0,0));
+    }
+
+    @Test void inboxFiltersBeforePaginationAndScopesSearchToMember() {
+        long first=user("目标商家一"),second=user("目标商家二"),unrelated=user("普通商家");
+        long c1=service.open(alice,new OpenConversation(first,null));
+        long c2=service.open(alice,new OpenConversation(second,null));
+        service.open(alice,new OpenConversation(unrelated,null));
+        assertThat(service.conversations(alice,0,1,"目标商家",false)).extracting(Conversation::id).containsExactly(c2);
+        assertThat(service.conversations(alice,1,1,"目标商家",false)).extracting(Conversation::id).containsExactly(c1);
+        assertThat(service.conversations(outsider,0,20,"目标商家",false)).isEmpty();
+        assertThat(service.conversations(alice,0,20,"%",false)).isEmpty();
+        assertThatThrownBy(()->service.conversations(alice,0,20,"a".repeat(101),false)).isInstanceOf(BizException.class);
+    }
+
+    @Test void inboxOverviewCountsIncomingUnreadAndTracksReadWithoutDeletingHistory() {
+        var first=service.send(bob,conversation,new SendMessage(UUID.randomUUID(),"咨询一",null));
+        var second=service.send(bob,conversation,new SendMessage(UUID.randomUUID(),"咨询二",null));
+        service.send(alice,conversation,new SendMessage(UUID.randomUUID(),"回复",null));
+        assertThat(service.inboxOverview(alice)).isEqualTo(new InboxOverview(1,1,2));
+        assertThat(service.inboxOverview(bob)).isEqualTo(new InboxOverview(1,1,1));
+        assertThat(service.conversations(alice,0,20,"",true)).extracting(Conversation::id).containsExactly(conversation);
+        service.read(alice,conversation,first.id());
+        assertThat(service.inboxOverview(alice).unreadMessages()).isEqualTo(1);
+        service.read(alice,conversation,second.id());
+        assertThat(service.inboxOverview(alice)).isEqualTo(new InboxOverview(1,0,0));
+        assertThat(service.conversations(alice,0,20,"",true)).isEmpty();
+        assertThat(service.history(alice,conversation,null,20).items()).hasSize(3);
+    }
+
+    @Test void conversationSummaryReturnsOnlyTheOtherMembersPublicIdentity() {
+        String avatar=UUID.randomUUID()+".jpg";
+        db.update("INSERT INTO user_avatars(user_id,filename,byte_size) VALUES(?,?,12)",bob,avatar);
+        Conversation summary=service.conversation(alice,conversation);
+        assertThat(summary.otherUserId()).isEqualTo(bob);
+        assertThat(summary.otherNickname()).isEqualTo("乙");
+        assertThat(summary.otherAvatarUrl()).isEqualTo("/api/v1/avatars/"+avatar);
+        assertThat(service.conversation(bob,conversation).otherUserId()).isEqualTo(alice);
+        assertThatThrownBy(()->service.conversation(alice,Long.MAX_VALUE)).isInstanceOf(BizException.class);
+    }
+
+    @Test void productSearchFindsAssociatedConversationWithoutExposingItToOthers() {
+        String categoryName="私信分类-"+UUID.randomUUID(),title="复古相机-"+UUID.randomUUID();
+        db.update("INSERT INTO categories(name) VALUES(?)",categoryName);
+        long category=db.queryForObject("SELECT id FROM categories WHERE name=?",Long.class,categoryName);
+        db.update("""
+            INSERT INTO products(seller_id,category_id,title,item_condition,price_cents,region,delivery_methods,status)
+            VALUES(?,?,?,'GOOD',18000,'上海','EXPRESS','ON_SALE')
+            """,bob,category,title);
+        long product=db.queryForObject("SELECT id FROM products WHERE title=?",Long.class,title);
+        db.update("UPDATE message_conversations SET product_id=? WHERE id=?",product,conversation);
+        assertThat(service.conversations(alice,0,20,"复古相机",false)).extracting(Conversation::id).containsExactly(conversation);
+        assertThat(service.conversation(alice,conversation).productTitle()).isEqualTo(title);
+        assertThat(service.conversations(outsider,0,20,"复古相机",false)).isEmpty();
     }
 
     @Test

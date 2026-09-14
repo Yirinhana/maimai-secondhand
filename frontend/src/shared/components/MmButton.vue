@@ -49,6 +49,10 @@ withDefaults(
 .mm-button--primary {
   background-color: var(--mm-primary);
   color: var(--mm-white);
+  border-color: #00000012;
+  box-shadow:
+    inset 0 1px #ffffff1a,
+    0 2px 3px #3524160d;
 }
 .mm-button--primary:hover:not(:disabled) {
   background-color: var(--mm-primary-hover);
@@ -60,11 +64,11 @@ withDefaults(
 .mm-button--ghost {
   background-color: var(--mm-white);
   color: var(--mm-ink);
-  border-color: var(--mm-border);
+  border-color: #c9cec5;
 }
 .mm-button--ghost:hover:not(:disabled) {
-  background-color: var(--mm-accent-soft);
-  border-color: #d5b29b;
+  background-color: var(--mm-canvas);
+  border-color: #929d8d;
 }
 
 .mm-button--danger {

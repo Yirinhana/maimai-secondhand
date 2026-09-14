@@ -1,27 +1,53 @@
 <template>
   <div class="mm-chat">
+    <h1 class="mm-visually-hidden">私信对话</h1>
     <MmCard title="私信会话" class="mm-chat__window">
       <template #extra>
-        <RouterLink to="/messages" class="mm-chat__back"
+        <RouterLink
+          :to="{ path: '/messages', query: route.query }"
+          class="mm-chat__back"
           >← 返回会话列表</RouterLink
         >
       </template>
 
-      <div v-if="otherUser" class="mm-actions">
-        <strong>{{ otherUser.otherNickname }}</strong
-        ><MmButton
-          variant="ghost"
-          :disabled="blockBusy || !blockState"
-          @click="toggleBlock"
-          >{{ blockState?.blockedByMe ? '取消屏蔽' : '屏蔽对方' }}</MmButton
-        ><RouterLink :to="reportLink">举报并联系人工客服</RouterLink
-        ><MmButton
-          variant="ghost"
-          :disabled="blockBusy"
-          @click="loadBlockState()"
-          >刷新屏蔽状态</MmButton
-        >
+      <div v-if="otherUser" class="mm-chat__peer">
+        <UserAvatar
+          :src="otherUser.otherAvatarUrl"
+          :nickname="otherUser.otherNickname"
+          :size="46"
+        />
+        <div class="mm-chat__identity">
+          <strong>{{ otherUser.otherNickname }}</strong>
+          <p>与对方的交易沟通</p>
+        </div>
+        <details class="mm-chat__management">
+          <summary><MmIcon name="shield" />会话管理</summary>
+          <div class="mm-chat__management-body">
+            <p>屏蔽限制双方的新消息，历史记录保留。</p>
+            <MmButton
+              variant="ghost"
+              :disabled="blockBusy || !blockState"
+              @click="toggleBlock"
+              >{{ blockState?.blockedByMe ? '取消屏蔽' : '屏蔽对方' }}</MmButton
+            ><RouterLink :to="reportLink">举报并联系人工客服</RouterLink
+            ><MmButton
+              variant="ghost"
+              :disabled="blockBusy"
+              @click="loadBlockState()"
+              >刷新屏蔽状态</MmButton
+            >
+          </div>
+        </details>
       </div>
+      <RouterLink
+        v-if="otherUser?.productId"
+        :to="`/products/${otherUser.productId}`"
+        class="mm-chat__product"
+        ><MmIcon name="box" /><span
+          ><small>首次咨询的商品</small
+          >{{ otherUser.productTitle || `商品 #${otherUser.productId}` }}</span
+        ><MmIcon name="arrow"
+      /></RouterLink>
       <p v-if="blockState?.blockedEitherDirection" class="mm-notice">
         当前双方不能发送新消息或图片。历史记录仍可查看，订单通知不受影响。
       </p>
@@ -29,8 +55,12 @@
         {{ blockError }}
       </p>
 
-      <p v-if="statusText" class="mm-chat__conn" role="status">
-        {{ statusText }}
+      <p
+        class="mm-chat__conn"
+        :class="{ 'is-ready': status === 'ready' }"
+        role="status"
+      >
+        {{ status === 'ready' ? '实时消息已连接' : statusText }}
       </p>
       <p v-if="error" class="mm-chat__error" role="alert">{{ error }}</p>
 
@@ -60,6 +90,9 @@
           :class="{ 'is-mine': m.senderId === myId }"
         >
           <div class="mm-chat__bubble">
+            <span class="mm-chat__sender">{{
+              m.senderId === myId ? '我' : otherUser?.otherNickname || '对方'
+            }}</span>
             <img
               v-if="m.attachmentUrl"
               :src="m.attachmentUrl"
@@ -132,6 +165,9 @@
           >发送</MmButton
         >
       </form>
+      <p class="mm-chat__composer-hint">
+        回车发送 · 图片支持 JPG、PNG，最大 5MB
+      </p>
     </MmCard>
   </div>
 </template>
@@ -148,6 +184,8 @@ import {
 import { useRoute } from 'vue-router';
 import MmButton from '../../shared/components/MmButton.vue';
 import MmCard from '../../shared/components/MmCard.vue';
+import MmIcon from '../../shared/components/MmIcon.vue';
+import UserAvatar from '../../shared/components/UserAvatar.vue';
 import EmptyState from '../../shared/components/EmptyState.vue';
 import { get, post, put, upload } from '../../shared/api';
 import { askConfirmation } from '../../shared/confirm';
@@ -191,17 +229,11 @@ async function loadBlockState() {
   blockError.value = '';
   try {
     if (!otherUser.value) {
-      let page = 0;
-      while (requestedId === conversationId.value) {
-        const batch = await get<ConversationSummary[]>(
-          '/messages/conversations',
-          { page, size: 50 },
-        );
-        if (requestedId !== conversationId.value) return;
-        otherUser.value = batch.find((c) => c.id === requestedId) ?? null;
-        if (otherUser.value || batch.length < 50) break;
-        page++;
-      }
+      const summary = await get<ConversationSummary>(
+        `/messages/conversations/${requestedId}/summary`,
+      );
+      if (requestedId !== conversationId.value) return;
+      otherUser.value = summary;
     }
     if (!otherUser.value) return;
     const result = await get<{
@@ -277,12 +309,17 @@ function scrollToBottom() {
 async function markRead() {
   await nextTick();
   if (document.visibilityState !== 'visible' || !listEl.value) return;
+  const requestedId = conversationId.value,
+    requestedUser = myId.value;
   const bounds = listEl.value.getBoundingClientRect();
+  const visibleTop = Math.max(0, bounds.top),
+    visibleBottom = Math.min(window.innerHeight, bounds.bottom);
+  if (visibleBottom <= visibleTop) return;
   const visible = [
     ...listEl.value.querySelectorAll<HTMLElement>('[data-message-id]'),
   ].filter((el) => {
     const r = el.getBoundingClientRect();
-    return r.bottom > bounds.top && r.top < bounds.bottom;
+    return r.bottom > visibleTop && r.top < visibleBottom;
   });
   const maxId = Math.max(
     0,
@@ -293,7 +330,8 @@ async function markRead() {
     await post(`/messages/conversations/${conversationId.value}/read`, {
       throughId: maxId,
     });
-    lastReadThroughId = maxId;
+    if (requestedId === conversationId.value && requestedUser === myId.value)
+      lastReadThroughId = Math.max(lastReadThroughId, maxId);
   } catch {
     // 已读上报失败静默，下一轮刷新再试
   }
@@ -521,7 +559,7 @@ async function retryImageSend() {
 }
 
 // ready（含重连恢复）重拉最新页补漏通知；messages.changed 匹配本会话时刷新并已读
-const { statusText } = useMessageSocket({
+const { status, statusText } = useMessageSocket({
   onReady: () => {
     if (!loading.value) void refreshLatest();
   },
@@ -561,10 +599,14 @@ function handleVisibility() {
 onMounted(() => {
   void loadInitial();
   document.addEventListener('visibilitychange', handleVisibility);
+  window.addEventListener('scroll', markRead, { passive: true });
+  window.addEventListener('resize', markRead);
 });
-onBeforeUnmount(() =>
-  document.removeEventListener('visibilitychange', handleVisibility),
-);
+onBeforeUnmount(() => {
+  document.removeEventListener('visibilitychange', handleVisibility);
+  window.removeEventListener('scroll', markRead);
+  window.removeEventListener('resize', markRead);
+});
 </script>
 
 <style scoped>
@@ -573,6 +615,99 @@ onBeforeUnmount(() =>
   margin: 0 auto;
   padding: var(--mm-space-5) var(--mm-space-4);
 }
+.mm-chat__peer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 18px;
+}
+.mm-chat__identity {
+  min-width: 0;
+  flex: 1;
+}
+.mm-chat__identity strong {
+  display: block;
+  overflow-wrap: anywhere;
+  font-size: 17px;
+}
+.mm-chat__identity p {
+  font-size: 12px;
+  color: var(--mm-muted);
+  margin-top: 2px;
+}
+.mm-chat__management {
+  position: relative;
+  flex: none;
+}
+.mm-chat__management summary {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  cursor: pointer;
+  font-size: 12px;
+  list-style: none;
+  min-height: 42px;
+  padding: 9px 12px;
+  border: 1px solid var(--mm-zone-border);
+  border-radius: 8px;
+  color: var(--mm-primary);
+}
+.mm-chat__management summary::-webkit-details-marker {
+  display: none;
+}
+.mm-chat__management .mm-icon {
+  width: 16px;
+  height: 16px;
+}
+.mm-chat__management-body {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 4;
+  width: 255px;
+  max-width: calc(100vw - 64px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  background: white;
+  border: 1px solid var(--mm-zone-border);
+  border-radius: 10px;
+  box-shadow: 0 9px 28px #28423b1c;
+  font-size: 13px;
+}
+.mm-chat__management-body p {
+  font-size: 12px;
+  color: var(--mm-muted);
+}
+.mm-chat__product {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  border: 1px solid var(--mm-zone-border);
+  background: var(--mm-zone-soft);
+  border-radius: 9px;
+  color: #315c58;
+  font-size: 13px;
+}
+.mm-chat__product .mm-icon {
+  width: 19px;
+  height: 19px;
+  flex: none;
+}
+.mm-chat__product span {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.mm-chat__product small {
+  display: block;
+  font-size: 10px;
+  color: #657f78;
+  margin-bottom: 2px;
+}
 
 .mm-chat__back {
   font-size: var(--mm-font-s);
@@ -580,9 +715,12 @@ onBeforeUnmount(() =>
 }
 
 .mm-chat__conn {
-  font-size: var(--mm-font-s);
-  color: var(--mm-muted);
+  font-size: 11px;
+  color: var(--mm-warning);
   margin-bottom: var(--mm-space-3);
+}
+.mm-chat__conn.is-ready {
+  color: var(--mm-primary);
 }
 
 .mm-chat__error {
@@ -605,13 +743,12 @@ onBeforeUnmount(() =>
   display: flex;
   flex-direction: column;
   gap: var(--mm-space-2);
-  height: min(55vh, 500px);
-  min-height: 260px;
+  height: clamp(220px, calc(100dvh - 740px), 400px);
   overflow-y: auto;
   padding: 22px 18px;
-  background: #f1f4ee;
-  border: 1px solid #e1e6dd;
-  border-radius: 6px;
+  background: #edf4f2;
+  border: 1px solid var(--mm-zone-border);
+  border-radius: 10px;
 }
 
 .mm-chat__more {
@@ -650,18 +787,29 @@ onBeforeUnmount(() =>
   max-width: 75%;
   padding: var(--mm-space-2) var(--mm-space-3);
   border-radius: var(--mm-radius-l);
-  background-color: var(--mm-canvas);
+  background-color: white;
+  border: 1px solid #d9e5e1;
+  border-top-left-radius: 3px;
   color: var(--mm-ink);
 }
 
 .mm-chat__row.is-mine .mm-chat__bubble {
-  background-color: #dce8cf;
-  color: #2e3b26;
+  background-color: #d1e8e2;
+  color: #254f48;
+  border-color: #b4d7cd;
+  border-top-left-radius: var(--mm-radius-l);
+  border-top-right-radius: 3px;
+}
+.mm-chat__sender {
+  display: block;
+  font-size: 10px;
+  color: #557a70;
+  margin-bottom: 5px;
 }
 
 .mm-chat__image {
   display: block;
-  max-width: 220px;
+  max-width: min(220px, 100%);
   max-height: 220px;
   border-radius: var(--mm-radius-m);
 }
@@ -683,16 +831,68 @@ onBeforeUnmount(() =>
   align-items: center;
   gap: var(--mm-space-2);
   margin-top: var(--mm-space-3);
+  padding-top: 16px;
+  border-top: 1px solid var(--mm-zone-border);
 }
 
 .mm-chat__composer input[type='text'],
 .mm-chat__composer input:not([type]) {
   flex: 1;
   min-width: 0;
-  min-height: 40px;
+  min-height: 46px;
   padding: 0 var(--mm-space-3);
-  border: 1px solid var(--mm-border);
+  border: 1px solid #b7ccc5;
   border-radius: var(--mm-radius-m);
+}
+.mm-chat__composer-hint {
+  margin-top: 9px;
+  font-size: 10px;
+  color: var(--mm-muted);
+}
+@media (max-width: 600px) {
+  .mm-chat {
+    padding: 20px 12px 88px;
+  }
+  .mm-chat :deep(.mm-card__body) {
+    padding: 16px 12px;
+  }
+  .mm-chat :deep(.mm-card__header) {
+    padding: 15px;
+  }
+  .mm-chat__peer {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .mm-chat__management {
+    margin-left: auto;
+  }
+  .mm-chat__management summary {
+    padding: 8px;
+  }
+  .mm-chat__identity strong {
+    font-size: 15px;
+  }
+  .mm-chat__list {
+    height: clamp(220px, 38dvh, 340px);
+    padding: 16px 10px;
+  }
+  .mm-chat__bubble {
+    max-width: 88%;
+  }
+  .mm-chat__time {
+    font-size: 10px;
+  }
+  .mm-chat__composer {
+    flex-wrap: wrap;
+  }
+  .mm-chat__composer input:not([type]) {
+    flex-basis: 100%;
+    font-size: 16px;
+  }
+  .mm-chat__composer .mm-button {
+    min-height: 44px;
+    font-size: 13px;
+  }
 }
 
 .mm-chat__count {

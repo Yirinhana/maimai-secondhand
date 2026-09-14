@@ -160,7 +160,7 @@ function onInput(event: Event) {
   width: 100%;
   min-width: 0;
   padding: 0 var(--mm-space-3);
-  border: 1px solid var(--mm-border);
+  border: 1px solid #c8cdc5;
   border-radius: var(--mm-radius-m);
   background-color: var(--mm-white);
   transition:

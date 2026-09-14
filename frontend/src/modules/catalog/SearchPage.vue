@@ -14,6 +14,10 @@
       novalidate
       @submit.prevent="applyFilters"
     >
+      <div class="mm-search__filter-heading">
+        <strong><MmIcon name="search" />找到合适的闲置</strong
+        ><span>关键词、成色、价格，都由你来选。</span>
+      </div>
       <div class="mm-search__quick">
         <label class="mm-search__field mm-search__keyword"
           ><span>关键词</span
@@ -250,6 +254,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { get, type ApiError } from '../../shared/api';
 import EmptyState from '../../shared/components/EmptyState.vue';
 import MmButton from '../../shared/components/MmButton.vue';
+import MmIcon from '../../shared/components/MmIcon.vue';
 import MmPagination from '../../shared/components/MmPagination.vue';
 import MmSkeleton from '../../shared/components/MmSkeleton.vue';
 import ProductCard from '../../shared/components/ProductCard.vue';
@@ -294,7 +299,7 @@ const router = useRouter();
 const auth = useAuthStore();
 const form = reactive(blankFilters());
 const applied = ref(blankFilters());
-const advancedOpen = ref(window.matchMedia('(min-width: 900px)').matches);
+const advancedOpen = ref(false);
 const nearbyOrigin = ref<{
   latitude: number;
   longitude: number;
@@ -552,11 +557,34 @@ onScopeDispose(() => {
   margin-bottom: 26px;
 }
 .mm-search__filters {
-  background: var(--mm-white);
-  border: 1px solid var(--mm-border);
+  background: #f7f1e7;
+  border: 1px solid #e4d6c4;
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 30px;
+}
+.mm-search__filter-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.mm-search__filter-heading strong {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #665137;
+}
+.mm-search__filter-heading .mm-icon {
+  width: 18px;
+  height: 18px;
+}
+.mm-search__filter-heading > span {
+  color: #776853;
+  font-size: 12px;
 }
 .mm-search__quick {
   display: grid;
@@ -579,7 +607,7 @@ onScopeDispose(() => {
   min-width: 0;
   min-height: 44px;
   padding: 9px 12px;
-  border: 1px solid var(--mm-border);
+  border: 1px solid #cec3b2;
   border-radius: 6px;
   background: var(--mm-white);
   font-size: 14px;
@@ -604,8 +632,8 @@ onScopeDispose(() => {
   gap: 9px;
   padding: 0 12px;
   color: var(--mm-ink);
-  background: #f4f2ee;
-  border: 1px solid transparent;
+  background: white;
+  border: 1px solid #cec3b2;
   border-radius: 6px;
   font-size: 14px;
 }

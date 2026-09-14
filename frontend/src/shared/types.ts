@@ -581,6 +581,8 @@ export interface ConversationSummary {
   id: number
   otherUserId: number
   otherNickname: string
+  otherAvatarUrl: string | null
+  productTitle: string | null
   productId: number | null
   lastMessage: string | null
   updatedAt: string

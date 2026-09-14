@@ -1,29 +1,41 @@
 <template>
   <div class="mm-admin">
-    <header class="mm-admin__side">
+    <header class="mm-admin__navigation">
       <div class="mm-admin__heading">
-        <span>麦麦运营台</span><small>OPERATIONS CONSOLE</small>
+        <span><MmIcon name="grid" />工作导航</span
+        ><small>{{
+          auth.me?.roles.includes('SUPER_ADMIN') ? '超级管理员' : '平台工作人员'
+        }}</small>
       </div>
       <nav class="mm-admin__nav" aria-label="后台导航">
-        <RouterLink
-          v-for="item in navItems"
-          :key="item.to"
-          :to="item.to"
-          class="mm-admin__link"
+        <div
+          v-for="group in navGroups"
+          :key="group.label"
+          class="mm-admin__group"
         >
-          {{ item.label }}
-        </RouterLink>
+          <p>{{ group.label }}</p>
+          <div>
+            <RouterLink
+              v-for="item in group.items"
+              :key="item.to"
+              :to="item.to"
+              class="mm-admin__link"
+              >{{ item.label }}</RouterLink
+            >
+          </div>
+        </div>
       </nav>
     </header>
-    <main class="mm-admin__main">
+    <div class="mm-admin__main">
       <router-view />
-    </main>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useAuthStore } from '../../shared/stores/auth';
+import MmIcon from '../../shared/components/MmIcon.vue';
 const auth = useAuthStore();
 const navItems = computed(() =>
   [
@@ -61,6 +73,33 @@ const navItems = computed(() =>
     return true;
   }),
 );
+const navGroups = computed(() =>
+  [
+    {
+      label: '概览与账号',
+      paths: ['/admin', '/admin/users', '/admin/audit-logs'],
+    },
+    {
+      label: '商品与卖家',
+      paths: ['/admin/seller-apps', '/admin/products', '/admin/categories'],
+    },
+    {
+      label: '交易与服务',
+      paths: [
+        '/admin/trade-todos',
+        '/admin/aftersales',
+        '/admin/support',
+        '/admin/finance',
+      ],
+    },
+    { label: '内容与社区', paths: ['/admin/official', '/admin/community'] },
+  ]
+    .map((group) => ({
+      label: group.label,
+      items: navItems.value.filter((item) => group.paths.includes(item.to)),
+    }))
+    .filter((group) => group.items.length),
+);
 </script>
 
 <style scoped>
@@ -73,10 +112,10 @@ const navItems = computed(() =>
   padding: 26px 28px 50px;
   min-width: 0;
 }
-.mm-admin__side {
+.mm-admin__navigation {
   border: 1px solid #d5d8d5;
   background: white;
-  border-radius: 6px;
+  border-radius: 12px;
   overflow: hidden;
 }
 .mm-admin__heading {
@@ -84,39 +123,66 @@ const navItems = computed(() =>
   justify-content: space-between;
   align-items: center;
   gap: 15px;
-  padding: 15px 20px;
-  background: #292d2a;
-  color: white;
-  font-size: 16px;
+  padding: 13px 20px;
+  background: #f8fafc;
+  border-bottom: 1px solid var(--mm-zone-border);
+  color: #34475a;
+  font-size: 14px;
   font-weight: 650;
 }
+.mm-admin__heading > span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mm-admin__heading .mm-icon {
+  width: 17px;
+  height: 17px;
+}
 .mm-admin__heading small {
-  font-size: 10px;
-  letter-spacing: 1.8px;
+  font-size: 11px;
   font-weight: 400;
-  color: #bac2bc;
+  color: #566777;
+  border: 1px solid #cfd9e3;
+  padding: 3px 10px;
+  border-radius: 20px;
 }
 .mm-admin__nav {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: 16px 8px;
+}
+.mm-admin__group {
+  padding: 0 12px;
+  border-right: 1px solid #e3e8ee;
+}
+.mm-admin__group:last-child {
+  border-right: 0;
+}
+.mm-admin__group > p {
+  font-size: 11px;
+  color: #687889;
+  padding: 0 8px 6px;
+}
+.mm-admin__group > div {
   display: flex;
   flex-wrap: wrap;
-  gap: 0;
-  padding: 7px 12px;
+  gap: 2px;
 }
 .mm-admin__link {
   display: block;
   font-size: 12px;
-  padding: 9px 12px;
-  margin: 2px;
-  border-radius: 4px;
-  color: #606960;
+  padding: 9px 8px;
+  border-radius: 6px;
+  color: #3f5366;
 }
 .mm-admin__link:hover {
-  background: #f0f2ed;
+  background: #f0f3f7;
   text-decoration: none;
 }
 .mm-admin__link.router-link-exact-active {
-  background: #e7ece4;
-  color: #283822;
+  background: #354b60;
+  color: white;
   font-weight: 700;
 }
 .mm-admin__main {
@@ -133,15 +199,20 @@ const navItems = computed(() =>
   .mm-admin__heading {
     padding: 13px 16px;
   }
-  .mm-admin__heading small {
-    display: none;
-  }
   .mm-admin__nav {
-    padding: 6px;
+    padding: 12px 4px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 0;
+  }
+  .mm-admin__group {
+    padding: 0 6px;
+  }
+  .mm-admin__group:nth-child(2n) {
+    border-right: 0;
   }
   .mm-admin__link {
-    font-size: 11px;
-    padding: 8px 10px;
+    font-size: 12px;
+    padding: 11px 8px;
   }
 }
 </style>

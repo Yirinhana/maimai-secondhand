@@ -5,13 +5,14 @@
         <p class="mm-eyebrow">OVERVIEW</p>
         <h1>平台总览</h1>
       </div>
-      <span>当前数据库 · 本地环境</span>
+      <span>当前平台 · 业务概览</span>
     </header>
     <p v-if="error" class="mm-error" role="alert">{{ error }}</p>
     <p v-else-if="!stats" class="mm-muted">正在读取统计…</p>
     <template v-if="stats"
       ><div class="mm-admin-overview__metrics">
         <div v-for="m in metrics" :key="m.key">
+          <MmIcon :name="m.icon" />
           <span>{{ m.label }}</span
           ><strong>{{ stats[m.key] }}</strong>
         </div>
@@ -19,7 +20,7 @@
       <div class="mm-admin-overview__finance">
         <div>
           <span>平台服务费累计</span>
-          <p>隔离环境中的支付数据仅用于联调。</p>
+          <p>以平台订单记录为准，模拟交易不代表真实资金结算。</p>
         </div>
         <PriceText :cents="stats.platformFeeSumCents" /></div
     ></template>
@@ -48,12 +49,16 @@ import MmIcon from '../../shared/components/MmIcon.vue';
 const auth = useAuthStore(),
   stats = ref<AdminStatsOverview | null>(null),
   error = ref('');
-const metrics: { key: keyof AdminStatsOverview; label: string }[] = [
-  { key: 'userCount', label: '注册用户' },
-  { key: 'productOnSaleCount', label: '在售商品' },
-  { key: 'orderCount', label: '全部订单' },
-  { key: 'paidOrderCount', label: '已支付订单' },
-  { key: 'refundSuccessCount', label: '成功退款记录' },
+const metrics: {
+  key: keyof AdminStatsOverview;
+  label: string;
+  icon: string;
+}[] = [
+  { key: 'userCount', label: '注册用户', icon: 'user' },
+  { key: 'productOnSaleCount', label: '在售商品', icon: 'box' },
+  { key: 'orderCount', label: '全部订单', icon: 'bag' },
+  { key: 'paidOrderCount', label: '已支付订单', icon: 'check' },
+  { key: 'refundSuccessCount', label: '成功退款记录', icon: 'refresh' },
 ];
 const queues = computed(() =>
   [
@@ -124,24 +129,33 @@ onMounted(async () => {
 }
 .mm-admin-overview__head > span {
   font-size: 11px;
-  color: #66715f;
-  border: 1px solid #d8dfd4;
+  color: #526576;
+  border: 1px solid #cfd8e2;
   padding: 6px 10px;
-  background: #f8faf5;
+  background: #f8fafc;
+  border-radius: 6px;
 }
 .mm-admin-overview__metrics {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  background: #fff;
-  border: 1px solid #dce0d9;
-  border-radius: 5px;
+  gap: 12px;
 }
 .mm-admin-overview__metrics > div {
-  padding: 24px;
-  border-right: 1px solid #e5e8e1;
+  padding: 20px;
+  border: 1px solid #d6dfe7;
+  border-radius: 11px;
+  background: white;
+  position: relative;
 }
-.mm-admin-overview__metrics > div:last-child {
-  border: 0;
+.mm-admin-overview__metrics > div > .mm-icon {
+  display: block;
+  width: 30px;
+  height: 30px;
+  padding: 6px;
+  background: #edf2f7;
+  color: #47617a;
+  border-radius: 8px;
+  margin-bottom: 12px;
 }
 .mm-admin-overview__metrics span {
   font-size: 11px;
@@ -156,12 +170,13 @@ onMounted(async () => {
 }
 .mm-admin-overview__finance {
   padding: 21px 25px;
-  background: #e7ebe4;
+  background: #354b60;
+  color: white;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  border-radius: 4px;
+  border-radius: 11px;
 }
 .mm-admin-overview__finance span {
   font-size: 13px;
@@ -169,17 +184,17 @@ onMounted(async () => {
 }
 .mm-admin-overview__finance p {
   font-size: 11px;
-  color: #77816f;
+  color: #dae3ee;
   margin-top: 4px;
 }
 .mm-admin-overview__finance :deep(.mm-price) {
   font-size: 24px;
-  color: #374d2d;
+  color: white;
 }
 .mm-admin-overview__queues {
   background: white;
   border: 1px solid #dce0d9;
-  border-radius: 5px;
+  border-radius: 11px;
 }
 .mm-admin-overview__queues header {
   display: flex;
@@ -210,9 +225,10 @@ onMounted(async () => {
   padding: 19px 16px;
   font-size: 13px;
   font-weight: 600;
+  border-radius: 7px;
 }
 .mm-admin-overview__queues a:hover {
-  background: #f4f6ef;
+  background: #edf2f7;
   text-decoration: none;
 }
 .mm-admin-overview__queues small {

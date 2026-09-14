@@ -1,0 +1,145 @@
+/* 每个业务区共用导航、容器和主操作色；Logo 与成功、警告、错误语义色保持独立。 */
+.mm-app {
+  --mm-zone-accent: #a44920;
+  --mm-zone-soft: #fbefe5;
+  --mm-zone-banner: #f4ece0;
+  --mm-zone-ink: #473c2d;
+  --mm-zone-muted: #716350;
+  --mm-zone-border: #e4d8c7;
+  --mm-zone-icon-bg: #fff9f0;
+  --mm-zone-canvas: #faf9f6;
+}
+.mm-app--seller {
+  --mm-primary: #2d6554;
+  --mm-primary-hover: #234c40;
+  --mm-primary-active: #19392f;
+  --mm-accent-soft: #edf5f0;
+  --mm-zone-accent: #2d6554;
+  --mm-zone-soft: #edf5f0;
+  --mm-zone-banner: #234c40;
+  --mm-zone-ink: #ffffff;
+  --mm-zone-muted: #d1e2d8;
+  --mm-zone-border: #cddfd3;
+  --mm-zone-icon-bg: #ffffff12;
+  --mm-zone-canvas: #f2f5f2;
+}
+.mm-app--buyer,
+.mm-app--transaction {
+  --mm-primary: #305f87;
+  --mm-primary-hover: #254b6b;
+  --mm-primary-active: #1b3750;
+  --mm-accent-soft: #eaf2f9;
+  --mm-zone-accent: #305f87;
+  --mm-zone-soft: #eaf2f9;
+  --mm-zone-banner: #e5eef6;
+  --mm-zone-ink: #213f5a;
+  --mm-zone-muted: #52697d;
+  --mm-zone-border: #cedce9;
+  --mm-zone-icon-bg: #f6faff;
+  --mm-zone-canvas: #f3f6f9;
+}
+.mm-app--account {
+  --mm-zone-accent: #795737;
+  --mm-zone-soft: #f5eee4;
+  --mm-zone-banner: #f0e7d9;
+  --mm-zone-ink: #493b2b;
+  --mm-zone-muted: #74624c;
+  --mm-zone-border: #dfd2bf;
+  --mm-zone-icon-bg: #fff9ef;
+  --mm-zone-canvas: #faf7f2;
+}
+.mm-app--messages,
+.mm-app--help {
+  --mm-primary: #266b70;
+  --mm-primary-hover: #1d5559;
+  --mm-primary-active: #174044;
+  --mm-accent-soft: #eaf5f4;
+  --mm-zone-accent: #266b70;
+  --mm-zone-soft: #eaf5f4;
+  --mm-zone-banner: #e3efed;
+  --mm-zone-ink: #254e50;
+  --mm-zone-muted: #516e6e;
+  --mm-zone-border: #cbdedc;
+  --mm-zone-icon-bg: #f5fcfa;
+  --mm-zone-canvas: #f0f5f4;
+}
+.mm-app--community {
+  --mm-zone-accent: #66633c;
+  --mm-zone-soft: #f3f2e5;
+  --mm-zone-banner: #eeecda;
+  --mm-zone-ink: #474931;
+  --mm-zone-muted: #676951;
+  --mm-zone-border: #d8dac1;
+  --mm-zone-icon-bg: #fcfcf2;
+  --mm-zone-canvas: #f8f8f0;
+}
+.mm-app--official {
+  --mm-zone-accent: #865637;
+  --mm-zone-soft: #f6ede4;
+  --mm-zone-banner: #faf5ec;
+  --mm-zone-ink: #4d392c;
+  --mm-zone-muted: #756354;
+  --mm-zone-border: #e5d9c9;
+  --mm-zone-icon-bg: #ffffff;
+}
+.mm-app--admin {
+  --mm-primary: #354b60;
+  --mm-primary-hover: #263443;
+  --mm-primary-active: #1a2631;
+  --mm-accent-soft: #edf1f6;
+  --mm-zone-accent: #354b60;
+  --mm-zone-soft: #edf1f6;
+  --mm-zone-banner: #263443;
+  --mm-zone-ink: #ffffff;
+  --mm-zone-muted: #c6d4e2;
+  --mm-zone-border: #cbd4df;
+  --mm-zone-icon-bg: #ffffff12;
+  --mm-zone-canvas: #eef1f5;
+}
+
+/* 后台所有业务页共用表单、信息面板与筛选外观，无需逐页复制颜色。 */
+.mm-main--admin .mm-admin__main > section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.mm-main--admin .mm-panel {
+  border-color: var(--mm-zone-border);
+}
+.mm-main--admin .mm-panel > h2 {
+  font-size: 18px;
+}
+.mm-main--admin .mm-admin__main > section > label,
+.mm-main--admin .mm-admin__main > section > .mm-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  max-width: none;
+  padding: 16px 18px;
+  background: white;
+  border: 1px solid var(--mm-zone-border);
+  border-left: 4px solid var(--mm-zone-accent);
+  border-radius: 9px;
+  font-size: 14px;
+}
+.mm-main--admin
+  .mm-admin__main
+  input:not([type='checkbox']):not([type='radio']),
+.mm-main--admin .mm-admin__main select,
+.mm-main--admin .mm-admin__main textarea {
+  padding: 9px 12px;
+  min-height: 42px;
+  max-width: 100%;
+  border: 1px solid #c5d0da;
+  border-radius: 7px;
+  background: white;
+}
+.mm-main--admin .mm-panel .mm-button {
+  align-self: flex-start;
+}
+@media (max-width: 760px) {
+  .mm-main--admin .mm-button {
+    min-height: 42px;
+  }
+}

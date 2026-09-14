@@ -11,11 +11,11 @@
  */
 withDefaults(
   defineProps<{
-    text: string
-    tone?: 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'neutral'
+    text: string;
+    tone?: 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'neutral';
   }>(),
   { tone: 'neutral' },
-)
+);
 </script>
 
 <style scoped>
@@ -23,11 +23,11 @@ withDefaults(
   display: inline-flex;
   align-items: center;
   gap: var(--mm-space-1);
-  padding: 2px var(--mm-space-2);
-  border-radius: var(--mm-radius-s);
+  padding: 3px 10px;
+  border-radius: 999px;
   font-size: var(--mm-font-s);
   font-weight: 600;
-  border: 1px solid currentColor;
+  border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
   white-space: nowrap;
 }
 
@@ -39,10 +39,28 @@ withDefaults(
   flex-shrink: 0;
 }
 
-.mm-tag--primary { color: var(--mm-primary); background-color: var(--mm-canvas); }
-.mm-tag--success { color: var(--mm-success); background-color: #EDF7F1; }
-.mm-tag--warning { color: var(--mm-warning); background-color: #FBF2E4; }
-.mm-tag--danger { color: var(--mm-danger); background-color: #FBEEF0; }
-.mm-tag--info { color: var(--mm-info); background-color: #EDF3FA; }
-.mm-tag--neutral { color: var(--mm-muted); background-color: var(--mm-canvas); }
+.mm-tag--primary {
+  color: var(--mm-primary);
+  background-color: var(--mm-canvas);
+}
+.mm-tag--success {
+  color: var(--mm-success);
+  background-color: #edf7f1;
+}
+.mm-tag--warning {
+  color: var(--mm-warning);
+  background-color: #fbf2e4;
+}
+.mm-tag--danger {
+  color: var(--mm-danger);
+  background-color: #fbeef0;
+}
+.mm-tag--info {
+  color: var(--mm-info);
+  background-color: #edf3fa;
+}
+.mm-tag--neutral {
+  color: var(--mm-muted);
+  background-color: var(--mm-canvas);
+}
 </style>

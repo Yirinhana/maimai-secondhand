@@ -5,6 +5,7 @@ import { router } from './router'
 import { touchCsrf } from './shared/api'
 import './shared/styles/tokens.css'
 import './shared/styles/base.css'
+import './shared/styles/sections.css'
 
 const app = createApp(App)
 app.use(createPinia())

@@ -30,8 +30,17 @@ public class MessageController {
         return Map.of("id",messages.open(SecurityUtils.currentUserId(),request));
     }
     @GetMapping("/conversations")
-    public List<Conversation> list(@RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size) {
-        return messages.conversations(SecurityUtils.currentUserId(),page,size);
+    public List<Conversation> list(@RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="20") int size,
+                                   @RequestParam(defaultValue="") String keyword,@RequestParam(defaultValue="false") boolean unreadOnly) {
+        return messages.conversations(SecurityUtils.currentUserId(),page,size,keyword,unreadOnly);
+    }
+    @GetMapping("/conversations/overview")
+    public InboxOverview overview() {
+        return messages.inboxOverview(SecurityUtils.currentUserId());
+    }
+    @GetMapping("/conversations/{id}/summary")
+    public Conversation summary(@PathVariable long id) {
+        return messages.conversation(SecurityUtils.currentUserId(),id);
     }
     @GetMapping("/conversations/{id}")
     public History history(@PathVariable long id,@RequestParam(required=false) Long beforeId,@RequestParam(defaultValue="30") int size) {

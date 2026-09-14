@@ -38,21 +38,72 @@ public class MessageService {
     }
 
     public List<Conversation> conversations(long actor, int page, int size) {
+        return conversations(actor,page,size,"",false);
+    }
+
+    public List<Conversation> conversations(long actor, int page, int size, String keyword, boolean unreadOnly) {
         validatePage(page, size);
-        return db.query("""
+        String search=keyword==null?"":keyword.strip();
+        if (search.length()>100) throw BizException.badRequest("MESSAGE_SEARCH","搜索内容不能超过100个字符");
+        StringBuilder query=new StringBuilder(CONVERSATION_SELECT);
+        List<Object> args=new ArrayList<>(List.of(actor,actor,actor,actor,actor,actor));
+        if (!search.isEmpty()) {
+            // LOCATE treats percent/underscore as ordinary text, and filtering precedes pagination.
+            query.append(" AND (LOCATE(?,u.nickname)>0 OR LOCATE(?,COALESCE(p.title,''))>0)");
+            args.add(search);args.add(search);
+        }
+        if (unreadOnly) {
+            query.append("""
+                 AND EXISTS (SELECT 1 FROM direct_messages unread_message
+                   WHERE unread_message.conversation_id=c.id AND unread_message.sender_id<>?
+                   AND unread_message.id>COALESCE((SELECT last_read_id FROM message_read_positions
+                     WHERE conversation_id=c.id AND user_id=?),0))
+                """);
+            args.add(actor);args.add(actor);
+        }
+        query.append(" ORDER BY c.updated_at DESC,c.id DESC LIMIT ? OFFSET ?");
+        args.add(size);args.add((long)page*size);
+        return db.query(query.toString(),conversationMapper(),args.toArray());
+    }
+
+    public Conversation conversation(long actor,long id) {
+        List<Conversation> found=db.query(CONVERSATION_SELECT+" AND c.id=?",conversationMapper(),
+            actor,actor,actor,actor,actor,actor,id);
+        if (found.isEmpty()) throw BizException.notFound("会话不存在或不可访问");
+        return found.getFirst();
+    }
+
+    public InboxOverview inboxOverview(long actor) {
+        return db.queryForObject("""
+            SELECT COUNT(*) conversations,COALESCE(SUM(unread>0),0) unread_conversations,
+                   COALESCE(SUM(unread),0) unread_messages
+            FROM (SELECT (SELECT COUNT(*) FROM direct_messages m
+                    WHERE m.conversation_id=c.id AND m.sender_id<>?
+                    AND m.id>COALESCE((SELECT last_read_id FROM message_read_positions r
+                      WHERE r.conversation_id=c.id AND r.user_id=?),0)) unread
+                  FROM message_conversations c WHERE c.user_low=? OR c.user_high=?) inbox
+            """,(rs,n)->new InboxOverview(rs.getLong("conversations"),rs.getLong("unread_conversations"),rs.getLong("unread_messages")),
+            actor,actor,actor,actor);
+    }
+
+    private static final String CONVERSATION_SELECT="""
             SELECT c.id, c.product_id, c.updated_at,
               CASE WHEN c.user_low=? THEN c.user_high ELSE c.user_low END other_id,
-              u.nickname,
+              u.nickname,CONCAT('/api/v1/avatars/',a.filename) avatar_url,p.title product_title,
               (SELECT COALESCE(m.body,'[图片]') FROM direct_messages m WHERE m.conversation_id=c.id ORDER BY m.id DESC LIMIT 1) last_message,
               (SELECT COUNT(*) FROM direct_messages m WHERE m.conversation_id=c.id AND m.sender_id<>?
                  AND m.id>COALESCE((SELECT last_read_id FROM message_read_positions r WHERE r.conversation_id=c.id AND r.user_id=?),0)) unread
             FROM message_conversations c
             JOIN users u ON u.id=CASE WHEN c.user_low=? THEN c.user_high ELSE c.user_low END
-            WHERE c.user_low=? OR c.user_high=?
-            ORDER BY c.updated_at DESC,c.id DESC LIMIT ? OFFSET ?
-            """, (rs,n) -> new Conversation(rs.getLong("id"),rs.getLong("other_id"),rs.getString("nickname"),
-                rs.getObject("product_id",Long.class),rs.getString("last_message"),rs.getTimestamp("updated_at").toInstant(),rs.getLong("unread")),
-            actor, actor, actor, actor, actor, actor, size, (long)page*size);
+            LEFT JOIN user_avatars a ON a.user_id=u.id
+            LEFT JOIN products p ON p.id=c.product_id
+            WHERE (c.user_low=? OR c.user_high=?)
+            """;
+
+    private static RowMapper<Conversation> conversationMapper() {
+        return (rs,n)->new Conversation(rs.getLong("id"),rs.getLong("other_id"),rs.getString("nickname"),
+            rs.getObject("product_id",Long.class),rs.getString("last_message"),rs.getTimestamp("updated_at").toInstant(),
+            rs.getLong("unread"),rs.getString("avatar_url"),rs.getString("product_title"));
     }
 
     public History history(long actor, long conversation, Long beforeId, int size) {

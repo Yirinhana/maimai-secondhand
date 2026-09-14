@@ -502,7 +502,7 @@ onMounted(load);
   gap: 10px;
   padding: 16px 20px;
   border-bottom: 1px solid var(--mm-border);
-  background: #fbfaf7;
+  background: var(--mm-zone-soft);
 }
 .mm-cart__seller-icon {
   display: grid;

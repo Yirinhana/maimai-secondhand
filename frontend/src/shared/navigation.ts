@@ -98,6 +98,34 @@ export const pageInfo: Record<string, { title: string; section: string }> = {
   'admin-audit-logs': { title: '审计日志', section: 'admin' },
   'admin-official': { title: '官方内容管理', section: 'admin' },
 };
+export const sectionAppearance: Record<
+  string,
+  { icon: string; description: string }
+> = {
+  market: { icon: 'bag', description: '发现好物，给闲置一个新去处。' },
+  seller: {
+    icon: 'box',
+    description: '管理商品、处理订单，照看你的闲置小店。',
+  },
+  buyer: {
+    icon: 'cart',
+    description: '从心动下单到安心收货，查看每一步进度。',
+  },
+  account: { icon: 'user', description: '照顾好你的资料、地址与账号。' },
+  admin: { icon: 'shield', description: '审核内容、跟进交易，维护平台秩序。' },
+  messages: {
+    icon: 'message',
+    description: '把商品细节聊清楚，让交易更放心。',
+  },
+  community: {
+    icon: 'heart',
+    description: '说说你想找什么，也许好物就在身边。',
+  },
+  official: { icon: 'book', description: '平台公告、实用指南与交易须知。' },
+  help: { icon: 'message', description: '查找答案，或让客服协助处理问题。' },
+  transaction: { icon: 'bag', description: '核对交易信息，跟进订单进度。' },
+};
+
 export const sectionInfo: Record<
   string,
   { label: string; links: { to: string; label: string }[] }

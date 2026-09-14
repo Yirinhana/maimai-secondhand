@@ -7,6 +7,7 @@
         type="button"
         class="mm-order-list__tab"
         :class="{ 'is-active': tab.status === activeStatus }"
+        :aria-pressed="tab.status === activeStatus"
         @click="switchTab(tab.status)"
       >
         {{ tab.label }}
@@ -77,6 +78,9 @@
         >
           请在 {{ formatTime(order.expiresAt) }} 前付款，逾期订单自动关闭
         </p>
+        <span class="mm-order-list__detail"
+          >查看订单详情 <span aria-hidden="true">→</span></span
+        >
       </RouterLink>
       <MmPagination :page="page" :total-pages="totalPages" @change="onPage" />
     </template>
@@ -84,8 +88,18 @@
     <EmptyState
       v-else
       title="暂无相关订单"
-      description="换个状态页签看看，或去首页逛逛"
-    />
+      :description="
+        activeStatus
+          ? '这个状态下还没有订单，试试查看全部订单。'
+          : role === 'buyer'
+            ? '遇见喜欢的好物，下单后可以在这里跟进进度。'
+            : '有买家下单后，订单会出现在这里。'
+      "
+      :icon="role === 'buyer' ? 'cart' : 'box'"
+      ><RouterLink :to="role === 'buyer' ? '/search' : '/seller/products'">{{
+        role === 'buyer' ? '去逛逛闲置 →' : '查看我的商品 →'
+      }}</RouterLink></EmptyState
+    >
   </div>
 </template>
 
@@ -186,24 +200,31 @@ onMounted(load);
 }
 .mm-order-list__tabs {
   display: flex;
-  gap: 28px;
+  gap: 5px;
   overflow-x: auto;
-  border-bottom: 1px solid var(--mm-border);
-  padding-bottom: 0;
+  border: 1px solid var(--mm-zone-border);
+  padding: 7px;
+  background: white;
+  border-radius: 11px;
 }
 .mm-order-list__tab {
   flex: none;
   white-space: nowrap;
   border: 0;
-  border-bottom: 3px solid transparent;
+  border-radius: 7px;
   background: transparent;
   color: var(--mm-muted);
   font-size: 13px;
-  padding: 9px 0 16px;
+  padding: 10px 19px;
+  min-height: 42px;
+}
+.mm-order-list__tab:hover {
+  background: var(--mm-zone-soft);
+  color: var(--mm-zone-accent);
 }
 .mm-order-list__tab.is-active {
-  border-bottom-color: var(--mm-ink);
-  color: var(--mm-ink);
+  background: var(--mm-zone-accent);
+  color: white;
   font-weight: 750;
 }
 .mm-order-list__error {
@@ -236,7 +257,8 @@ onMounted(load);
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-  background: #f0f1eb;
+  background: var(--mm-zone-soft);
+  border-bottom: 1px solid var(--mm-zone-border);
   margin: 0 -24px;
   padding: 13px 24px;
 }
@@ -330,6 +352,18 @@ onMounted(load);
   font-size: 20px;
   font-weight: 750;
 }
+.mm-order-list__detail {
+  grid-column: 1/-1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--mm-border);
+  color: var(--mm-zone-accent);
+  font-size: 13px;
+  font-weight: 650;
+}
 .mm-order-list__deadline {
   grid-column: 1/-1;
   font-size: 11px;
@@ -338,8 +372,14 @@ onMounted(load);
   padding-top: 12px;
 }
 @media (max-width: 760px) {
+  .mm-order-list__detail {
+    justify-content: flex-start;
+  }
   .mm-order-list__tabs {
-    gap: 23px;
+    gap: 4px;
+  }
+  .mm-order-list__tab {
+    padding: 10px 14px;
   }
   .mm-order-list__card {
     grid-template-columns: minmax(0, 1fr);
