@@ -23,6 +23,7 @@ if (Test-Path -LiteralPath $amapConfigPath) {
     }
 }
 $env:MAIMAI_UPLOAD_DIR = Join-Path $ProjectRoot '.local/uploads'
+$env:MAIMAI_AVATAR_DIR = Join-Path $ProjectRoot '.local/avatars'
 $env:MAIMAI_MESSAGE_IMAGE_DIR = Join-Path $ProjectRoot '.local/private-message-images'
 $env:MAIMAI_AFTERSALE_IMAGE_DIR = Join-Path $ProjectRoot '.local/private-aftersale-images'
 $env:MAIMAI_MAIL_CAPTURE_DIR = Join-Path $ProjectRoot '.local/mail-capture'

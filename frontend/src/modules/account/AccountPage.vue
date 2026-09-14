@@ -1,17 +1,26 @@
 <template>
   <div class="mm-account">
-    <h1 class="mm-account__heading">个人中心</h1>
-    <nav class="mm-actions" aria-label="我的功能">
-      <RouterLink to="/seller/products">我的商品</RouterLink>
-      <RouterLink to="/seller/orders">卖家订单</RouterLink>
-      <RouterLink to="/me/bargains">我的议价</RouterLink>
-      <RouterLink to="/seller/bargains">收到的议价</RouterLink>
-      <RouterLink to="/me/aftersales">我的售后</RouterLink>
-      <RouterLink to="/seller/aftersales">卖家售后</RouterLink>
-      <RouterLink to="/me/community">收藏、关注与足迹</RouterLink>
-      <RouterLink to="/support">帮助与客服</RouterLink>
-      <RouterLink to="/me/closure">账号注销申请</RouterLink>
-    </nav>
+    <header class="mm-account__identity">
+      <div class="mm-account__portrait" aria-label="个人头像">
+        <img
+          v-if="auth.me?.avatarUrl && !avatarBroken"
+          :src="auth.me.avatarUrl"
+          alt="我的头像"
+          @error="avatarBroken = true"
+        />
+        <span v-else>{{ auth.me?.nickname?.slice(0, 1) || '麦' }}</span>
+      </div>
+      <div>
+        <p class="mm-account__eyebrow">我的麦麦</p>
+        <h1 class="mm-account__heading">{{ currentTabTitle }}</h1>
+        <p class="mm-account__meta">
+          {{ auth.me?.nickname }} · 管理你的资料、收货地址与消息通知
+        </p>
+      </div>
+      <RouterLink to="/orders" class="mm-account__orders"
+        >查看我的订单 →</RouterLink
+      >
+    </header>
 
     <div class="mm-account__tabs" role="tablist" aria-label="个人中心分区">
       <button
@@ -24,7 +33,10 @@
         @click="activeTab = tab.key"
       >
         {{ tab.label }}
-        <span v-if="tab.key === 'notifications' && unreadCount > 0" class="mm-account__badge">
+        <span
+          v-if="tab.key === 'notifications' && unreadCount > 0"
+          class="mm-account__badge"
+        >
           {{ unreadCount > 99 ? '99+' : unreadCount }}
         </span>
       </button>
@@ -33,6 +45,32 @@
     <!-- 资料 -->
     <MmCard v-show="activeTab === 'profile'" title="基本资料">
       <div class="mm-account__profile">
+        <section class="mm-account__avatar-settings">
+          <div>
+            <h3>让大家认识你</h3>
+            <p class="mm-account__meta">
+              头像会显示在顶部个人菜单中，请使用适合公开展示的图片。
+            </p>
+          </div>
+          <label class="mm-account__avatar-upload"
+            >{{ avatarSaving ? '头像保存中…' : '上传新头像'
+            }}<input
+              type="file"
+              accept="image/jpeg,image/png"
+              aria-label="上传头像"
+              :disabled="avatarSaving"
+              @change="saveAvatar"
+          /></label>
+          <p class="mm-account__meta">
+            支持 JPG、PNG，最大 5MB。上传后会移除图片元数据。
+          </p>
+          <p v-if="avatarError" role="alert" class="mm-account__error">
+            {{ avatarError }}
+          </p>
+          <p v-if="avatarDone" role="status" class="mm-account__ok">
+            头像已更新
+          </p>
+        </section>
         <p class="mm-account__meta">邮箱：{{ auth.me?.email }}</p>
         <form class="mm-account__form" @submit.prevent="onSaveNickname">
           <MmInput
@@ -42,8 +80,12 @@
             placeholder="请输入昵称"
             :error="nicknameForm.error"
           />
-          <MmButton type="submit" :loading="nicknameForm.saving">保存昵称</MmButton>
-          <p v-if="nicknameForm.done" class="mm-account__ok" role="status">昵称已更新</p>
+          <MmButton type="submit" :loading="nicknameForm.saving"
+            >保存昵称</MmButton
+          >
+          <p v-if="nicknameForm.done" class="mm-account__ok" role="status">
+            昵称已更新
+          </p>
         </form>
       </div>
     </MmCard>
@@ -53,10 +95,16 @@
       <template #extra>
         <MmButton variant="ghost" @click="startAddAddress">新增地址</MmButton>
       </template>
-      <p v-if="addressError" class="mm-account__error" role="alert">{{ addressError }}</p>
+      <p v-if="addressError" class="mm-account__error" role="alert">
+        {{ addressError }}
+      </p>
       <EmptyState v-else-if="addresses.length === 0" title="还没有收货地址" />
       <ul v-else class="mm-account__address-list">
-        <li v-for="addr in addresses" :key="addr.id" class="mm-account__address">
+        <li
+          v-for="addr in addresses"
+          :key="addr.id"
+          class="mm-account__address"
+        >
           <div>
             <p>
               <strong>{{ addr.receiver }}</strong> {{ addr.phone }}
@@ -65,8 +113,12 @@
             <p class="mm-account__meta">{{ addr.region }} {{ addr.detail }}</p>
           </div>
           <div class="mm-account__address-actions">
-            <MmButton variant="ghost" @click="startEditAddress(addr)">编辑</MmButton>
-            <MmButton variant="danger" @click="onDeleteAddress(addr)">删除</MmButton>
+            <MmButton variant="ghost" @click="startEditAddress(addr)"
+              >编辑</MmButton
+            >
+            <MmButton variant="danger" @click="onDeleteAddress(addr)"
+              >删除</MmButton
+            >
           </div>
         </li>
       </ul>
@@ -76,20 +128,35 @@
         class="mm-account__form mm-account__address-form"
         @submit.prevent="onSaveAddress"
       >
-        <h3 class="mm-account__subheading">{{ addressForm.id ? '编辑地址' : '新增地址' }}</h3>
+        <h3 class="mm-account__subheading">
+          {{ addressForm.id ? '编辑地址' : '新增地址' }}
+        </h3>
         <MmInput v-model="addressForm.receiver" label="收货人" maxlength="50" />
         <MmInput v-model="addressForm.phone" label="手机号" maxlength="20" />
-        <MmInput v-model="addressForm.region" label="所在地区" maxlength="100" placeholder="省 / 市 / 区" />
-        <MmInput v-model="addressForm.detail" label="详细地址" maxlength="200" />
-        <MapPicker @select="addressForm.region=$event.region;addressForm.detail=$event.detail" />
+        <MmInput
+          v-model="addressForm.region"
+          label="所在地区"
+          maxlength="100"
+          placeholder="省 / 市 / 区"
+        />
+        <MmInput
+          v-model="addressForm.detail"
+          label="详细地址"
+          maxlength="200"
+        />
+        <MapPicker @select="onAddressPicked" />
         <label class="mm-account__checkbox">
           <input v-model="addressForm.isDefault" type="checkbox" />
           设为默认地址
         </label>
-        <p v-if="addressForm.error" class="mm-account__error" role="alert">{{ addressForm.error }}</p>
+        <p v-if="addressForm.error" class="mm-account__error" role="alert">
+          {{ addressForm.error }}
+        </p>
         <div class="mm-account__form-actions">
           <MmButton type="submit" :loading="addressForm.saving">保存</MmButton>
-          <MmButton variant="ghost" @click="addressForm.visible = false">取消</MmButton>
+          <MmButton variant="ghost" @click="addressForm.visible = false"
+            >取消</MmButton
+          >
         </div>
       </form>
     </MmCard>
@@ -98,21 +165,33 @@
     <MmCard v-show="activeTab === 'seller'" title="卖家入驻申请">
       <div v-if="sellerApp" class="mm-account__seller-status">
         <p>
-          人工审核：<MmTag :text="SELLER_STATUS_TEXT[sellerApp.status]" :tone="sellerStatusTone" />
+          人工审核：<MmTag
+            :text="SELLER_STATUS_TEXT[sellerApp.status]"
+            :tone="sellerStatusTone"
+          />
         </p>
         <p>
-          渠道资格：<MmTag :text="CHANNEL_STATUS_TEXT[sellerApp.channelStatus]" :tone="channelStatusTone" />
+          渠道资格：<MmTag
+            :text="CHANNEL_STATUS_TEXT[sellerApp.channelStatus]"
+            :tone="channelStatusTone"
+          />
         </p>
-        <p v-if="sellerApp.reason" class="mm-account__meta">审核说明：{{ sellerApp.reason }}</p>
+        <p v-if="sellerApp.reason" class="mm-account__meta">
+          审核说明：{{ sellerApp.reason }}
+        </p>
         <p class="mm-account__meta">
-          提交时间：{{ formatTime(sellerApp.createdAt) }} · 人工审核与收款渠道资格分开记录，
+          提交时间：{{ formatTime(sellerApp.createdAt) }} ·
+          人工审核与收款渠道资格分开记录，
           两者均通过后才能发布可成交商品并收款。
         </p>
       </div>
       <p v-else class="mm-account__meta">你还没有提交过卖家入驻申请。</p>
 
       <form
-        v-if="!sellerApp || ['REJECTED', 'SUPPLEMENT', 'NONE'].includes(sellerApp.status)"
+        v-if="
+          !sellerApp ||
+          ['REJECTED', 'SUPPLEMENT', 'NONE'].includes(sellerApp.status)
+        "
         class="mm-account__form"
         @submit.prevent="onApplySeller"
       >
@@ -128,8 +207,12 @@
             placeholder="介绍一下你想出售的闲置类型、交易方式等"
           ></textarea>
         </label>
-        <p v-if="sellerForm.error" class="mm-account__error" role="alert">{{ sellerForm.error }}</p>
-        <MmButton type="submit" :loading="sellerForm.submitting">提交申请</MmButton>
+        <p v-if="sellerForm.error" class="mm-account__error" role="alert">
+          {{ sellerForm.error }}
+        </p>
+        <MmButton type="submit" :loading="sellerForm.submitting"
+          >提交申请</MmButton
+        >
       </form>
     </MmCard>
 
@@ -145,7 +228,9 @@
           本页全部已读
         </MmButton>
       </template>
-      <p v-if="notificationError" class="mm-account__error" role="alert">{{ notificationError }}</p>
+      <p v-if="notificationError" class="mm-account__error" role="alert">
+        {{ notificationError }}
+      </p>
       <p v-else-if="notificationLoading" class="mm-account__meta">加载中…</p>
       <EmptyState v-else-if="notifications.length === 0" title="暂无通知" />
       <template v-else>
@@ -158,13 +243,21 @@
           >
             <div>
               <p class="mm-account__notification-title">
-                <span v-if="!item.read" class="mm-account__unread-dot" aria-label="未读"></span>
+                <span
+                  v-if="!item.read"
+                  class="mm-account__unread-dot"
+                  aria-label="未读"
+                ></span>
                 {{ item.title }}
               </p>
               <p class="mm-account__notification-content">{{ item.content }}</p>
               <p class="mm-account__meta">{{ formatTime(item.createdAt) }}</p>
             </div>
-            <MmButton v-if="!item.read" variant="ghost" @click="onMarkRead(item.id)">
+            <MmButton
+              v-if="!item.read"
+              variant="ghost"
+              @click="onMarkRead(item.id)"
+            >
               标记已读
             </MmButton>
           </li>
@@ -176,13 +269,18 @@
         />
       </template>
     </MmCard>
+    <div class="mm-account__privacy">
+      <RouterLink to="/policies">查看隐私与交易规则</RouterLink
+      ><RouterLink to="/me/closure">账号注销申请</RouterLink>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import {askConfirmation} from '../../shared/confirm'
+import { askConfirmation } from '../../shared/confirm'
 import { computed, onMounted, reactive, ref } from 'vue'
-import { del, get, post, put } from '../../shared/api'
+import { useRoute, useRouter } from 'vue-router'
+import { del, get, post, put, upload } from '../../shared/api'
 import type { ApiError } from '../../shared/api'
 import { formatTime } from '../../shared/format'
 import { useAuthStore } from '../../shared/stores/auth'
@@ -202,6 +300,13 @@ import MmTag from '../../shared/components/MmTag.vue'
 import MapPicker from '../../shared/components/MapPicker.vue'
 
 const auth = useAuthStore()
+const route = useRoute()
+const router = useRouter()
+
+function onAddressPicked(place: { region: string; detail: string }) {
+  addressForm.region = place.region
+  addressForm.detail = place.detail
+}
 
 type TabKey = 'profile' | 'addresses' | 'seller' | 'notifications'
 
@@ -211,7 +316,58 @@ const tabs: { key: TabKey; label: string }[] = [
   { key: 'seller', label: '卖家入驻' },
   { key: 'notifications', label: '站内通知' },
 ]
-const activeTab = ref<TabKey>('profile')
+const activeTab = computed<TabKey>({
+  get: () =>
+    tabs.some((tab) => tab.key === route.query.tab)
+      ? (route.query.tab as TabKey)
+      : 'profile',
+  set: (tab) => {
+    void router.replace({ query: { ...route.query, tab } })
+  },
+})
+const currentTabTitle = computed(
+  () =>
+    ({
+      profile: '个人资料',
+      addresses: '我的地址簿',
+      seller: '卖家入驻',
+      notifications: '站内通知',
+    })[activeTab.value],
+)
+const avatarSaving = ref(false),
+  avatarError = ref(''),
+  avatarDone = ref(false),
+  avatarBroken = ref(false)
+async function saveAvatar(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  avatarError.value = ''
+  avatarDone.value = false
+  if (
+    !['image/jpeg', 'image/png'].includes(file.type) ||
+    file.size > 5 * 1024 * 1024
+  ) {
+    avatarError.value = '请选择不超过 5MB 的 JPG 或 PNG 图片'
+    input.value = ''
+    return
+  }
+  avatarSaving.value = true
+  try {
+    const body = new FormData()
+    body.append('file', file)
+    const saved = await upload<{ avatarUrl: string }>('/me/avatar', body)
+    if (auth.me) auth.me.avatarUrl = saved.avatarUrl
+    avatarBroken.value = false
+    avatarDone.value = true
+  } catch (error) {
+    avatarError.value =
+      (error as ApiError).message || '头像上传失败，请稍后重试'
+  } finally {
+    avatarSaving.value = false
+    input.value = ''
+  }
+}
 
 /* ---------- 资料 ---------- */
 
@@ -301,7 +457,12 @@ async function onSaveAddress() {
     detail: addressForm.detail.trim(),
     isDefault: addressForm.isDefault,
   }
-  if (!payload.receiver || !payload.phone || !payload.region || !payload.detail) {
+  if (
+    !payload.receiver ||
+    !payload.phone ||
+    !payload.region ||
+    !payload.detail
+  ) {
     addressForm.error = '请完整填写收货人、手机号、地区与详细地址'
     return
   }
@@ -323,7 +484,12 @@ async function onSaveAddress() {
 }
 
 async function onDeleteAddress(addr: Address) {
-  if (!await askConfirmation(`确定删除收货地址「${addr.receiver} ${addr.region}」吗？`)) return
+  if (
+    !(await askConfirmation(
+      `确定删除收货地址「${addr.receiver} ${addr.region}」吗？`,
+    ))
+  )
+    return
   try {
     await del(`/me/addresses/${addr.id}`)
     await loadAddresses()
@@ -368,7 +534,7 @@ const channelStatusTone = computed(() => {
 
 async function loadSellerApp() {
   try {
-    const result=await get<SellerApplication | null>('/me/seller-application')
+    const result = await get<SellerApplication | null>('/me/seller-application')
     sellerApp.value = result?.id ? result : null
   } catch {
     sellerApp.value = null
@@ -467,6 +633,102 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.mm-account__identity {
+  display: flex;
+  gap: 22px;
+  align-items: center;
+  padding: 18px 0 28px;
+  border-bottom: 1px solid var(--mm-border);
+}
+.mm-account__portrait {
+  width: 88px;
+  height: 88px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--mm-ink);
+  color: var(--mm-white);
+  display: grid;
+  place-items: center;
+  font-size: 32px;
+  overflow: hidden;
+}
+.mm-account__portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.mm-account__eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--mm-muted);
+  margin-bottom: 6px;
+}
+.mm-account__orders {
+  margin-left: auto;
+  white-space: nowrap;
+  font-size: 14px;
+}
+.mm-account__avatar-settings {
+  padding-bottom: 24px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--mm-border);
+  display: grid;
+  gap: 12px;
+}
+.mm-account__avatar-upload {
+  width: max-content;
+  position: relative;
+  padding: 10px 16px;
+  border: 1px solid var(--mm-border);
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  overflow: hidden;
+}
+.mm-account__avatar-upload input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+}
+.mm-account__avatar-upload:focus-within {
+  outline: 2px solid var(--mm-primary);
+  outline-offset: 2px;
+}
+.mm-account__privacy {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  padding-top: 16px;
+  color: var(--mm-muted);
+}
+.mm-account :deep(.mm-card) {
+  box-shadow: none;
+  border-radius: 8px;
+}
+@media (max-width: 600px) {
+  .mm-account__identity {
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+  .mm-account__portrait {
+    width: 64px;
+    height: 64px;
+  }
+  .mm-account__identity > div:nth-child(2) {
+    flex: 1;
+    min-width: 0;
+  }
+  .mm-account__orders {
+    margin: 0;
+    flex-basis: 100%;
+    padding-left: 78px;
+  }
+  .mm-account__heading {
+    font-size: 24px !important;
+  }
+}
 .mm-account {
   display: flex;
   flex-direction: column;

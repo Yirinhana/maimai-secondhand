@@ -1,18 +1,19 @@
-# 示例：替换域名及TLS证书路径后再由管理员审阅启用。
+# 候选：按用户报告的 www 域名与证书目录填写，尚未独立核验或部署。
+# 根域 example.com 的证书覆盖及重定向需另外核对。
 map $http_upgrade $maimai_connection_upgrade {
     default upgrade;
     '' close;
 }
 server {
     listen 80;
-    server_name example.com;
+    server_name market.example.com;
     return 301 https://$host$request_uri;
 }
 server {
     listen 443 ssl;
-    server_name example.com;
-    ssl_certificate /etc/letsencrypt/live/example.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/example.com/privkey.pem;
+    server_name market.example.com;
+    ssl_certificate /etc/letsencrypt/live/market.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/market.example.com/privkey.pem;
     root /opt/maimai/current/frontend;
     index index.html;
     client_max_body_size 25m;

@@ -1,7 +1,13 @@
 <template>
   <div class="mm-auth">
+    <AuthIntro />
     <MmCard title="找回密码" class="mm-auth__card">
-      <form v-if="!done" class="mm-auth__form" novalidate @submit.prevent="onSubmit">
+      <form
+        v-if="!done"
+        class="mm-auth__form"
+        novalidate
+        @submit.prevent="onSubmit"
+      >
         <MmInput
           v-model="form.email"
           label="注册邮箱"
@@ -45,7 +51,9 @@
           autocomplete="new-password"
           :error="errors.confirmPassword"
         />
-        <p v-if="formError" class="mm-auth__error" role="alert">{{ formError }}</p>
+        <p v-if="formError" class="mm-auth__error" role="alert">
+          {{ formError }}
+        </p>
         <MmButton type="submit" :loading="submitting">重置密码</MmButton>
         <div class="mm-auth__links">
           <RouterLink to="/login">返回登录</RouterLink>
@@ -60,101 +68,120 @@
 </template>
 
 <script setup lang="ts">
-import { onUnmounted, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import MmButton from '../../shared/components/MmButton.vue'
-import MmCard from '../../shared/components/MmCard.vue'
-import MmInput from '../../shared/components/MmInput.vue'
-import { post, type ApiError } from '../../shared/api'
+import AuthIntro from '../../shared/components/AuthIntro.vue';
+import { onUnmounted, reactive, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import MmButton from '../../shared/components/MmButton.vue';
+import MmCard from '../../shared/components/MmCard.vue';
+import MmInput from '../../shared/components/MmInput.vue';
+import { post, type ApiError } from '../../shared/api';
 
-const router = useRouter()
+const router = useRouter();
 
-const form = reactive({ email: '', code: '', newPassword: '', confirmPassword: '' })
-const errors = reactive({ email: '', code: '', newPassword: '', confirmPassword: '' })
-const formError = ref('')
-const codeHint = ref('')
-const submitting = ref(false)
-const sendingCode = ref(false)
-const done = ref(false)
-const cooldown = ref(0)
-let cooldownTimer: ReturnType<typeof setInterval> | null = null
+const form = reactive({
+  email: '',
+  code: '',
+  newPassword: '',
+  confirmPassword: '',
+});
+const errors = reactive({
+  email: '',
+  code: '',
+  newPassword: '',
+  confirmPassword: '',
+});
+const formError = ref('');
+const codeHint = ref('');
+const submitting = ref(false);
+const sendingCode = ref(false);
+const done = ref(false);
+const cooldown = ref(0);
+let cooldownTimer: ReturnType<typeof setInterval> | null = null;
 
 onUnmounted(() => {
-  if (cooldownTimer) clearInterval(cooldownTimer)
-})
+  if (cooldownTimer) clearInterval(cooldownTimer);
+});
 
 function validEmail(): boolean {
-  errors.email = form.email.trim() ? '' : '请输入注册邮箱'
+  errors.email = form.email.trim() ? '' : '请输入注册邮箱';
   if (!errors.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
-    errors.email = '邮箱格式不正确'
+    errors.email = '邮箱格式不正确';
   }
-  return !errors.email
+  return !errors.email;
 }
 
 function startCooldown() {
-  cooldown.value = 60
+  cooldown.value = 60;
   cooldownTimer = setInterval(() => {
-    cooldown.value -= 1
+    cooldown.value -= 1;
     if (cooldown.value <= 0 && cooldownTimer) {
-      clearInterval(cooldownTimer)
-      cooldownTimer = null
+      clearInterval(cooldownTimer);
+      cooldownTimer = null;
     }
-  }, 1000)
+  }, 1000);
 }
 
 async function onSendCode() {
-  codeHint.value = ''
-  if (!validEmail()) return
-  sendingCode.value = true
+  codeHint.value = '';
+  if (!validEmail()) return;
+  sendingCode.value = true;
   try {
-    await post('/auth/password/code', { email: form.email.trim() })
-    codeHint.value = '若该邮箱已注册，验证码已发送，10 分钟内有效'
-    startCooldown()
+    await post('/auth/password/code', { email: form.email.trim() });
+    codeHint.value = '若该邮箱已注册，验证码已发送，10 分钟内有效';
+    startCooldown();
   } catch (e) {
-    codeHint.value = (e as ApiError).message || '验证码发送失败，请稍后重试'
+    codeHint.value = (e as ApiError).message || '验证码发送失败，请稍后重试';
   } finally {
-    sendingCode.value = false
+    sendingCode.value = false;
   }
 }
 
 function validate(): boolean {
-  const emailOk = validEmail()
-  errors.code = form.code.trim() ? '' : '请输入邮箱验证码'
-  errors.newPassword = form.newPassword.length >= 8 ? '' : '新密码至少 8 位'
+  const emailOk = validEmail();
+  errors.code = form.code.trim() ? '' : '请输入邮箱验证码';
+  errors.newPassword = form.newPassword.length >= 8 ? '' : '新密码至少 8 位';
   errors.confirmPassword =
-    form.confirmPassword === form.newPassword ? '' : '两次输入的密码不一致'
-  return emailOk && !errors.code && !errors.newPassword && !errors.confirmPassword
+    form.confirmPassword === form.newPassword ? '' : '两次输入的密码不一致';
+  return (
+    emailOk && !errors.code && !errors.newPassword && !errors.confirmPassword
+  );
 }
 
 async function onSubmit() {
-  formError.value = ''
-  if (!validate()) return
-  submitting.value = true
+  formError.value = '';
+  if (!validate()) return;
+  submitting.value = true;
   try {
     await post('/auth/password/reset', {
       email: form.email.trim(),
       code: form.code.trim(),
       newPassword: form.newPassword,
-    })
-    done.value = true
+    });
+    done.value = true;
   } catch (e) {
-    formError.value = (e as ApiError).message || '重置失败，请检查验证码后重试'
+    formError.value = (e as ApiError).message || '重置失败，请检查验证码后重试';
   } finally {
-    submitting.value = false
+    submitting.value = false;
   }
 }
 </script>
 
 <style scoped>
 .mm-auth {
-  display: flex;
-  justify-content: center;
-  padding: var(--mm-space-6) var(--mm-space-4);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 460px);
+  gap: 60px;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 60px 28px;
+  align-items: center;
 }
 
 .mm-auth__card {
   width: 100%;
-  max-width: 400px;
+  max-width: 460px;
+  padding: 20px 10px;
+  border-radius: 10px;
 }
 
 .mm-auth__form {
@@ -199,5 +226,20 @@ async function onSubmit() {
   flex-direction: column;
   gap: var(--mm-space-4);
   align-items: flex-start;
+}
+@media (max-width: 760px) {
+  .mm-auth {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 26px;
+    padding: 28px 18px 38px;
+  }
+  .mm-auth__card {
+    max-width: none;
+    padding: 8px 0;
+  }
+  .mm-auth__links {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
 }
 </style>

@@ -1,7 +1,16 @@
 <template>
-  <section class="mm-page"><h1>我买到的</h1><nav class="mm-actions"><RouterLink to="/seller/orders">查看我卖出的</RouterLink><RouterLink to="/me/aftersales">售后记录</RouterLink></nav><OrderListView role="buyer" /></section>
+  <section class="mm-workspace">
+    <header class="mm-page-heading">
+      <div>
+        <p class="mm-eyebrow">MY PURCHASES</p>
+        <h1>我买到的</h1>
+        <p>查看付款、交付和售后进度，让每次交易都有迹可循。</p>
+      </div>
+      <RouterLink to="/search" class="mm-text-link">继续逛逛 →</RouterLink>
+    </header>
+    <OrderListView role="buyer" />
+  </section>
 </template>
-
 <script setup lang="ts">
-import OrderListView from './components/OrderListView.vue'
+import OrderListView from './components/OrderListView.vue';
 </script>

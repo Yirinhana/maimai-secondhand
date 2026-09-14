@@ -5,11 +5,11 @@ const OUT = path.resolve(__dirname, '../../.local/screenshots');
 const RUN = process.env.MAIMAI_E2E_RUN || Date.now().toString();
 const actors = {}, state = { run: RUN, orders: [], screenshots: [], apiSetup: [], websocket: {}, map: {} };
 const png = fs.readFileSync(path.join(__dirname, 'fixture8x8.png'));
-async function shot(page, name) { const filename = `022-${RUN}-${name}.png`; await page.screenshot({ path: path.join(OUT, filename), fullPage: true }); state.screenshots.push(filename); }
+async function shot(page, name) { await page.evaluate(async()=>{await document.fonts.ready;window.scrollTo({top:0,behavior:'instant'});}); const filename = `022-${RUN}-${name}.png`; await page.screenshot({ path: path.join(OUT, filename), fullPage: true }); state.screenshots.push(filename); }
 async function api(ctx, method, endpoint, data, multipart) { if (!endpoint.startsWith('/api/v1/'))
     throw Error('Only local application API allowed'); await ctx.request.get(BASE + '/api/v1/auth/csrf'); const token = (await ctx.cookies(BASE)).find(c => c.name === 'XSRF-TOKEN')?.value; const r = await ctx.request.fetch(BASE + endpoint, { method, headers: { 'X-XSRF-TOKEN': decodeURIComponent(token || '') }, ...(multipart ? { multipart } : data === undefined ? {} : { data }) }); if (!r.ok())
     throw Error(`${method} ${endpoint.split('?')[0]} failed ${r.status()} ${await r.text()}`); const text = await r.text(); return text ? JSON.parse(text) : null; }
-async function uiLogin(browser, name) { const context = await browser.newContext({ viewport: { width: 1440, height: 960 }, locale: 'zh-CN', timezoneId: 'Asia/Shanghai' }); const page = await context.newPage(); await page.goto(BASE + '/login'); await page.getByLabel('邮箱', { exact: true }).fill(name + '@maimai.local'); await page.getByLabel('密码', { exact: true }).fill('Maimai#2026'); await page.getByRole('button', { name: '登录', exact: true }).click(); await expect(page.getByRole('heading', { name: '让闲置再次流转' })).toBeVisible(); actors[name] = { context, page, me: await api(context, 'GET', '/api/v1/auth/me') }; }
+async function uiLogin(browser, name) { const context = await browser.newContext({ viewport: { width: 1440, height: 960 }, locale: 'zh-CN', timezoneId: 'Asia/Shanghai' }); const page = await context.newPage(); await page.goto(BASE + '/login'); await page.getByLabel('邮箱', { exact: true }).fill(name + '@maimai.local'); await page.getByLabel('密码', { exact: true }).fill('Maimai#2026'); await page.getByRole('button', { name: '登录', exact: true }).click(); await expect(page.getByRole('heading', { name: /把喜欢的留下/ })).toBeVisible(); actors[name] = { context, page, me: await api(context, 'GET', '/api/v1/auth/me') }; }
 async function createProduct(seller, suffix, price, freight) { const context = actors[seller].context; const cats = await api(context, 'GET', '/api/v1/categories'); const category = cats.find(c => c.children?.length)?.children[0]?.id || cats[0].id; const title = `E2E${RUN}-${suffix} 本地演示用品`; const product = await api(context, 'POST', '/api/v1/seller/products', { title, categoryId: category, description: '自动化验收专用本地测试商品，不是真实交易。', condition: 'GOOD', defects: '测试图片，仅本地业务验证', priceCents: price, stock: 10, region: '上海市黄浦区', deliveryMethods: ['EXPRESS', 'MEETUP'], freightCents: freight, returnPromise: '按已审核平台规则办理', submit: false }); await api(context, 'POST', `/api/v1/seller/products/${product.id}/images`, undefined, { files: { name: 'fixture8x8.png', mimeType: 'image/png', buffer: png } }); await api(context, 'POST', `/api/v1/seller/products/${product.id}/submit`); await api(actors.admin.context, 'POST', `/api/v1/admin/products/${product.id}/review`, { approve: true, reason: '本地自动化测试资料完整' }); state.apiSetup.push({ action: 'create/upload/submit/review own product', id: product.id, seller }); return { ...product, title, price, freight, seller }; }
 function recordSockets(page, name) { const data = { opened: 0, ready: 0, changed: 0 }; state.websocket[name] = data; page.on('websocket', ws => { if (new URL(ws.url()).pathname !== '/api/v1/messages/socket')
     return; data.opened++; ws.on('framereceived', frame => { const value = String(frame.payload); if (value.includes('ready'))
@@ -38,7 +38,7 @@ async function uiRegister(browser, name) {
     await expect(page.getByText('请阅读并勾选同意条款后注册', { exact: true })).toBeVisible();
     await page.getByRole('checkbox').check();
     await page.getByRole('button', { name: '注册并登录', exact: true }).click();
-    await expect(page.getByRole('heading', { name: '让闲置再次流转', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /把喜欢的留下/ })).toBeVisible();
     actors[name].me = await api(context, 'GET', '/api/v1/auth/me');
     return actors[name];
 }
@@ -59,7 +59,7 @@ test('01 desktop cart split, local mock payment, shipping, receipt, review and p
     test.setTimeout(180000);
     const buyer = actors.buyer.page, seller = actors.seller.page;
     await buyer.goto(BASE + '/');
-    await expect(buyer.getByRole('heading', { name: '让闲置再次流转' })).toBeVisible();
+    await expect(buyer.getByRole('heading', { name: /把喜欢的留下/ })).toBeVisible();
     await expect(buyer.getByRole('link', { name: new RegExp(state.productA.title) })).toBeVisible();
     await shot(buyer, 'desktop-home');
     const seedProducts = await api(actors.buyer.context, 'GET', '/api/v1/products?keyword=iPhone&page=0&size=1');
@@ -205,9 +205,9 @@ test('02 two isolated browser contexts exchange messages with websocket unread a
     await buyer.getByLabel('消息内容', { exact: true }).fill(text);
     await buyer.getByRole('button', { name: '发送', exact: true }).click();
     await expect(buyer.getByText(text, { exact: true })).toBeVisible();
-    const row = seller.locator('.mm-conversations__item').filter({ hasText: text });
+    const row = seller.locator('.mm-inbox__item').filter({ hasText: text });
     await expect(row).toBeVisible();
-    await expect(row.locator('.mm-conversations__unread')).toBeVisible();
+    await expect(row.locator('.mm-inbox__unread')).toBeVisible();
     await shot(seller, 'message-unread');
     await row.click();
     await expect(seller.getByText(text, { exact: true })).toBeVisible();
@@ -246,8 +246,10 @@ test('02 two isolated browser contexts exchange messages with websocket unread a
     await seller.getByRole('button', { name: '刷新屏蔽状态', exact: true }).click();
     await expect(seller.getByRole('button', { name: '图片', exact: true })).toBeDisabled();
     await shot(buyer, 'message-blocked-history');
+    const unblocked = buyer.waitForResponse(r => r.request().method() === 'PUT' && new URL(r.url()).pathname === `/api/v1/messages/users/${actors.seller.me.id}/block`);
     await buyer.getByRole('button', { name: '取消屏蔽', exact: true }).click();
     await confirmDialog(buyer);
+    expect((await unblocked).ok()).toBe(true);
     await seller.getByRole('button', { name: '刷新屏蔽状态', exact: true }).click();
     await expect(seller.getByRole('button', { name: '图片', exact: true })).toBeEnabled();
     await buyer.getByLabel('消息内容', { exact: true }).fill('E2E解除屏蔽 ' + RUN);
@@ -372,7 +374,7 @@ test('06 mobile 360px layout has no horizontal overflow', async () => {
         await expect(page.locator('h1').first()).toBeVisible();
         if (route === '/') {
             await expect(page.getByRole('heading', { name: state.productA.title, exact: true })).toBeVisible();
-            const images = page.locator('.mm-product__cover img');
+            const images = page.locator('.mm-home__grid .mm-product-card__cover img');
             expect(await images.count()).toBeGreaterThan(0);
             for (const image of await images.all()) {
                 await image.scrollIntoViewIfNeeded();

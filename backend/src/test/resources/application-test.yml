@@ -5,6 +5,10 @@ spring:
     url: jdbc:mysql://${MAIMAI_DB_HOST:127.0.0.1}:${MAIMAI_DB_PORT:3307}/maimai_test?useUnicode=true&characterEncoding=UTF-8&connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true&useSSL=false&allowPublicKeyRetrieval=true
     username: ${MAIMAI_DB_USER:maimai}
     password: ${MAIMAI_DB_PASSWORD:}
+    hikari:
+      # 多个测试上下文共享小型 MySQL；保留并发容量，但不预先占满每个闲置池。
+      minimum-idle: 0
+      idle-timeout: 10000
 
 maimai:
   mail:

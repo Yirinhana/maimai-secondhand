@@ -95,6 +95,7 @@ public class SecurityConfig {
                         "/api/v1/categories", "/api/v1/products", "/api/v1/products/*",
                         "/api/v1/sellers/*", "/api/v1/sellers/*/products",
                         "/api/v1/policies/current", "/api/v1/shipping-provinces", "/api/v1/support/faq",
+                        "/api/v1/avatars/*", "/api/v1/official/articles", "/api/v1/official/articles/*",
                         "/uploads/**", "/error").permitAll()
                     .requestMatchers("/api/v1/auth/register/code", "/api/v1/auth/register",
                         "/api/v1/auth/login", "/api/v1/auth/password/code",

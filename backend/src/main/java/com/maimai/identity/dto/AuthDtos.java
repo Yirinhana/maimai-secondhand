@@ -47,7 +47,7 @@ public final class AuthDtos {
     }
 
     public record UserSummary(Long id, String email, String nickname, Set<String> roles,
-                              String sellerStatus) {
+                              String sellerStatus, String avatarUrl) {
     }
 
     public record CsrfResponse(String token) {

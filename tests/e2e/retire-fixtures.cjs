@@ -47,7 +47,7 @@ async function api(context, method, endpoint) {
       await page.getByLabel('邮箱',{exact:true}).fill(name+'@maimai.local');
       await page.getByLabel('密码',{exact:true}).fill('Maimai#2026');
       await page.getByRole('button',{name:'登录',exact:true}).click();
-      await expect(page.getByRole('heading',{name:'让闲置再次流转',exact:true})).toBeVisible();
+      await expect(page.getByRole('heading',{name:/把喜欢的留下/})).toBeVisible();
       actors[name]={context,me:await api(context,'GET','/api/v1/auth/me')};
     }
     // Preflight all candidates before changing any product.
@@ -76,7 +76,7 @@ async function api(context, method, endpoint) {
     await page.goto(BASE+'/');
     const products=await (await productsResponse).json();
     ledger.remainingHomepageProducts=products.content.map(p=>({id:p.id,title:p.title}));
-    const images=page.locator('.mm-product__cover img');
+    const images=page.locator('.mm-home__grid .mm-product-card__cover img');
     await expect(images).toHaveCount(products.content.length);
     for (const image of await images.all()) {
       await image.scrollIntoViewIfNeeded();

@@ -1,14 +1,51 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import type { RouteRecordRaw } from 'vue-router'
-import { useAuthStore } from '../shared/stores/auth'
+import { createRouter, createWebHistory } from 'vue-router';
+import type { RouteRecordRaw } from 'vue-router';
+import { useAuthStore } from '../shared/stores/auth';
 
 const routes: RouteRecordRaw[] = [
-  {path:'/me/closure',name:'account-closure',component:()=>import('../modules/account/AccountClosurePage.vue'),meta:{requiresAuth:true}},
-  {path:'/policies',name:'policies',component:()=>import('../modules/policies/PoliciesPage.vue')},
-  {path:'/support',name:'support',component:()=>import('../modules/support/SupportListPage.vue')},
-  {path:'/support/tickets/:id',name:'support-ticket',component:()=>import('../modules/support/SupportTicketPage.vue'),meta:{requiresAuth:true}},
-  {path:'/community/demands',name:'demands',component:()=>import('../modules/community/DemandsPage.vue')},
-  {path:'/me/community',name:'my-community',component:()=>import('../modules/community/MyCommunityPage.vue'),meta:{requiresAuth:true}},
+  {
+    path: '/official',
+    name: 'official',
+    component: () => import('../modules/official/OfficialListPage.vue'),
+  },
+  {
+    path: '/official/:slug',
+    name: 'official-article',
+    component: () => import('../modules/official/OfficialArticlePage.vue'),
+  },
+  {
+    path: '/me/closure',
+    name: 'account-closure',
+    component: () => import('../modules/account/AccountClosurePage.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/policies',
+    name: 'policies',
+    component: () => import('../modules/policies/PoliciesPage.vue'),
+  },
+  {
+    path: '/support',
+    name: 'support',
+    component: () => import('../modules/support/SupportListPage.vue'),
+  },
+  {
+    path: '/support/tickets/:id',
+    name: 'support-ticket',
+    component: () => import('../modules/support/SupportTicketPage.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/community/demands',
+    name: 'demands',
+    component: () => import('../modules/community/DemandsPage.vue'),
+  },
+  {
+    path: '/me/community',
+    name: 'my-community',
+    component: () => import('../modules/community/MyCommunityPage.vue'),
+    meta: { requiresAuth: true },
+  },
   // 商品（catalog）
   {
     path: '/',
@@ -152,11 +189,37 @@ const routes: RouteRecordRaw[] = [
     component: () => import('../modules/admin/AdminLayout.vue'),
     meta: { requiresAuth: true, admin: true },
     children: [
-      {path:'categories',name:'admin-categories',component:()=>import('../modules/admin/CategoriesPage.vue')},
-      {path:'finance',name:'admin-finance',component:()=>import('../modules/admin/FinancePage.vue')},
-      {path:'trade-todos',name:'admin-trade-todos',component:()=>import('../modules/admin/TradeTodosPage.vue')},
-      {path:'support',name:'admin-support',component:()=>import('../modules/support/SupportListPage.vue')},
-      {path:'community',name:'admin-community',component:()=>import('../modules/admin/CommunityModerationPage.vue')},
+      {
+        path: 'official',
+        name: 'admin-official',
+        component: () => import('../modules/official/AdminOfficialPage.vue'),
+        meta: { title: '官方内容管理' },
+      },
+      {
+        path: 'categories',
+        name: 'admin-categories',
+        component: () => import('../modules/admin/CategoriesPage.vue'),
+      },
+      {
+        path: 'finance',
+        name: 'admin-finance',
+        component: () => import('../modules/admin/FinancePage.vue'),
+      },
+      {
+        path: 'trade-todos',
+        name: 'admin-trade-todos',
+        component: () => import('../modules/admin/TradeTodosPage.vue'),
+      },
+      {
+        path: 'support',
+        name: 'admin-support',
+        component: () => import('../modules/support/SupportListPage.vue'),
+      },
+      {
+        path: 'community',
+        name: 'admin-community',
+        component: () => import('../modules/admin/CommunityModerationPage.vue'),
+      },
       {
         path: '',
         name: 'admin-dashboard',
@@ -194,26 +257,26 @@ const routes: RouteRecordRaw[] = [
     name: 'not-found',
     component: () => import('../modules/catalog/SearchPage.vue'),
   },
-]
+];
 
 export const router = createRouter({
   history: createWebHistory(),
   routes,
   scrollBehavior: () => ({ top: 0 }),
-})
+});
 
 router.beforeEach(async (to) => {
-  if (!to.meta.requiresAuth && !to.meta.admin) return true
+  if (!to.meta.requiresAuth && !to.meta.admin) return true;
 
-  const auth = useAuthStore()
+  const auth = useAuthStore();
   if (!auth.meLoaded) {
-    await auth.fetchMe()
+    await auth.fetchMe();
   }
   if (!auth.me) {
-    return { name: 'login', query: { redirect: to.fullPath } }
+    return { name: 'login', query: { redirect: to.fullPath } };
   }
   if (to.meta.admin && !auth.isAdmin) {
-    return { name: 'home' }
+    return { name: 'home' };
   }
-  return true
-})
+  return true;
+});

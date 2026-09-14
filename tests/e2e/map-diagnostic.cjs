@@ -11,7 +11,7 @@ const path = require('path');
     await page.getByLabel('邮箱', { exact: true }).fill('buyer@maimai.local');
     await page.getByLabel('密码', { exact: true }).fill('Maimai#2026');
     await page.getByRole('button', { name: '登录', exact: true }).click();
-    await page.getByRole('heading', { name: '让闲置再次流转', exact: true }).waitFor();
+    await page.getByRole('heading', { name: /把喜欢的留下/ }).waitFor();
     await page.goto('http://127.0.0.1:5173/me');
     await page.getByRole('tab', { name: '收货地址', exact: true }).click();
     await page.getByRole('button', { name: '新增地址', exact: true }).click();

@@ -1,34 +1,36 @@
-/* 麦麦二手设计令牌：来源 docs/design/brand/palette.json */
+/* 035 网站改版设计令牌；原始品牌稿保留于 docs/design/brand */
 :root {
   /* 品牌色 */
-  --mm-primary: #6D42D8;
-  --mm-primary-hover: #5C36BE;
-  --mm-primary-active: #4C2CA0;
-  --mm-canvas: #F7F5FC;
-  --mm-ink: #241D34;
-  --mm-muted: #716B7C;
-  --mm-white: #FFFFFF;
+  --mm-primary: #b94e18;
+  --mm-primary-hover: #9a3d10;
+  --mm-primary-active: #7d300c;
+  --mm-canvas: #f7f6f2;
+  --mm-ink: #242522;
+  --mm-muted: #71746d;
+  --mm-white: #ffffff;
+  --mm-accent-soft: #fcf0e6;
+  --mm-warm: #eee8dc;
 
   /* 功能色 */
-  --mm-danger: #C0344A;
-  --mm-danger-hover: #A82B40;
-  --mm-success: #1E7B4E;
-  --mm-warning: #A35E00;
-  --mm-info: #1F5FA8;
+  --mm-danger: #c0344a;
+  --mm-danger-hover: #a82b40;
+  --mm-success: #1e7b4e;
+  --mm-warning: #a35e00;
+  --mm-info: #1f5fa8;
 
   /* 线条与阴影 */
-  --mm-border: #E3DEEF;
-  --mm-shadow: 0 1px 3px rgba(36, 29, 52, 0.1);
+  --mm-border: #e4e4dd;
+  --mm-shadow: 0 2px 8px rgba(34, 36, 30, 0.035);
   --mm-radius-s: 6px;
   --mm-radius-m: 10px;
-  --mm-radius-l: 16px;
+  --mm-radius-l: 12px;
 
   /* 字号 */
   --mm-font-s: 13px;
   --mm-font-base: 15px;
   --mm-font-l: 18px;
   --mm-font-xl: 22px;
-  --mm-font-xxl: 28px;
+  --mm-font-xxl: 36px;
 
   /* 间距基准 */
   --mm-space-1: 4px;

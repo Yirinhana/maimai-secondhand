@@ -32,12 +32,21 @@
         </div>
         <div class="mm-order-list__peer">
           {{ role === 'buyer' ? `卖家：${order.sellerNickname}` : `买家订单` }}
-          · {{ DELIVERY_METHOD_TEXT[order.deliveryMethod] }} · {{ formatTime(order.createdAt) }}
+          · {{ DELIVERY_METHOD_TEXT[order.deliveryMethod] }} ·
+          {{ formatTime(order.createdAt) }}
         </div>
         <ul class="mm-order-list__items">
-          <li v-for="(item, idx) in order.items" :key="idx" class="mm-order-list__item">
+          <li
+            v-for="(item, idx) in order.items"
+            :key="idx"
+            class="mm-order-list__item"
+          >
             <span class="mm-order-list__item-cover">
-              <ItemImage v-if="item.imagePath" :src="item.imagePath" :alt="item.title" />
+              <ItemImage
+                v-if="item.imagePath"
+                :src="item.imagePath"
+                :alt="item.title"
+              />
               <span v-else class="mm-order-list__item-noimg">暂无图</span>
             </span>
             <span class="mm-order-list__item-title">{{ item.title }}</span>
@@ -45,43 +54,59 @@
           </li>
         </ul>
         <dl class="mm-order-list__amounts">
-          <div><dt>商品款</dt><dd><PriceText :cents="order.goodsAmountCents" /></dd></div>
-          <div><dt>运费</dt><dd><PriceText :cents="order.freightCents" /></dd></div>
-          <div><dt>卖家承担的平台费</dt><dd><PriceText :cents="order.platformFeeCents" /></dd></div>
+          <div>
+            <dt>商品款</dt>
+            <dd><PriceText :cents="order.goodsAmountCents" /></dd>
+          </div>
+          <div>
+            <dt>运费</dt>
+            <dd><PriceText :cents="order.freightCents" /></dd>
+          </div>
+          <div>
+            <dt>卖家承担的平台费</dt>
+            <dd><PriceText :cents="order.platformFeeCents" /></dd>
+          </div>
           <div class="mm-order-list__total">
             <dt>合计</dt>
             <dd><PriceText :cents="order.totalCents" /></dd>
           </div>
         </dl>
-        <p v-if="order.fulfillmentStatus === 'PENDING_PAYMENT'" class="mm-order-list__deadline">
+        <p
+          v-if="order.fulfillmentStatus === 'PENDING_PAYMENT'"
+          class="mm-order-list__deadline"
+        >
           请在 {{ formatTime(order.expiresAt) }} 前付款，逾期订单自动关闭
         </p>
       </RouterLink>
       <MmPagination :page="page" :total-pages="totalPages" @change="onPage" />
     </template>
 
-    <EmptyState v-else title="暂无相关订单" description="换个状态页签看看，或去首页逛逛" />
+    <EmptyState
+      v-else
+      title="暂无相关订单"
+      description="换个状态页签看看，或去首页逛逛"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import ItemImage from '../../../shared/components/ItemImage.vue'
-import { onMounted, ref } from 'vue'
-import { get, type ApiError } from '../../../shared/api'
-import { formatTime } from '../../../shared/format'
+import ItemImage from '../../../shared/components/ItemImage.vue';
+import { onMounted, ref } from 'vue';
+import { get, type ApiError } from '../../../shared/api';
+import { formatTime } from '../../../shared/format';
 import {
   DELIVERY_METHOD_TEXT,
   FULFILLMENT_STATUS_TEXT,
   type FulfillmentStatus,
   type OrderDto,
   type Page,
-} from '../../../shared/types'
-import MmTag from '../../../shared/components/MmTag.vue'
-import MmPagination from '../../../shared/components/MmPagination.vue'
-import EmptyState from '../../../shared/components/EmptyState.vue'
-import PriceText from '../../../shared/components/PriceText.vue'
+} from '../../../shared/types';
+import MmTag from '../../../shared/components/MmTag.vue';
+import MmPagination from '../../../shared/components/MmPagination.vue';
+import EmptyState from '../../../shared/components/EmptyState.vue';
+import PriceText from '../../../shared/components/PriceText.vue';
 
-const props = defineProps<{ role: 'buyer' | 'seller' }>()
+const props = defineProps<{ role: 'buyer' | 'seller' }>();
 
 const tabs: { label: string; status: FulfillmentStatus | '' }[] = [
   { label: '全部', status: '' },
@@ -91,211 +116,260 @@ const tabs: { label: string; status: FulfillmentStatus | '' }[] = [
   { label: '待面交', status: 'AWAITING_MEETUP' },
   { label: '已完成', status: 'COMPLETED' },
   { label: '已关闭', status: 'CLOSED' },
-]
+];
 
-const activeStatus = ref<FulfillmentStatus | ''>('')
-const orders = ref<OrderDto[]>([])
-const page = ref(0)
-const totalPages = ref(0)
-const loading = ref(true)
-const error = ref('')
+const activeStatus = ref<FulfillmentStatus | ''>('');
+const orders = ref<OrderDto[]>([]);
+const page = ref(0);
+const totalPages = ref(0);
+const loading = ref(true);
+const error = ref('');
 
 function statusTone(
   status: FulfillmentStatus,
 ): 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'neutral' {
   switch (status) {
     case 'PENDING_PAYMENT':
-      return 'warning'
+      return 'warning';
     case 'PAID_PENDING_SHIP':
     case 'SHIPPED':
     case 'AWAITING_MEETUP':
-      return 'info'
+      return 'info';
     case 'COMPLETED':
-      return 'success'
+      return 'success';
     case 'CLOSED':
-      return 'neutral'
+      return 'neutral';
     default:
-      return 'primary'
+      return 'primary';
   }
 }
 
 async function load() {
-  loading.value = true
-  error.value = ''
+  loading.value = true;
+  error.value = '';
   try {
     const res = await get<Page<OrderDto>>('/orders', {
       role: props.role,
       status: activeStatus.value || undefined,
       page: page.value,
       size: 10,
-    })
-    orders.value = res.content
-    totalPages.value = res.totalPages
+    });
+    orders.value = res.content;
+    totalPages.value = res.totalPages;
   } catch (e) {
-    error.value = (e as ApiError).message
+    error.value = (e as ApiError).message;
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 function switchTab(status: FulfillmentStatus | '') {
-  if (status === activeStatus.value) return
-  activeStatus.value = status
-  page.value = 0
-  load()
+  if (status === activeStatus.value) return;
+  activeStatus.value = status;
+  page.value = 0;
+  load();
 }
 
 function onPage(p: number) {
-  page.value = p
-  load()
+  page.value = p;
+  load();
 }
 
-onMounted(load)
+onMounted(load);
 </script>
 
 <style scoped>
 .mm-order-list {
   display: flex;
   flex-direction: column;
-  gap: var(--mm-space-4);
+  gap: 20px;
 }
-
 .mm-order-list__tabs {
   display: flex;
-  gap: var(--mm-space-2);
+  gap: 28px;
   overflow-x: auto;
-  padding-bottom: var(--mm-space-1);
+  border-bottom: 1px solid var(--mm-border);
+  padding-bottom: 0;
 }
-
 .mm-order-list__tab {
-  flex-shrink: 0;
-  padding: var(--mm-space-2) var(--mm-space-3);
-  border-radius: var(--mm-radius-m);
-  border: 1px solid var(--mm-border);
-  background-color: var(--mm-white);
-  font-size: var(--mm-font-s);
-  color: var(--mm-ink);
+  flex: none;
+  white-space: nowrap;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: var(--mm-muted);
+  font-size: 13px;
+  padding: 9px 0 16px;
 }
-
 .mm-order-list__tab.is-active {
-  background-color: var(--mm-primary);
-  border-color: var(--mm-primary);
-  color: var(--mm-white);
-  font-weight: 600;
+  border-bottom-color: var(--mm-ink);
+  color: var(--mm-ink);
+  font-weight: 750;
 }
-
 .mm-order-list__error {
   color: var(--mm-danger);
-  font-size: var(--mm-font-s);
+  font-size: 13px;
 }
-
 .mm-order-list__hint {
   color: var(--mm-muted);
-  font-size: var(--mm-font-s);
+  font-size: 13px;
 }
-
 .mm-order-list__card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--mm-space-2);
-  background-color: var(--mm-white);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 270px;
+  gap: 15px 30px;
+  background: white;
   border: 1px solid var(--mm-border);
-  border-radius: var(--mm-radius-l);
-  box-shadow: var(--mm-shadow);
-  padding: var(--mm-space-4);
+  border-radius: 8px;
+  overflow: hidden;
+  padding: 0 24px 23px;
   color: var(--mm-ink);
 }
-
+.mm-order-list__card:hover {
+  text-decoration: none;
+  border-color: #b9bfb2;
+}
 .mm-order-list__card-head {
+  grid-column: 1/-1;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: var(--mm-space-2);
+  gap: 12px;
+  flex-wrap: wrap;
+  background: #f0f1eb;
+  margin: 0 -24px;
+  padding: 13px 24px;
 }
-
 .mm-order-list__no {
-  font-size: var(--mm-font-s);
-  color: var(--mm-muted);
+  font-size: 11px;
   font-variant-numeric: tabular-nums;
+  color: var(--mm-muted);
+  overflow-wrap: anywhere;
 }
-
 .mm-order-list__peer {
-  font-size: var(--mm-font-s);
+  grid-column: 1;
+  font-size: 11px;
   color: var(--mm-muted);
 }
-
 .mm-order-list__items {
+  grid-column: 1;
   display: flex;
   flex-direction: column;
-  gap: var(--mm-space-2);
+  gap: 12px;
 }
-
 .mm-order-list__item {
   display: flex;
   align-items: center;
-  gap: var(--mm-space-2);
+  gap: 17px;
+  min-width: 0;
 }
-
 .mm-order-list__item-cover {
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
-  border-radius: var(--mm-radius-s);
+  width: 76px;
+  height: 76px;
+  flex: none;
+  border-radius: 6px;
   overflow: hidden;
-  background-color: var(--mm-canvas);
+  background: var(--mm-canvas);
   display: flex;
   align-items: center;
   justify-content: center;
 }
-
 .mm-order-list__item-cover img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-
 .mm-order-list__item-noimg {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--mm-muted);
 }
-
 .mm-order-list__item-title {
   flex: 1;
-  font-size: var(--mm-font-s);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  min-width: 0;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+  font-weight: 600;
 }
-
 .mm-order-list__item-qty {
-  font-size: var(--mm-font-s);
+  font-size: 12px;
   color: var(--mm-muted);
 }
-
 .mm-order-list__amounts {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--mm-space-1) var(--mm-space-4);
-  border-top: 1px solid var(--mm-border);
-  padding-top: var(--mm-space-2);
+  grid-column: 2;
+  grid-row: 2 / span 2;
+  margin: 0;
+  border-left: 1px solid var(--mm-border);
+  padding-left: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  justify-content: center;
 }
-
 .mm-order-list__amounts > div {
   display: flex;
   justify-content: space-between;
-  font-size: var(--mm-font-s);
+  gap: 12px;
+  font-size: 12px;
 }
-
 .mm-order-list__amounts dt {
   color: var(--mm-muted);
 }
-
-.mm-order-list__total {
-  font-weight: 700;
+.mm-order-list__amounts dd {
+  margin: 0;
 }
-
+.mm-order-list__amounts :deep(.mm-price) {
+  font-weight: 500;
+  color: var(--mm-ink);
+}
+.mm-order-list__total {
+  padding-top: 8px;
+  border-top: 1px solid var(--mm-border);
+  margin-top: 4px;
+}
+.mm-order-list__total :deep(.mm-price) {
+  font-size: 20px;
+  font-weight: 750;
+}
 .mm-order-list__deadline {
-  font-size: var(--mm-font-s);
+  grid-column: 1/-1;
+  font-size: 11px;
   color: var(--mm-warning);
+  border-top: 1px solid var(--mm-border);
+  padding-top: 12px;
+}
+@media (max-width: 760px) {
+  .mm-order-list__tabs {
+    gap: 23px;
+  }
+  .mm-order-list__card {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 0 16px 18px;
+    gap: 15px;
+  }
+  .mm-order-list__card-head {
+    margin: 0 -16px;
+    padding: 13px 16px;
+    gap: 10px;
+  }
+  .mm-order-list__amounts {
+    grid-column: 1;
+    grid-row: auto;
+    border-left: 0;
+    border-top: 1px dashed var(--mm-border);
+    padding: 14px 0 0;
+  }
+  .mm-order-list__item-cover {
+    width: 62px;
+    height: 62px;
+  }
+  .mm-order-list__item-title {
+    font-size: 13px;
+  }
+  .mm-order-list__no {
+    font-size: 10px;
+  }
+  .mm-order-list__card-head :deep(.mm-tag) {
+    font-size: 11px;
+  }
 }
 </style>

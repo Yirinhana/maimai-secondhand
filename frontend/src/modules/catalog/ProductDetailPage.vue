@@ -6,7 +6,11 @@
     </div>
 
     <template v-else-if="product">
-      <p v-if="product.status !== 'ON_SALE'" class="mm-detail__status-banner" role="alert">
+      <p
+        v-if="product.status !== 'ON_SALE'"
+        class="mm-detail__status-banner"
+        role="alert"
+      >
         该商品当前{{ PRODUCT_STATUS_TEXT[product.status] }}，暂不可购买
       </p>
 
@@ -29,7 +33,11 @@
                 :aria-label="`查看第 ${i + 1} 张图片`"
                 @click="currentIndex = i"
               >
-                <ItemImage :src="img.path" :alt="`${product.title} 缩略图 ${i + 1}`" loading="lazy" />
+                <ItemImage
+                  :src="img.path"
+                  :alt="`${product.title} 缩略图 ${i + 1}`"
+                  loading="lazy"
+                />
               </button>
             </li>
           </ul>
@@ -41,22 +49,31 @@
           <div class="mm-detail__meta">
             <MmTag :text="CONDITION_TEXT[product.condition]" tone="primary" />
             <span class="mm-detail__region">{{ product.region }}</span>
-            <span class="mm-detail__time">发布于 {{ formatTime(product.createdAt) }}</span>
+            <span class="mm-detail__time"
+              >发布于 {{ formatTime(product.createdAt) }}</span
+            >
           </div>
 
           <div class="mm-detail__price-row">
             <PriceText class="mm-detail__price" :cents="product.priceCents" />
             <span class="mm-detail__stock">
-              <template v-if="product.stockAvailable > 0">库存 {{ product.stockAvailable }} 件</template>
+              <template v-if="product.stockAvailable > 0"
+                >库存 {{ product.stockAvailable }} 件</template
+              >
               <template v-else>已售罄</template>
             </span>
           </div>
 
           <!-- 缺陷与成色显著展示，不隐藏 -->
-          <div class="mm-detail__defects" :class="{ 'mm-detail__defects--none': !product.defects }">
+          <div
+            class="mm-detail__defects"
+            :class="{ 'mm-detail__defects--none': !product.defects }"
+          >
             <h2 class="mm-detail__block-title">成色与缺陷说明</h2>
             <p v-if="product.defects">{{ product.defects }}</p>
-            <p v-else>卖家未填写缺陷说明，请结合图片与描述判断，必要时先与卖家议价沟通。</p>
+            <p v-else>
+              卖家未填写缺陷说明，请结合图片与描述判断，必要时先与卖家议价沟通。
+            </p>
           </div>
 
           <!-- 运费与交付方式明示 -->
@@ -65,12 +82,23 @@
             <ul>
               <li v-for="m in product.deliveryMethods" :key="m">
                 <template v-if="m === 'EXPRESS'">
-                  快递：运费 {{ product.freightCents > 0 ? formatPrice(product.freightCents) : '免运费' }}（下单时一并结算）
+                  快递：运费
+                  {{
+                    product.freightCents > 0
+                      ? formatPrice(product.freightCents)
+                      : '免运费'
+                  }}（下单时一并结算）
                 </template>
                 <template v-else>面交：与卖家约定时间地点，当面交付</template>
               </li>
             </ul>
-            <p v-if="product.deliveryMethods.includes('EXPRESS')">快递配送范围：{{product.shippingProvinces?.length?product.shippingProvinces.join('、'):'全国'}}</p>
+            <p v-if="product.deliveryMethods.includes('EXPRESS')">
+              快递配送范围：{{
+                product.shippingProvinces?.length
+                  ? product.shippingProvinces.join('、')
+                  : '全国'
+              }}
+            </p>
           </div>
 
           <div v-if="product.returnPromise" class="mm-detail__return">
@@ -91,19 +119,36 @@
                   :disabled="product.stockAvailable <= 0"
                 />
               </label>
-              <label v-if="product.deliveryMethods.length > 1" class="mm-detail__control">
+              <label
+                v-if="product.deliveryMethods.length > 1"
+                class="mm-detail__control"
+              >
                 <span>交付方式</span>
                 <select v-model="deliveryMethod">
-                  <option v-for="m in product.deliveryMethods" :key="m" :value="m">
+                  <option
+                    v-for="m in product.deliveryMethods"
+                    :key="m"
+                    :value="m"
+                  >
                     {{ DELIVERY_METHOD_TEXT[m] }}
                   </option>
                 </select>
               </label>
             </div>
-            <p v-if="actionMessage" class="mm-detail__action-message" role="status">{{ actionMessage }}</p>
-            <p v-if="actionError" class="mm-detail__action-error" role="alert">{{ actionError }}</p>
+            <p
+              v-if="actionMessage"
+              class="mm-detail__action-message"
+              role="status"
+            >
+              {{ actionMessage }}
+            </p>
+            <p v-if="actionError" class="mm-detail__action-error" role="alert">
+              {{ actionError }}
+            </p>
             <div class="mm-detail__buttons">
-              <MmButton :disabled="product.stockAvailable <= 0" @click="buyNow">立即购买</MmButton>
+              <MmButton :disabled="product.stockAvailable <= 0" @click="buyNow"
+                >立即购买</MmButton
+              >
               <MmButton
                 variant="ghost"
                 :disabled="product.stockAvailable <= 0"
@@ -112,16 +157,24 @@
               >
                 加入购物车
               </MmButton>
-              <MmButton variant="ghost" @click="bargainOpen = true">议价</MmButton>
+              <MmButton variant="ghost" @click="bargainOpen = true"
+                >议价</MmButton
+              >
             </div>
           </div>
         </section>
       </div>
 
-      <ProductSocialActions :key="product.id" :product-id="product.id" :seller-id="product.seller.id" />
+      <ProductSocialActions
+        :key="product.id"
+        :product-id="product.id"
+        :seller-id="product.seller.id"
+      />
       <!-- 商品描述 -->
       <MmCard title="商品描述" class="mm-detail__section">
-        <p class="mm-detail__description">{{ product.description || '卖家还没有填写描述。' }}</p>
+        <p class="mm-detail__description">
+          {{ product.description || '卖家还没有填写描述。' }}
+        </p>
       </MmCard>
 
       <!-- 卖家卡片 -->
@@ -131,7 +184,10 @@
             <p class="mm-seller__name">{{ product.seller.nickname }}</p>
             <p class="mm-seller__hint">点击查看 ta 的更多在售商品</p>
           </div>
-          <RouterLink class="mm-seller__link" :to="`/sellers/${product.seller.id}`">
+          <RouterLink
+            class="mm-seller__link"
+            :to="`/sellers/${product.seller.id}`"
+          >
             查看卖家主页
           </RouterLink>
         </div>
@@ -139,23 +195,53 @@
     </template>
 
     <!-- 议价对话框 -->
-    <div v-if="bargainOpen" class="mm-dialog-mask" @click.self="bargainOpen = false">
-      <div class="mm-dialog" role="dialog" aria-modal="true" aria-labelledby="mm-bargain-title">
+    <div
+      v-if="bargainOpen"
+      class="mm-dialog-mask"
+      @click.self="bargainOpen = false"
+    >
+      <div
+        class="mm-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="mm-bargain-title"
+      >
         <h2 id="mm-bargain-title" class="mm-dialog__title">向卖家议价</h2>
-        <p class="mm-dialog__note">议价 24 小时内有效，卖家同意后仅你本人可按议价下单。</p>
+        <p class="mm-dialog__note">
+          议价 24 小时内有效，卖家同意后仅你本人可按议价下单。
+        </p>
         <form @submit.prevent="submitBargain">
           <label class="mm-dialog__field">
             <span>数量</span>
-            <input v-model.number="bargainQuantity" type="number" min="1" :max="product?.stockAvailable" required />
+            <input
+              v-model.number="bargainQuantity"
+              type="number"
+              min="1"
+              :max="product?.stockAvailable"
+              required
+            />
           </label>
           <label class="mm-dialog__field">
             <span>你的报价（元/件）</span>
-            <input v-model="bargainPrice" type="number" min="0.01" step="0.01" placeholder="输入期望单价" required />
+            <input
+              v-model="bargainPrice"
+              type="number"
+              min="0.01"
+              step="0.01"
+              placeholder="输入期望单价"
+              required
+            />
           </label>
-          <p v-if="bargainError" class="mm-dialog__error" role="alert">{{ bargainError }}</p>
+          <p v-if="bargainError" class="mm-dialog__error" role="alert">
+            {{ bargainError }}
+          </p>
           <div class="mm-dialog__actions">
-            <MmButton type="submit" :loading="bargainLoading">提交议价</MmButton>
-            <MmButton variant="ghost" @click="bargainOpen = false">取消</MmButton>
+            <MmButton type="submit" :loading="bargainLoading"
+              >提交议价</MmButton
+            >
+            <MmButton variant="ghost" @click="bargainOpen = false"
+              >取消</MmButton
+            >
           </div>
         </form>
       </div>
@@ -164,17 +250,17 @@
 </template>
 
 <script setup lang="ts">
-import ItemImage from '../../shared/components/ItemImage.vue'
-import { computed, ref, watch } from 'vue'
-import ProductSocialActions from '../community/ProductSocialActions.vue'
-import { useRoute, useRouter } from 'vue-router'
-import { get, post, type ApiError } from '../../shared/api'
-import EmptyState from '../../shared/components/EmptyState.vue'
-import MmButton from '../../shared/components/MmButton.vue'
-import MmCard from '../../shared/components/MmCard.vue'
-import MmTag from '../../shared/components/MmTag.vue'
-import PriceText from '../../shared/components/PriceText.vue'
-import { formatPrice, formatTime } from '../../shared/format'
+import ItemImage from '../../shared/components/ItemImage.vue';
+import { computed, ref, watch } from 'vue';
+import ProductSocialActions from '../community/ProductSocialActions.vue';
+import { useRoute, useRouter } from 'vue-router';
+import { get, post, type ApiError } from '../../shared/api';
+import EmptyState from '../../shared/components/EmptyState.vue';
+import MmButton from '../../shared/components/MmButton.vue';
+import MmCard from '../../shared/components/MmCard.vue';
+import MmTag from '../../shared/components/MmTag.vue';
+import PriceText from '../../shared/components/PriceText.vue';
+import { formatPrice, formatTime } from '../../shared/format';
 import {
   CONDITION_TEXT,
   DELIVERY_METHOD_TEXT,
@@ -182,115 +268,121 @@ import {
   type CheckoutItem,
   type DeliveryMethod,
   type ProductDetail,
-} from '../../shared/types'
+} from '../../shared/types';
 
-const route = useRoute()
-const router = useRouter()
+const route = useRoute();
+const router = useRouter();
 
-const product = ref<ProductDetail | null>(null)
-const loading = ref(true)
-const error = ref('')
-const currentIndex = ref(0)
+const product = ref<ProductDetail | null>(null);
+const loading = ref(true);
+const error = ref('');
+const currentIndex = ref(0);
 
-const quantity = ref(1)
-const deliveryMethod = ref<DeliveryMethod>('EXPRESS')
-const actionMessage = ref('')
-const actionError = ref('')
-const cartLoading = ref(false)
+const quantity = ref(1);
+const deliveryMethod = ref<DeliveryMethod>('EXPRESS');
+const actionMessage = ref('');
+const actionError = ref('');
+const cartLoading = ref(false);
 
-const bargainOpen = ref(false)
-const bargainQuantity = ref(1)
-const bargainPrice = ref('')
-const bargainLoading = ref(false)
-const bargainError = ref('')
+const bargainOpen = ref(false);
+const bargainQuantity = ref(1);
+const bargainPrice = ref('');
+const bargainLoading = ref(false);
+const bargainError = ref('');
 
-const currentImage = computed(() => product.value?.images[currentIndex.value] ?? null)
+const currentImage = computed(
+  () => product.value?.images[currentIndex.value] ?? null,
+);
 
 async function load(id: string) {
-  loading.value = true
-  error.value = ''
-  product.value = null
-  currentIndex.value = 0
+  loading.value = true;
+  error.value = '';
+  product.value = null;
+  currentIndex.value = 0;
   try {
-    const data = await get<ProductDetail>(`/products/${id}`)
-    product.value = data
-    quantity.value = data.stockAvailable > 0 ? 1 : 0
-    deliveryMethod.value = data.deliveryMethods[0] ?? 'EXPRESS'
+    const data = await get<ProductDetail>(`/products/${id}`);
+    product.value = data;
+    quantity.value = data.stockAvailable > 0 ? 1 : 0;
+    deliveryMethod.value = data.deliveryMethods[0] ?? 'EXPRESS';
   } catch (e) {
-    error.value = (e as ApiError).message || '加载失败，请稍后重试'
+    error.value = (e as ApiError).message || '加载失败，请稍后重试';
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
 
 watch(
   () => route.params.id,
   (id) => {
-    if (typeof id === 'string') load(id)
+    if (typeof id === 'string') load(id);
   },
   { immediate: true },
-)
+);
 
 function validQuantity(): number {
-  if (!product.value) return 1
-  const q = Math.floor(quantity.value)
-  if (!Number.isFinite(q) || q < 1) return 1
-  return Math.min(q, Math.max(product.value.stockAvailable, 1))
+  if (!product.value) return 1;
+  const q = Math.floor(quantity.value);
+  if (!Number.isFinite(q) || q < 1) return 1;
+  return Math.min(q, Math.max(product.value.stockAvailable, 1));
 }
 
 function buyNow() {
-  if (!product.value) return
+  if (!product.value) return;
   const items: CheckoutItem[] = [
-    { productId: product.value.id, quantity: validQuantity(), deliveryMethod: deliveryMethod.value },
-  ]
-  router.push({ path: '/checkout', query: { items: JSON.stringify(items) } })
+    {
+      productId: product.value.id,
+      quantity: validQuantity(),
+      deliveryMethod: deliveryMethod.value,
+    },
+  ];
+  router.push({ path: '/checkout', query: { items: JSON.stringify(items) } });
 }
 
 async function addToCart() {
-  if (!product.value) return
-  cartLoading.value = true
-  actionMessage.value = ''
-  actionError.value = ''
+  if (!product.value) return;
+  cartLoading.value = true;
+  actionMessage.value = '';
+  actionError.value = '';
   try {
     await post('/cart', {
       productId: product.value.id,
       quantity: validQuantity(),
       deliveryMethod: deliveryMethod.value,
-    })
-    actionMessage.value = '已加入购物车'
+    });
+    actionMessage.value = '已加入购物车';
   } catch (e) {
-    actionError.value = (e as ApiError).message || '加入购物车失败'
+    actionError.value = (e as ApiError).message || '加入购物车失败';
   } finally {
-    cartLoading.value = false
+    cartLoading.value = false;
   }
 }
 
 async function submitBargain() {
-  if (!product.value) return
-  const price = Number(bargainPrice.value)
+  if (!product.value) return;
+  const price = Number(bargainPrice.value);
   if (!Number.isFinite(price) || price <= 0) {
-    bargainError.value = '请输入有效报价'
-    return
+    bargainError.value = '请输入有效报价';
+    return;
   }
-  const q = Math.floor(bargainQuantity.value)
+  const q = Math.floor(bargainQuantity.value);
   if (!Number.isFinite(q) || q < 1) {
-    bargainError.value = '请输入有效数量'
-    return
+    bargainError.value = '请输入有效数量';
+    return;
   }
-  bargainLoading.value = true
-  bargainError.value = ''
+  bargainLoading.value = true;
+  bargainError.value = '';
   try {
     await post(`/products/${product.value.id}/bargains`, {
       quantity: q,
       offerPriceCents: Math.round(price * 100),
-    })
-    bargainOpen.value = false
-    actionMessage.value = '议价已提交，24 小时内有效，可在「我的议价」查看进度'
-    actionError.value = ''
+    });
+    bargainOpen.value = false;
+    actionMessage.value = '议价已提交，24 小时内有效，可在「我的议价」查看进度';
+    actionError.value = '';
   } catch (e) {
-    bargainError.value = (e as ApiError).message || '议价提交失败'
+    bargainError.value = (e as ApiError).message || '议价提交失败';
   } finally {
-    bargainLoading.value = false
+    bargainLoading.value = false;
   }
 }
 </script>
@@ -309,7 +401,7 @@ async function submitBargain() {
 }
 
 .mm-detail__status-banner {
-  background-color: #FBF2E4;
+  background-color: #fbf2e4;
   color: var(--mm-warning);
   border: 1px solid var(--mm-warning);
   border-radius: var(--mm-radius-m);
@@ -416,7 +508,7 @@ async function submitBargain() {
 }
 
 .mm-detail__defects {
-  background-color: #FBF2E4;
+  background-color: #fbf2e4;
   border: 1px solid var(--mm-warning);
   border-radius: var(--mm-radius-m);
   padding: var(--mm-space-3) var(--mm-space-4);
@@ -597,6 +689,52 @@ async function submitBargain() {
   .mm-detail__layout {
     grid-template-columns: 1fr;
     gap: var(--mm-space-4);
+  }
+}
+.mm-detail {
+  max-width: 1240px;
+}
+.mm-detail__layout {
+  gap: 44px;
+}
+.mm-detail__title {
+  font-size: 28px;
+  letter-spacing: -0.6px;
+  line-height: 1.5;
+}
+.mm-gallery__main {
+  background: #eceee6;
+  border-radius: 10px;
+  border: 1px solid var(--mm-border);
+}
+.mm-detail__price-row {
+  padding: 20px 0;
+  border-top: 1px solid var(--mm-border);
+  border-bottom: 1px solid var(--mm-border);
+}
+.mm-detail__price {
+  color: var(--mm-ink);
+  font-size: 35px;
+}
+.mm-detail__block-title {
+  font-size: 13px;
+}
+.mm-detail__defects,
+.mm-detail__delivery,
+.mm-detail__return {
+  font-size: 13px;
+  line-height: 1.9;
+}
+.mm-detail__actions {
+  border-top: 1px solid var(--mm-border);
+  padding-top: 18px;
+}
+@media (max-width: 760px) {
+  .mm-detail__layout {
+    gap: 26px;
+  }
+  .mm-detail__title {
+    font-size: 24px;
   }
 }
 </style>

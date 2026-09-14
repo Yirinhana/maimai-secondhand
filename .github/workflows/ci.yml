@@ -1,0 +1,131 @@
+name: Build and MySQL tests
+
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend / Java 21 / MySQL 8.4
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: maimai_test
+          MYSQL_USER: maimai_ci
+          # Public fixtures for this disposable CI container, never production credentials.
+          MYSQL_PASSWORD: ci-fixture-only
+          MYSQL_ROOT_PASSWORD: ci-root-fixture-only
+        ports:
+          - 33306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --host=127.0.0.1 --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      SPRING_PROFILES_ACTIVE: test
+      MAIMAI_DB_HOST: 127.0.0.1
+      MAIMAI_DB_PORT: '33306'
+      MAIMAI_DB_USER: maimai_ci
+      MAIMAI_DB_PASSWORD: ci-fixture-only
+      MAIMAI_MAIL_PROVIDER: capture
+      MAIMAI_PAY_CHANNEL: mock
+      MAIMAI_AMAP_KEY: ''
+      MAIMAI_AMAP_JS_KEY: ''
+      MAIMAI_AMAP_SECURITY_CODE: ''
+      MAIMAI_KUAIDI100_CUSTOMER: ''
+      MAIMAI_KUAIDI100_KEY: ''
+      MAIMAI_HERMES_BASE_URL: ''
+      MAIMAI_HERMES_TOKEN: ''
+      MAIMAI_HERMES_MODEL: ''
+      MAIMAI_HERMES_READONLY_VERIFIED: 'false'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+      - name: Read the single product version
+        id: version
+        shell: bash
+        run: |
+          product_version="$(tr -d '\r\n' < VERSION)"
+          [[ "$product_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]] || exit 1
+          printf 'value=%s\n' "$product_version" >> "$GITHUB_OUTPUT"
+      - name: Verify the disposable MySQL database
+        env:
+          MYSQL_CONTAINER: ${{ job.services.mysql.id }}
+        run: |
+          docker exec "$MYSQL_CONTAINER" sh -c 'MYSQL_PWD="$MYSQL_PASSWORD" mysql --user="$MYSQL_USER" --database="$MYSQL_DATABASE" --batch --skip-column-names --execute="SELECT VERSION(), DATABASE()"'
+      - name: Verify all backend unit and integration tests
+        env:
+          PRODUCT_VERSION: ${{ steps.version.outputs.value }}
+        run: mvn --batch-mode --no-transfer-progress "-Drevision=$PRODUCT_VERSION" -f backend/pom.xml verify
+      - name: Preserve test reports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: backend-test-reports-${{ github.sha }}
+          path: backend/target/surefire-reports/
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Preserve the verified backend build
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: maimai-backend-v${{ steps.version.outputs.value }}-${{ github.sha }}
+          path: |
+            backend/target/maimai-backend.jar
+            VERSION
+          if-no-files-found: error
+          retention-days: 14
+
+  frontend:
+    name: Frontend / Node 24 / TypeScript and Vite
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Read the single product version
+        id: version
+        shell: bash
+        run: |
+          product_version="$(tr -d '\r\n' < VERSION)"
+          [[ "$product_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]] || exit 1
+          printf 'value=%s\n' "$product_version" >> "$GITHUB_OUTPUT"
+      - name: Install the locked frontend dependencies
+        working-directory: frontend
+        run: npm ci --no-audit --no-fund
+      - name: Type-check and build the frontend
+        working-directory: frontend
+        run: npm run build
+      - name: Preserve the verified frontend build
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: maimai-frontend-v${{ steps.version.outputs.value }}-${{ github.sha }}
+          path: |
+            frontend/dist/
+            VERSION
+          if-no-files-found: error
+          retention-days: 14

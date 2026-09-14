@@ -88,6 +88,10 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
+          <systemPropertyVariables>
+            <!-- Bound retained test contexts/pools; do not weaken each test's concurrency limit. -->
+            <spring.test.context.cache.maxSize>4</spring.test.context.cache.maxSize>
+          </systemPropertyVariables>
           <includes>
             <include>**/*Test.java</include>
             <include>**/*Tests.java</include>

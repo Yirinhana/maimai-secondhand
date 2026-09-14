@@ -155,7 +155,8 @@ public class AuthService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> BizException.unauthorized("请先登录"));
         return new UserSummary(user.getId(), user.getEmail(), user.getNickname(), rolesOf(userId),
-                sellerStatusOf(userId));
+                sellerStatusOf(userId), jdbcTemplate.query("SELECT filename FROM user_avatars WHERE user_id=?",
+                        (rs,n) -> AvatarService.url(rs.getString(1)), userId).stream().findFirst().orElse(null));
     }
 
     private void createAndSendCode(String email, Purpose purpose, String ip, String scene) {

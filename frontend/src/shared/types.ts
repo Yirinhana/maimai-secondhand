@@ -24,17 +24,13 @@ export interface TotalPage<T> {
 /* ---------- 认证与账号（identity） ---------- */
 
 export type SellerStatus =
-  | 'NONE'
-  | 'PENDING'
-  | 'SUPPLEMENT'
-  | 'APPROVED'
-  | 'REJECTED'
-  | 'SUSPENDED'
+  'NONE' | 'PENDING' | 'SUPPLEMENT' | 'APPROVED' | 'REJECTED' | 'SUSPENDED'
 
 export interface User {
   id: number
   email: string
   nickname: string
+  avatarUrl?: string | null
   roles: string[]
   sellerStatus: SellerStatus
 }
@@ -84,7 +80,8 @@ export interface AddressRequest {
   isDefault: boolean
 }
 
-export type ChannelStatus = 'NONE' | 'PENDING' | 'QUALIFIED' | 'REJECTED' | 'UNQUALIFIED'
+export type ChannelStatus =
+  'NONE' | 'PENDING' | 'QUALIFIED' | 'REJECTED' | 'UNQUALIFIED'
 
 export interface SellerApplication {
   id: number
@@ -124,7 +121,8 @@ export type ProductStatus =
   | 'REJECTED'
   | 'OFF_SHELF'
 
-export type ProductSort = 'time_desc' | 'price_asc' | 'price_desc' | 'distance_asc'
+export type ProductSort =
+  'time_desc' | 'price_asc' | 'price_desc' | 'distance_asc'
 
 export interface ProductSummary {
   id: number
@@ -238,12 +236,7 @@ export interface ProductUpdateRequest {
 /* ---------- 交易（trade） ---------- */
 
 export type BargainStatus =
-  | 'PENDING'
-  | 'COUNTERED'
-  | 'CONFIRMED'
-  | 'REJECTED'
-  | 'EXPIRED'
-  | 'USED'
+  'PENDING' | 'COUNTERED' | 'CONFIRMED' | 'REJECTED' | 'EXPIRED' | 'USED'
 
 /** 对应后端 TradeDtos.BargainDto（无 rejectReason 落库字段） */
 export interface Bargain {
@@ -361,7 +354,8 @@ export interface OrderDto {
   createdAt: string
 }
 
-export type ShipmentStatus = 'IN_TRANSIT' | 'DELIVERED' | 'EXCEPTION' | 'UNKNOWN'
+export type ShipmentStatus =
+  'IN_TRANSIT' | 'DELIVERED' | 'EXCEPTION' | 'UNKNOWN'
 
 /** 对应后端 TradeDtos.ShipmentDto：traces 为轨迹文本（本地环境为模拟轨迹） */
 export interface Shipment {

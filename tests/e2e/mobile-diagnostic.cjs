@@ -4,7 +4,7 @@ const { chromium } = require('@playwright/test');
   try {
     const page = await browser.newPage({viewport:{width:360,height:800},locale:'zh-CN'});
     await page.goto('http://127.0.0.1:5173/');
-    await page.locator('.mm-product__cover img').first().waitFor();
+    await page.locator('.mm-home__grid .mm-product-card__cover img').first().waitFor();
     await page.evaluate(() => document.fonts.ready);
     const diagnosis = await page.evaluate(() => ({
       viewport: innerWidth, width: document.documentElement.scrollWidth,
