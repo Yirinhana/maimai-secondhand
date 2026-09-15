@@ -128,6 +128,7 @@
 </template>
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import { get, post, type ApiError } from '../../shared/api';
 import {
   PRODUCT_STATUS_TEXT,
@@ -145,7 +146,11 @@ const items = ref<SellerProductItem[]>([]),
   page = ref(0),
   totalPages = ref(0),
   total = ref(0),
-  status = ref(''),
+  status = ref(
+    typeof useRoute().query.status === 'string'
+      ? String(useRoute().query.status)
+      : '',
+  ),
   error = ref(''),
   loading = ref(true),
   busy = ref(false);

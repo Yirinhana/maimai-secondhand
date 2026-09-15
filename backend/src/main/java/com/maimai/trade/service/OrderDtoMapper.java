@@ -62,7 +62,7 @@ public class OrderDtoMapper {
                 meetupLocation, meetupTime,
                 order.getExpiresAt(), order.getPaidAt(), order.getShippedAt(), order.getAutoConfirmAt(),
                 order.getCreatedAt(), money.retainedPlatformFeeCents(), money.channelFeeCents(), money.channelFeeConfirmed(),
-                money.expectedSellerNetCents(), money.simulated(), money.allocationStatus());
+                money.expectedSellerNetCents(), money.simulated(), money.allocationStatus(), order.getExperienceSource());
     }
 
     private OrderItemDto toItemDto(OrderItem item) {

@@ -101,7 +101,13 @@ async function onSubmit() {
     await auth.login({ email: form.email.trim(), password: form.password });
     if (disposed) return;
     const redirect =
-      typeof route.query.redirect === 'string' ? route.query.redirect : '/';
+      typeof route.query.redirect === 'string'
+        ? route.query.redirect
+        : auth.isAdmin
+          ? '/admin'
+          : auth.isSeller
+            ? '/seller'
+            : '/';
     router.push(
       redirect.startsWith('/') &&
         !redirect.startsWith('//') &&

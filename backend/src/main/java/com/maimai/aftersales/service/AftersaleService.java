@@ -75,6 +75,7 @@ public class AftersaleService {
         Order order = orderRepository.lockByOrderNo(orderNo)
                 .orElseThrow(() -> BizException.notFound("订单不存在"));
         SecurityUtils.requireOwner(order.getBuyerId());
+        order.requireLiveRecord();
         if (order.getFulfillmentStatus() == Order.FulfillmentStatus.PENDING_PAYMENT
                 || order.getFulfillmentStatus() == Order.FulfillmentStatus.CLOSED
                 || order.getPayStatus() != Order.PayStatus.PAID) {

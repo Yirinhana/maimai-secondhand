@@ -15,8 +15,8 @@ import static com.maimai.community.service.CommunitySupport.*;
 @Service
 @Transactional(readOnly = true)
 public class RatingService {
-    private static final String JOIN = " FROM community_order_ratings r JOIN users u ON u.id = r.rater_id JOIN orders o ON o.id = r.order_id ";
-    private static final String SELECT = "SELECT r.*, u.nickname, o.refund_status" + JOIN;
+    private static final String JOIN = " FROM community_order_ratings r JOIN users u ON u.id = r.rater_id JOIN orders o ON o.id = r.order_id LEFT JOIN user_avatars av ON av.user_id=u.id ";
+    private static final String SELECT = "SELECT r.*, u.nickname, CONCAT('/api/v1/avatars/',av.filename) reviewer_avatar_url, o.refund_status, (o.experience_source IS NOT NULL OR EXISTS (SELECT 1 FROM payment_requests pr WHERE pr.order_id=o.id AND pr.simulated=1)) simulated" + JOIN;
     private final CommunityRepository repo;
     private final CommunitySupport support;
     public RatingService(CommunityRepository repo, CommunitySupport support) { this.repo = repo; this.support = support; }
@@ -54,7 +54,7 @@ public class RatingService {
         if (repo.count("SELECT COUNT(*) FROM users WHERE id = ? AND status = 'ACTIVE'", userId) == 0) throw BizException.notFound("用户不存在");
         var result = list("r.ratee_id = ? AND r.is_hidden = 0", userId, page, size);
         var rows = result.items().stream().map(r -> new PublicRatingItem(r.id(), r.reviewerId(), r.rateeId(),
-                r.reviewerNickname(), r.rating(), r.comment(), r.refundStatus(), r.createdAt())).toList();
+                r.reviewerNickname(), r.rating(), r.comment(), r.refundStatus(), r.createdAt(), r.simulated(), r.reviewerAvatarUrl())).toList();
         return new PageResult<>(rows, result.total(), result.page(), result.size(), result.totalPages());
     }
 
@@ -66,7 +66,7 @@ public class RatingService {
     public PageResult<PublicRatingItem> product(Long productId,Integer page,Integer size) {
         support.publicProduct(productId);
         var result=list("r.is_hidden=0 AND r.rater_id=o.buyer_id AND r.ratee_id=o.seller_id AND o.fulfillment_status='COMPLETED' AND u.status='ACTIVE' AND EXISTS (SELECT 1 FROM order_items oi WHERE oi.order_id=o.id AND oi.product_id=?)",productId,page,size);
-        return new PageResult<>(result.items().stream().map(r->new PublicRatingItem(r.id(),r.reviewerId(),r.rateeId(),r.reviewerNickname(),r.rating(),r.comment(),r.refundStatus(),r.createdAt())).toList(),result.total(),result.page(),result.size(),result.totalPages());
+        return new PageResult<>(result.items().stream().map(r->new PublicRatingItem(r.id(),r.reviewerId(),r.rateeId(),r.reviewerNickname(),r.rating(),r.comment(),r.refundStatus(),r.createdAt(),r.simulated(),r.reviewerAvatarUrl())).toList(),result.total(),result.page(),result.size(),result.totalPages());
     }
     private Order order(Long id, boolean lock) {
         var result = repo.queryOne("SELECT buyer_id, seller_id, fulfillment_status, completed_at FROM orders WHERE id = ?" + (lock ? " FOR UPDATE" : ""),

@@ -43,7 +43,7 @@ public final class CatalogDtos {
     public record ImageItem(long id, String path, int sort) {
     }
 
-    public record SellerBrief(long id, String nickname) {
+    public record SellerBrief(long id, String nickname, String avatarUrl) {
     }
 
     public record ProductDetail(long id,
@@ -61,10 +61,11 @@ public final class CatalogDtos {
                                 List<ImageItem> images,
                                 SellerBrief seller,
                                 Instant createdAt, List<String> shippingProvinces,
-                                java.math.BigDecimal latitude, java.math.BigDecimal longitude) {
+                                java.math.BigDecimal latitude, java.math.BigDecimal longitude,
+                                String experienceSource, String supplyNote) {
     }
 
-    public record SellerProfile(long id, String nickname, Instant joinedAt, long onSaleCount) {
+    public record SellerProfile(long id, String nickname, Instant joinedAt, long onSaleCount, String avatarUrl) {
     }
 
     public record SellerProductDetail(long id, long categoryId, String title, String description,

@@ -1,13 +1,26 @@
 <template>
   <div class="mm-admin">
-    <header class="mm-admin__navigation">
+    <aside class="mm-admin__navigation">
       <div class="mm-admin__heading">
         <span><MmIcon name="grid" />工作导航</span
         ><small>{{
           auth.me?.roles.includes('SUPER_ADMIN') ? '超级管理员' : '平台工作人员'
         }}</small>
       </div>
-      <nav class="mm-admin__nav" aria-label="后台导航">
+      <button
+        class="mm-admin__toggle"
+        :aria-expanded="navOpen"
+        aria-controls="admin-menu"
+        @click="navOpen = !navOpen"
+      >
+        {{ navOpen ? '收起工作导航' : '展开工作导航' }}
+      </button>
+      <nav
+        id="admin-menu"
+        :class="{ 'is-open': navOpen }"
+        class="mm-admin__nav"
+        aria-label="后台导航"
+      >
         <div
           v-for="group in navGroups"
           :key="group.label"
@@ -20,12 +33,13 @@
               :key="item.to"
               :to="item.to"
               class="mm-admin__link"
+              @click="navOpen = false"
               >{{ item.label }}</RouterLink
             >
           </div>
         </div>
       </nav>
-    </header>
+    </aside>
     <div class="mm-admin__main">
       <router-view />
     </div>
@@ -33,10 +47,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useAuthStore } from '../../shared/stores/auth';
 import MmIcon from '../../shared/components/MmIcon.vue';
 const auth = useAuthStore();
+const navOpen = ref(false);
 const navItems = computed(() =>
   [
     { to: '/admin', label: '总览' },
@@ -104,76 +119,63 @@ const navGroups = computed(() =>
 
 <style scoped>
 .mm-admin {
-  display: flex;
-  flex-direction: column;
-  gap: 27px;
-  max-width: 1280px;
+  display: grid;
+  grid-template-columns: 205px minmax(0, 1fr);
+  align-items: start;
+  gap: 28px;
+  max-width: 1520px;
   margin: auto;
-  padding: 26px 28px 50px;
+  padding: 28px 28px 50px;
   min-width: 0;
 }
 .mm-admin__navigation {
-  border: 1px solid #d5d8d5;
+  position: sticky;
+  top: 24px;
+  border: 1px solid var(--mm-zone-border);
   background: white;
-  border-radius: 12px;
+  border-radius: 10px;
   overflow: hidden;
 }
 .mm-admin__heading {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 15px;
-  padding: 13px 20px;
-  background: #f8fafc;
-  border-bottom: 1px solid var(--mm-zone-border);
-  color: #34475a;
+  display: grid;
+  gap: 10px;
+  padding: 20px;
+  background: #263443;
+  color: white;
   font-size: 14px;
-  font-weight: 650;
 }
 .mm-admin__heading > span {
   display: flex;
   align-items: center;
   gap: 8px;
+  font-weight: 700;
 }
 .mm-admin__heading .mm-icon {
-  width: 17px;
-  height: 17px;
+  width: 18px;
 }
 .mm-admin__heading small {
   font-size: 11px;
-  font-weight: 400;
-  color: #566777;
-  border: 1px solid #cfd9e3;
-  padding: 3px 10px;
-  border-radius: 20px;
+  color: #c6d4e2;
 }
 .mm-admin__nav {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  padding: 16px 8px;
-}
-.mm-admin__group {
-  padding: 0 12px;
-  border-right: 1px solid #e3e8ee;
-}
-.mm-admin__group:last-child {
-  border-right: 0;
+  gap: 18px;
+  padding: 20px 12px;
 }
 .mm-admin__group > p {
   font-size: 11px;
   color: #687889;
-  padding: 0 8px 6px;
+  padding: 0 10px 6px;
 }
 .mm-admin__group > div {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
   gap: 2px;
 }
 .mm-admin__link {
   display: block;
-  font-size: 12px;
-  padding: 9px 8px;
-  border-radius: 6px;
+  font-size: 13px;
+  padding: 10px 12px;
+  border-radius: 5px;
   color: #3f5366;
 }
 .mm-admin__link:hover {
@@ -192,27 +194,38 @@ const navGroups = computed(() =>
   padding: 0;
   max-width: none;
 }
-@media (max-width: 760px) {
+.mm-admin__toggle {
+  display: none;
+}
+@media (max-width: 900px) {
   .mm-admin {
-    padding: 19px 18px 35px;
+    grid-template-columns: minmax(0, 1fr);
+    padding: 18px 16px 32px;
+    gap: 20px;
+  }
+  .mm-admin__navigation {
+    position: static;
   }
   .mm-admin__heading {
-    padding: 13px 16px;
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 16px;
+  }
+  .mm-admin__toggle {
+    display: block;
+    width: 100%;
+    background: white;
+    border: 0;
+    padding: 12px;
+    color: #354b60;
+    text-align: left;
   }
   .mm-admin__nav {
-    padding: 12px 4px;
+    display: none;
+  }
+  .mm-admin__nav.is-open {
+    display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px 0;
-  }
-  .mm-admin__group {
-    padding: 0 6px;
-  }
-  .mm-admin__group:nth-child(2n) {
-    border-right: 0;
-  }
-  .mm-admin__link {
-    font-size: 12px;
-    padding: 11px 8px;
   }
 }
 </style>

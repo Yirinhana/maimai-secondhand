@@ -58,6 +58,13 @@
                 : '暂时无货'
             }}</span>
           </div>
+          <div v-if="product.supplyNote" class="mm-detail__supply">
+            <h2>货源与库存</h2>
+            <p>{{ product.supplyNote }}</p>
+            <small v-if="product.experienceSource"
+              >体验账号供给资料 · 库存为模拟数量，图片为生成素材</small
+            >
+          </div>
           <div class="mm-detail__defects">
             <h2>成色与缺陷说明</h2>
             <p>
@@ -113,8 +120,7 @@
               v-if="product.stockAvailable <= 0"
               class="mm-detail__unavailable"
             >
-              {{
-                '这件商品暂时无货，可以联系卖家了解情况。'
+              {{ '这件商品暂时无货，可以联系卖家了解情况。'
               }}<RouterLink to="/search">看看其他闲置</RouterLink>
             </p>
             <template v-else>
@@ -168,9 +174,18 @@
                   >查看我的议价 →</RouterLink
                 >
               </div>
+              <p
+                v-if="product.experienceSource"
+                class="mm-muted"
+                style="font-size: 12px"
+              >
+                体验库存用于浏览与交流，不生成真实付款订单。
+              </p>
               <div class="mm-detail__buttons">
                 <MmButton
-                  :disabled="cartLoading || bargainLoading"
+                  :disabled="
+                    cartLoading || bargainLoading || !!product.experienceSource
+                  "
                   @click="buyNow"
                   >立即购买</MmButton
                 ><MmButton
@@ -195,7 +210,11 @@
         </section>
       </div>
 
-      <nav class="mm-detail__section-nav" aria-label="商品详情导航"><a href="#product-description-title">物品详情</a><a href="#product-ratings">买家评价</a><a href="#product-discussion">留言讨论</a></nav>
+      <nav class="mm-detail__section-nav" aria-label="商品详情导航">
+        <a href="#product-description-title">物品详情</a
+        ><a href="#product-ratings">买家评价</a
+        ><a href="#product-discussion">留言讨论</a>
+      </nav>
       <div class="mm-detail__about">
         <section
           class="mm-detail__description-section"
@@ -203,11 +222,26 @@
         >
           <p class="mm-eyebrow">ABOUT THIS ITEM</p>
           <h2 id="product-description-title">商品描述</h2>
-          <p v-for="(paragraph,index) in (product.description || '卖家还没有填写描述。').split(/\n\s*\n/)" :key="index" class="mm-detail__description">{{paragraph}}</p>
+          <p
+            v-for="(paragraph, index) in (
+              product.description || '卖家还没有填写描述。'
+            ).split(/\n\s*\n/)"
+            :key="index"
+            class="mm-detail__description"
+          >
+            {{ paragraph }}
+          </p>
         </section>
         <aside class="mm-seller" aria-label="卖家信息">
           <p class="mm-seller__label">来自这位卖家</p>
-          <p class="mm-seller__name">{{ product.seller.nickname }}</p>
+          <p class="mm-seller__name">
+            <UserAvatar
+              :src="product.seller.avatarUrl"
+              :nickname="product.seller.nickname"
+              :size="38"
+            />
+            {{ product.seller.nickname }}
+          </p>
           <p class="mm-seller__hint">
             看看 ta 的更多在售商品，也可以先聊聊商品细节。
           </p>
@@ -292,6 +326,7 @@ import { get, post, type ApiError } from '../../shared/api';
 import EmptyState from '../../shared/components/EmptyState.vue';
 import MmButton from '../../shared/components/MmButton.vue';
 import MmSkeleton from '../../shared/components/MmSkeleton.vue';
+import UserAvatar from '../../shared/components/UserAvatar.vue';
 import MmTag from '../../shared/components/MmTag.vue';
 import PriceText from '../../shared/components/PriceText.vue';
 import { useAuthStore } from '../../shared/stores/auth';
@@ -513,6 +548,27 @@ async function submitBargain() {
 </script>
 
 <style scoped>
+.mm-detail__supply {
+  padding: 16px 18px;
+  border: 1px solid var(--mm-border);
+  border-left: 3px solid var(--mm-primary);
+  background: #fffdf8;
+  border-radius: 6px;
+}
+.mm-detail__supply h2 {
+  font-size: 14px;
+  margin-bottom: 7px;
+}
+.mm-detail__supply p {
+  font-size: 13px;
+  line-height: 1.8;
+}
+.mm-detail__supply small {
+  display: block;
+  font-size: 11px;
+  color: var(--mm-muted);
+  margin-top: 7px;
+}
 .mm-detail {
   max-width: 1240px;
   margin: 0 auto;
@@ -763,10 +819,24 @@ async function submitBargain() {
   border-top: 1px solid var(--mm-border);
   padding-top: 34px;
 }
-.mm-detail__section-nav {display:flex;gap:30px;margin:34px 0 24px;border-bottom:1px solid var(--mm-border);padding:0 4px 16px;font-size:14px;font-weight:600;}
-.mm-detail__section-nav a:hover {color:var(--mm-primary);}
-.mm-detail__description-section {scroll-margin-top:150px;}
-.mm-detail__description p+p {margin-top:18px;}
+.mm-detail__section-nav {
+  display: flex;
+  gap: 30px;
+  margin: 34px 0 24px;
+  border-bottom: 1px solid var(--mm-border);
+  padding: 0 4px 16px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.mm-detail__section-nav a:hover {
+  color: var(--mm-primary);
+}
+.mm-detail__description-section {
+  scroll-margin-top: 150px;
+}
+.mm-detail__description p + p {
+  margin-top: 18px;
+}
 .mm-detail__description-section h2 {
   font-size: 22px;
   margin: 8px 0 22px;

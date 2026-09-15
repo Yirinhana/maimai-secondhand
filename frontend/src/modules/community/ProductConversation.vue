@@ -154,7 +154,7 @@ onBeforeUnmount(() => {
   >
     <header>
       <div>
-        <span class="product-talk__eyebrow">交易后的真实反馈</span>
+        <span class="product-talk__eyebrow">来自购买者的反馈</span>
         <h2 id="product-ratings-title">
           买家评价 <span>{{ ratingTotal }}</span>
         </h2>
@@ -173,14 +173,23 @@ onBeforeUnmount(() => {
       :key="rating.id"
       class="product-talk__entry"
     >
-      <UserAvatar :nickname="rating.reviewerNickname" :size="38" />
+      <UserAvatar
+        :src="rating.reviewerAvatarUrl"
+        :nickname="rating.reviewerNickname"
+        :size="38"
+      />
       <div>
-        <strong>{{ rating.reviewerNickname }}</strong
+        <RouterLink :to="`/sellers/${rating.reviewerId}`">{{
+          rating.reviewerNickname
+        }}</RouterLink
         ><span
           class="product-talk__stars"
           :aria-label="`${rating.rating}分，满分5分`"
           >{{ '★'.repeat(rating.rating)
           }}{{ '☆'.repeat(5 - rating.rating) }}</span
+        >
+        <small v-if="rating.simulated" class="product-talk__source"
+          >体验成交评价 · 未发生真实交易</small
         >
         <p>{{ rating.comment || '买家没有填写文字评价' }}</p>
         <time>{{ formatTime(rating.createdAt) }}</time
@@ -262,7 +271,9 @@ onBeforeUnmount(() => {
       />
       <div class="product-talk__content">
         <div class="product-talk__author">
-          <strong>{{ comment.nickname }}</strong
+          <RouterLink :to="`/sellers/${comment.authorId}`">{{
+            comment.nickname
+          }}</RouterLink
           ><span v-if="comment.seller" class="product-talk__seller">卖家</span
           ><time>{{ formatTime(comment.createdAt) }}</time>
         </div>
@@ -301,6 +312,17 @@ onBeforeUnmount(() => {
   </section>
 </template>
 <style scoped>
+.product-talk__source {
+  display: block;
+  width: fit-content;
+  margin: 7px 0;
+  padding: 3px 8px;
+  color: var(--mm-muted);
+  background: var(--mm-canvas);
+  border: 1px solid var(--mm-border);
+  border-radius: 4px;
+  font-size: 11px;
+}
 .product-talk {
   scroll-margin-top: 150px;
   background: #fff;

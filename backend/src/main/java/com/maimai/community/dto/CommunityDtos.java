@@ -78,7 +78,7 @@ public final class CommunityDtos {
                             Instant updatedAt,
                             Long reviewedBy,
                             Instant reviewedAt,
-                            String reviewReason) {
+                            String reviewReason, String authorAvatarUrl) {
     }
 
     public record DemandReplyRequest(@NotBlank @Size(max = 800) String content) {
@@ -94,7 +94,7 @@ public final class CommunityDtos {
                                  Instant updatedAt,
                                  Long reviewedBy,
                                  Instant reviewedAt,
-                                 String reviewReason) {
+                                 String reviewReason, String authorAvatarUrl) {
     }
 
     public record ReportCreateRequest(@NotBlank @Size(max = 40) String resourceType,
@@ -131,11 +131,11 @@ public final class CommunityDtos {
                             int rating,
                             String comment,
                             String refundStatus,
-                            Instant createdAt) {
+                            Instant createdAt, boolean simulated, String reviewerAvatarUrl) {
     }
 
     public record PublicRatingItem(long id, long reviewerId, long rateeId, String reviewerNickname,
-                                   int rating, String comment, String refundStatus, Instant createdAt) {
+                                   int rating, String comment, String refundStatus, Instant createdAt, boolean simulated, String reviewerAvatarUrl) {
     }
 
     public enum ResourceType {

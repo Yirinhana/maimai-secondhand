@@ -15,8 +15,8 @@ import static com.maimai.community.service.CommunitySupport.*;
 @Service
 @Transactional(readOnly = true)
 public class DemandService {
-    private static final String DEMANDS = " FROM community_demand_posts d JOIN users u ON u.id = d.author_id ";
-    private static final String REPLIES = " FROM community_demand_replies r JOIN users u ON u.id = r.author_id ";
+    private static final String DEMANDS = " FROM community_demand_posts d JOIN users u ON u.id = d.author_id LEFT JOIN user_avatars av ON av.user_id=u.id ";
+    private static final String REPLIES = " FROM community_demand_replies r JOIN users u ON u.id = r.author_id LEFT JOIN user_avatars av ON av.user_id=u.id ";
     private static final String PUBLIC = "d.status = 'PUBLISHED' AND d.is_closed = 0 AND d.is_deleted = 0";
     private final CommunityRepository repo;
     private final CommunitySupport support;
@@ -161,12 +161,12 @@ public class DemandService {
     }
 
     DemandItem demand(Long id, boolean lock) {
-        var value = repo.queryOne("SELECT d.*, u.nickname" + DEMANDS + "WHERE d.id = ? AND d.is_deleted = 0" + (lock ? " FOR UPDATE" : ""), CommunityRows.DEMAND, id);
+        var value = repo.queryOne("SELECT d.*, u.nickname, CONCAT('/api/v1/avatars/',av.filename) author_avatar_url" + DEMANDS + "WHERE d.id = ? AND d.is_deleted = 0" + (lock ? " FOR UPDATE" : ""), CommunityRows.DEMAND, id);
         if (value == null) throw BizException.notFound("求购不存在");
         return value;
     }
     DemandReplyItem reply(Long id, boolean lock) {
-        var value = repo.queryOne("SELECT r.*, u.nickname" + REPLIES + "WHERE r.id = ? AND r.is_deleted = 0" + (lock ? " FOR UPDATE" : ""), CommunityRows.REPLY, id);
+        var value = repo.queryOne("SELECT r.*, u.nickname, CONCAT('/api/v1/avatars/',av.filename) author_avatar_url" + REPLIES + "WHERE r.id = ? AND r.is_deleted = 0" + (lock ? " FOR UPDATE" : ""), CommunityRows.REPLY, id);
         if (value == null) throw BizException.notFound("回复不存在");
         return value;
     }
@@ -189,13 +189,13 @@ public class DemandService {
     private PageResult<DemandItem> demandList(String filter, Integer page, Integer size, Object... args) {
         var p = paging(page, size);
         var bound = new ArrayList<>(Arrays.asList(args)); bound.add(p.size()); bound.add(p.offset());
-        var rows = repo.query("SELECT d.*, u.nickname" + DEMANDS + "WHERE " + filter + " ORDER BY d.created_at DESC, d.id DESC LIMIT ? OFFSET ?", CommunityRows.DEMAND, bound.toArray());
+        var rows = repo.query("SELECT d.*, u.nickname, CONCAT('/api/v1/avatars/',av.filename) author_avatar_url" + DEMANDS + "WHERE " + filter + " ORDER BY d.created_at DESC, d.id DESC LIMIT ? OFFSET ?", CommunityRows.DEMAND, bound.toArray());
         return p.result(rows, repo.count("SELECT COUNT(*)" + DEMANDS + "WHERE " + filter, args));
     }
     private PageResult<DemandReplyItem> replyList(String filter, Integer page, Integer size, Object... args) {
         var p = paging(page, size);
         var bound = new ArrayList<>(Arrays.asList(args)); bound.add(p.size()); bound.add(p.offset());
-        var rows = repo.query("SELECT r.*, u.nickname" + REPLIES + "WHERE " + filter + " ORDER BY r.created_at DESC, r.id DESC LIMIT ? OFFSET ?", CommunityRows.REPLY, bound.toArray());
+        var rows = repo.query("SELECT r.*, u.nickname, CONCAT('/api/v1/avatars/',av.filename) author_avatar_url" + REPLIES + "WHERE " + filter + " ORDER BY r.created_at DESC, r.id DESC LIMIT ? OFFSET ?", CommunityRows.REPLY, bound.toArray());
         return p.result(rows, repo.count("SELECT COUNT(*)" + REPLIES + "WHERE " + filter, args));
     }
 }

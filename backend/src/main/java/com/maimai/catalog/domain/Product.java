@@ -26,6 +26,13 @@ public class Product {
     @Column(name = "seller_id", nullable = false)
     private Long sellerId;
 
+    @Column(name="experience_source",length=80)
+    private String experienceSource;
+    @Column(name="supply_note",length=500)
+    private String supplyNote;
+    public String getExperienceSource() { return experienceSource; }
+    public String getSupplyNote() { return supplyNote; }
+
     @Column(name = "category_id", nullable = false)
     private Long categoryId;
 

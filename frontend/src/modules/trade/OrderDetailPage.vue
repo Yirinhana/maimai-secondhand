@@ -97,7 +97,11 @@
         >
       </div>
       <p v-if="order.simulated" class="mm-order-detail__simulation">
-        本地模拟交易，未发生真实扣款、退款或分账。
+        {{
+          order.experienceSource
+            ? '体验成交记录，仅供查看交易与评价效果，不受理退款和履约操作。'
+            : '本地模拟交易，未发生真实扣款、退款或分账。'
+        }}
       </p>
 
       <div class="mm-order-detail__layout">
@@ -395,6 +399,7 @@
 
           <section
             v-if="
+              !order.experienceSource &&
               order.payStatus === 'PAID' &&
               isBuyer &&
               order.refundStatus !== 'FULL'

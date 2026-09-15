@@ -92,15 +92,9 @@
                 v-else-if="!addressLoading && !addressError"
                 class="mm-checkout__hint"
               >
-                还没有收货地址。先添加地址，再回到这里刷新即可。
+                还没有收货地址。在下方添加地址即可继续。
               </p>
-              <RouterLink
-                to="/me?tab=addresses"
-                target="_blank"
-                rel="noopener"
-                class="mm-checkout__link"
-                >管理收货地址 <span>（新窗口）↗</span></RouterLink
-              >
+              <CheckoutAddressEditor @saved="addressSaved" />
             </div>
             <div v-if="needsMeetup" class="mm-checkout__delivery-block">
               <h3>面交约定</h3>
@@ -265,6 +259,7 @@
 </template>
 
 <script setup lang="ts">
+import CheckoutAddressEditor from './components/CheckoutAddressEditor.vue';
 import ItemImage from '../../shared/components/ItemImage.vue';
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -289,6 +284,7 @@ import MapPicker from '../../shared/components/MapPicker.vue';
 
 /** 结算预览行：购物车勾选或详情直购统一成此结构 */
 interface PreviewLine {
+  experienceSource?: string | null;
   key: string;
   productId: number;
   title: string;
@@ -390,6 +386,8 @@ const totalUnits = computed(() =>
   lines.value.reduce((sum, line) => sum + line.quantity, 0),
 );
 const submissionHint = computed(() => {
+  if (lines.value.some((line) => line.experienceSource))
+    return '所选商品含体验库存，可查看结算结构，不生成真实付款订单';
   if (addressLoading.value) return '正在刷新收货地址，请稍候';
   if (needsExpress.value && (addressId.value === null || addressError.value))
     return '请先选择有效的收货地址';
@@ -408,6 +406,7 @@ const meetupTimeValid = computed(() => {
 });
 
 const canSubmit = computed(() => {
+  if (lines.value.some((line) => line.experienceSource)) return false;
   if (
     submitting.value ||
     loading.value ||
@@ -455,6 +454,7 @@ async function loadFromCart(ids: number[]) {
     const p = productMap.get(i.productId);
     return {
       key: `cart-${i.id}`,
+      experienceSource: p?.experienceSource,
       productId: i.productId,
       title: i.title ?? p?.title ?? '商品',
       coverImage: i.coverImage,
@@ -504,6 +504,7 @@ async function loadDirect(directItems: DirectItem[]) {
       throw new Error('议价单无效或已过期，请返回我的议价确认');
     return {
       key: `direct-${idx}-${i.productId}`,
+      experienceSource: p.experienceSource,
       productId: i.productId,
       title: p.title,
       coverImage: p.images[0]?.path ?? null,
@@ -542,6 +543,10 @@ async function fetchProducts(
   return map;
 }
 
+async function addressSaved(id: number) {
+  await loadAddresses();
+  addressId.value = id;
+}
 async function loadAddresses() {
   if (!needsExpress.value) return;
   if (addressLoading.value) return;

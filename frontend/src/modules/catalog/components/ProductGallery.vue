@@ -11,6 +11,7 @@
         v-if="currentImage"
         :src="currentImage.path"
         :alt="`${title} 图片 ${currentIndex + 1}`"
+        size="detail"
         loading="eager"
       />
       <span v-else>暂无图片</span>
@@ -54,7 +55,11 @@
           :aria-pressed="index === currentIndex"
           @click="currentIndex = index"
         >
-          <ItemImage :src="item.path" :alt="`${title} 缩略图 ${index + 1}`" />
+          <ItemImage
+            :src="item.path"
+            :alt="`${title} 缩略图 ${index + 1}`"
+            size="thumb"
+          />
           <span
             v-if="demoImageView(item.path)"
             class="product-gallery__view-label"
@@ -73,9 +78,10 @@
     >
       <div class="product-gallery__viewer">
         <ItemImage
-          v-if="currentImage"
+          v-if="currentImage && viewerOpen"
           :src="currentImage.path"
           :alt="`${title} 大图 ${currentIndex + 1}`"
+          size="original"
           loading="eager"
         />
         <div class="product-gallery__viewer-controls">

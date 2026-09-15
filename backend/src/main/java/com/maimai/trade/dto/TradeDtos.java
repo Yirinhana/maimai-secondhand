@@ -89,7 +89,7 @@ public final class TradeDtos {
                            Instant expiresAt, Instant paidAt, Instant shippedAt, Instant autoConfirmAt,
                            Instant createdAt, long retainedPlatformFeeCents, Long channelFeeCents,
                            boolean channelFeeConfirmed, Long expectedSellerNetCents, boolean simulated,
-                           String allocationStatus) {
+                           String allocationStatus, String experienceSource) {
     }
 
     public record PageResponse<T>(List<T> content, long totalElements, int totalPages, int page, int size) {

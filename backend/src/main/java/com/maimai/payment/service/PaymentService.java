@@ -48,6 +48,7 @@ public class PaymentService {
         Order order = orderRepository.lockByOrderNo(orderNo)
                 .orElseThrow(() -> BizException.notFound("订单不存在"));
         SecurityUtils.requireOwner(order.getBuyerId());
+        order.requireLiveRecord();
         if (order.getFulfillmentStatus() != Order.FulfillmentStatus.PENDING_PAYMENT
                 || order.getPayStatus() != Order.PayStatus.UNPAID) {
             throw BizException.conflict("ORDER_NOT_PAYABLE", "订单当前状态不可支付");

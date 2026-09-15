@@ -10,6 +10,7 @@ import {
   type Place,
 } from '../maps/amap';
 import MmButton from './MmButton.vue';
+import { locationProblem } from '../maps/locationQuality';
 export interface SelectedAddress {
   region: string;
   detail: string;
@@ -19,6 +20,14 @@ export interface SelectedAddress {
   coordinateSystem: 'GCJ-02';
 }
 const emit = defineEmits<{ select: [address: SelectedAddress] }>();
+const props = defineProps<{
+  initialLongitude?: number | null;
+  initialLatitude?: number | null;
+}>();
+const precision = ref(''),
+  confirmed = ref(false);
+let pointRequest = 0,
+  searchRequest = 0;
 const opened = ref(false),
   busy = ref(false),
   error = ref(''),
@@ -41,8 +50,10 @@ async function open() {
     if (disposed || !container.value) return;
     map?.destroy();
     map = new sdk.Map(container.value, {
-      zoom: 11,
-      center: [121.4737, 31.2304],
+      ...(Number.isFinite(props.initialLongitude) &&
+      Number.isFinite(props.initialLatitude)
+        ? { center: [props.initialLongitude, props.initialLatitude], zoom: 15 }
+        : { center: [104.1, 35.8], zoom: 4 }),
       viewMode: '2D',
     });
     map.on('click', (event) => selectPoint(event.lnglat));
@@ -52,8 +63,15 @@ async function open() {
     busy.value = false;
   }
 }
-function selectPoint(position: LngLat) {
+function selectPoint(
+  position: LngLat,
+  placeName = '',
+  locationNote = '已手动选点，请核对附近地标与门牌号。',
+) {
   if (!sdk || !map) return;
+  const request = ++pointRequest;
+  precision.value = locationNote;
+  confirmed.value = false;
   error.value = '';
   chosen.value = null;
   if (!marker) {
@@ -63,7 +81,7 @@ function selectPoint(position: LngLat) {
   map.setCenter(position);
   const geocoder = new sdk.Geocoder();
   geocoder.getAddress(position, (status, result) => {
-    if (disposed) return;
+    if (disposed || request !== pointRequest) return;
     if (status !== 'complete' || !result.regeocode) {
       error.value = '该位置地址解析失败，可更换地点或手动填写。';
       return;
@@ -81,8 +99,16 @@ function selectPoint(position: LngLat) {
       .join(' ');
     chosen.value = {
       region,
-      detail: a.formattedAddress,
-      fullAddress: a.formattedAddress,
+      detail:
+        a.formattedAddress +
+        (placeName && !a.formattedAddress.includes(placeName)
+          ? ` ${placeName}`
+          : ''),
+      fullAddress:
+        a.formattedAddress +
+        (placeName && !a.formattedAddress.includes(placeName)
+          ? ` ${placeName}`
+          : ''),
       longitude: position.getLng(),
       latitude: position.getLat(),
       coordinateSystem: 'GCJ-02',
@@ -91,6 +117,7 @@ function selectPoint(position: LngLat) {
 }
 function search() {
   if (!sdk || !query.value.trim()) return;
+  const request = ++searchRequest;
   busy.value = true;
   error.value = '';
   places.value = [];
@@ -100,8 +127,8 @@ function search() {
     extensions: 'base',
   });
   searcher.search(query.value.trim(), (status, result) => {
+    if (disposed || request !== searchRequest) return;
     busy.value = false;
-    if (disposed) return;
     if (status === 'complete' && result.poiList) {
       places.value = result.poiList.pois.filter((p) => p.location);
       if (!places.value.length) error.value = '没有找到地点，请增加城市名称。';
@@ -110,24 +137,42 @@ function search() {
 }
 function locate() {
   if (!sdk) return;
+  const request = ++pointRequest;
+  chosen.value = null;
+  precision.value = '';
+  confirmed.value = false;
   busy.value = true;
   error.value = '';
   const geolocation = new sdk.Geolocation({
     enableHighAccuracy: true,
     timeout: 10000,
     convert: true,
+    noIpLocate: 3,
+    maximumAge: 0,
   });
   geolocation.getCurrentPosition((status, result) => {
     busy.value = false;
-    if (disposed) return;
+    if (disposed || request !== pointRequest) return;
     if (status === 'complete' && result.position) {
-      selectPoint(result.position);
+      const problem = locationProblem(result);
+      if (problem) {
+        error.value = problem;
+        return;
+      }
+      selectPoint(
+        result.position,
+        '',
+        `设备定位精度约 ${Math.round(Number(result.accuracy))} 米，仍需核对门牌号。`,
+      );
       map?.setZoom(16);
     } else error.value = '未获得定位权限或定位失败，仍可搜索地点和手动填写。';
   });
 }
 function choose() {
-  if (chosen.value) emit('select', chosen.value);
+  if (chosen.value) {
+    emit('select', chosen.value);
+    confirmed.value = true;
+  }
 }
 onBeforeUnmount(() => {
   disposed = true;
@@ -154,10 +199,13 @@ onBeforeUnmount(() => {
         /><MmButton variant="ghost" :disabled="busy || !sdk" @click="search"
           >搜索地点</MmButton
         ><MmButton variant="ghost" :disabled="busy || !sdk" @click="locate"
-          >使用我的位置</MmButton
+          >定位我</MmButton
         >
       </div>
       <p v-if="busy" role="status">地图服务处理中…</p>
+      <p v-if="precision" class="mm-map-precision" role="status">
+        {{ precision }}
+      </p>
       <p v-if="error" class="mm-error" role="alert">{{ error }}</p>
       <div
         ref="container"
@@ -172,7 +220,7 @@ onBeforeUnmount(() => {
       />
       <ul class="mm-stack">
         <li v-for="(p, index) in places" :key="index">
-          <MmButton variant="ghost" @click="selectPoint(p.location)"
+          <MmButton variant="ghost" @click="selectPoint(p.location, p.name)"
             >{{ p.name }} ·
             {{ typeof p.address === 'string' ? p.address : '' }}</MmButton
           >
@@ -180,8 +228,18 @@ onBeforeUnmount(() => {
       </ul>
       <div v-if="chosen" class="mm-panel">
         <p>{{ chosen.fullAddress }}</p>
-        <MmButton @click="choose">使用此地址</MmButton>
+        <MmButton @click="choose">{{
+          confirmed ? '已使用此地址' : '确认使用此地址'
+        }}</MmButton>
       </div></template
     >
   </section>
 </template>
+<style scoped>
+.mm-map-precision {
+  padding: 10px 14px;
+  border-left: 3px solid var(--mm-primary);
+  background: var(--mm-accent-soft);
+  font-size: 13px;
+}
+</style>

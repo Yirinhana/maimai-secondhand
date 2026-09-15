@@ -25,7 +25,14 @@
         class="mm-order-list__card"
       >
         <div class="mm-order-list__card-head">
-          <span class="mm-order-list__no">订单号 {{ order.orderNo }}</span>
+          <span class="mm-order-list__no"
+            >订单号 {{ order.orderNo
+            }}<small
+              v-if="order.experienceSource"
+              style="margin-left: 10px; color: var(--mm-muted)"
+              >体验成交</small
+            ></span
+          >
           <MmTag
             :text="FULFILLMENT_STATUS_TEXT[order.fulfillmentStatus]"
             :tone="statusTone(order.fulfillmentStatus)"

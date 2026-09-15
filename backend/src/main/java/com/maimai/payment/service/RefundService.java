@@ -64,6 +64,7 @@ public class RefundService {
     public Refund createRefund(Order order, Long aftersaleId, long goodsCents, long freightCents) {
         Order locked = orderRepository.lockById(order.getId())
                 .orElseThrow(() -> BizException.notFound("订单不存在"));
+        locked.requireLiveRecord();
         if (locked.getPayStatus() != Order.PayStatus.PAID) {
             throw BizException.conflict("REFUND_NOT_PAID", "订单未支付成功，不能退款");
         }

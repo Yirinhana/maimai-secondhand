@@ -96,12 +96,7 @@
           />
           <label class="mm-auth__terms"
             ><input v-model="acceptedTerms" type="checkbox" />
-            <span
-              >我已阅读并同意
-              <RouterLink to="/policies" target="_blank" rel="noopener"
-                >用户协议与交易售后规则</RouterLink
-              >（条款草案）</span
-            >
+            <span>我已阅读并同意 <PolicyLink />（条款草案）</span>
           </label>
           <p v-if="policyLoading" class="mm-auth__hint" role="status">
             正在读取条款版本…
@@ -131,6 +126,7 @@
 </template>
 
 <script setup lang="ts">
+import PolicyLink from '../../shared/components/PolicyLink.vue';
 import RegistrationVisual from './RegistrationVisual.vue';
 import { nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';

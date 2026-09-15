@@ -30,7 +30,7 @@ public class ProductRevisionService {
     @Transactional(propagation=Propagation.MANDATORY)
     public void record(Product product,Long actorId,String action) {
         int version=jdbc.queryForObject("SELECT COALESCE(MAX(version),0)+1 FROM product_revisions WHERE product_id=?",Integer.class,product.getId());
-        Content content=new Content(product.getTitle(),product.getCategoryId(),product.getDescription(),product.getItemCondition().name(),product.getDefects(),product.getPriceCents(),product.getRegion(),ProductAssembler.splitDeliveryMethods(product.getDeliveryMethods()),product.getFreightCents(),product.getReturnPromise(),ProductShipping.split(product.getShippingProvinces()),product.getLatitude(),product.getLongitude(),assembler.images(product.getId()),product.getStatus().name(),product.getReviewReason());
+        Content content=new Content(product.getTitle(),product.getCategoryId(),product.getDescription(),product.getItemCondition().name(),product.getDefects(),product.getPriceCents(),product.getRegion(),ProductAssembler.splitDeliveryMethods(product.getDeliveryMethods()),product.getFreightCents(),product.getReturnPromise(),ProductShipping.split(product.getShippingProvinces()),product.getLatitude(),product.getLongitude(),assembler.images(product.getId()),product.getStatus().name(),product.getReviewReason(),product.getExperienceSource(),product.getSupplyNote());
         jdbc.update("INSERT INTO product_revisions(product_id,version,action,actor_id,content) VALUES(?,?,?,?,?)",product.getId(),version,action,actorId,json.writeValueAsString(content));
     }
     @Transactional(readOnly=true)
@@ -46,5 +46,5 @@ public class ProductRevisionService {
         return new PageResult<>(content,total,(int)((total+size-1)/size),page,size);
     }
     public record Revision(long id,int version,String action,Long actorId,Instant createdAt,Content content) {}
-    public record Content(String title,long categoryId,String description,String condition,String defects,long priceCents,String region,List<String> deliveryMethods,long freightCents,String returnPromise,List<String> shippingProvinces,BigDecimal latitude,BigDecimal longitude,List<ImageItem> images,String status,String reviewReason) {}
+    public record Content(String title,long categoryId,String description,String condition,String defects,long priceCents,String region,List<String> deliveryMethods,long freightCents,String returnPromise,List<String> shippingProvinces,BigDecimal latitude,BigDecimal longitude,List<ImageItem> images,String status,String reviewReason,String experienceSource,String supplyNote) {}
 }

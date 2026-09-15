@@ -149,6 +149,9 @@ onMounted(async () => {
         >发布求购</MmButton
       ><RouterLink v-else to="/login">登录后发布</RouterLink>
     </nav>
+    <p class="mm-muted" style="font-size: 12px">
+      部分求购与回复由体验账号发布，用于展示交流流程。
+    </p>
     <p v-if="error" class="mm-error" role="alert">{{ error }}</p>
     <p v-if="hint" class="mm-notice" role="status">{{ hint }}</p>
     <form v-if="showForm" class="mm-panel mm-form" @submit.prevent="submit">
@@ -198,7 +201,16 @@ onMounted(async () => {
         预算 <PriceText :cents="d.budgetMinCents" /> —
         <PriceText :cents="d.budgetMaxCents" /> · {{ d.region || '不限地区' }}
       </p>
-      <div class="mm-demand-author"><UserAvatar :nickname="d.authorNickname" :size="32"/><strong>{{d.authorNickname}}</strong><time>{{formatTime(d.createdAt)}}</time></div>
+      <div class="mm-demand-author">
+        <UserAvatar
+          :src="d.authorAvatarUrl"
+          :nickname="d.authorNickname"
+          :size="32"
+        /><RouterLink :to="`/sellers/${d.authorId}`">{{
+          d.authorNickname
+        }}</RouterLink
+        ><time>{{ formatTime(d.createdAt) }}</time>
+      </div>
       <p v-if="mine && d.reviewReason">审核说明：{{ d.reviewReason }}</p>
       <div class="mm-actions">
         <MmButton
@@ -239,7 +251,22 @@ onMounted(async () => {
   </section>
 </template>
 <style scoped>
-.mm-demand-author{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--mm-muted);margin:18px 0}.mm-demand-author strong{color:var(--mm-ink);font-weight:500}.mm-demand-author time{margin-left:auto;font-size:11px}
+.mm-demand-author {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--mm-muted);
+  margin: 18px 0;
+}
+.mm-demand-author strong {
+  color: var(--mm-ink);
+  font-weight: 500;
+}
+.mm-demand-author time {
+  margin-left: auto;
+  font-size: 11px;
+}
 
 .mm-demand-board {
   max-width: 1130px;
@@ -248,7 +275,7 @@ onMounted(async () => {
 }
 .mm-demand-board__intro {
   position: relative;
-  background: #e9ede1;
+  background: var(--mm-accent-soft);
   padding: 35px 36px;
   border-radius: 3px;
   border-bottom: 3px solid #879473;
@@ -260,7 +287,7 @@ onMounted(async () => {
 }
 .mm-demand-board__intro > p:not(.mm-eyebrow) {
   font-size: 13px;
-  color: #66715d;
+  color: var(--mm-muted);
 }
 .mm-demand-board__intro > span {
   position: absolute;
@@ -274,7 +301,7 @@ onMounted(async () => {
   justify-content: center;
   align-items: center;
   font-size: 12px;
-  color: #536648;
+  color: var(--mm-primary);
   transform: rotate(12deg);
 }
 .mm-demand-board > nav {
@@ -298,9 +325,9 @@ onMounted(async () => {
   position: absolute;
   left: 24px;
   top: 25px;
-  color: #6d775f;
+  color: var(--mm-primary);
   border: 1px solid #d4dcc9;
-  background: #f2f5ec;
+  background: var(--mm-canvas);
   border-radius: 4px;
   width: 32px;
   height: 32px;

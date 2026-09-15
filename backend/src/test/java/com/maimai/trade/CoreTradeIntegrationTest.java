@@ -441,6 +441,25 @@ class CoreTradeIntegrationTest {
         assertThat(reminders.todos(0,100).stream().anyMatch(t->t.orderId()==order.id())).isFalse();
     }
 
+    @Test void markedCatalogCannotBecomeARealOrderOrReserveStock() {
+        db.update("UPDATE products SET experience_source='experience-test' WHERE id=?",product);
+        assertThatThrownBy(()->create("MEETUP")).isInstanceOf(BizException.class).hasMessageContaining("体验库存");
+        assertThat(count("SELECT stock_available FROM products WHERE id=?",product)).isEqualTo(3);
+        assertThat(count("SELECT stock_reserved FROM products WHERE id=?",product)).isZero();
+    }
+
+    @Test void importedExperienceOrderIsVisibleButCannotStartFinancialOperations() {
+        var order=paid("MEETUP");
+        db.update("UPDATE orders SET experience_source='experience-test',fulfillment_status='COMPLETED',completed_at=UTC_TIMESTAMP() WHERE id=?",order.id());
+        db.update("DELETE FROM finance_allocation_expectations WHERE order_id=?",order.id());
+        finance.captureExpectedAllocation(order.id());
+        assertThat(count("SELECT COUNT(*) FROM finance_allocation_expectations WHERE order_id=?",order.id())).isZero();
+        assertThat(finance.money(order.id()).simulated()).isTrue();
+        assertThatThrownBy(()->as(buyer,()->payments.pay(order.orderNo()))).isInstanceOf(BizException.class).hasMessageContaining("体验成交记录");
+        assertThatThrownBy(()->as(buyer,()->aftersales.create(order.orderNo(),new CreateAftersaleRequest(Aftersale.Type.REFUND_ONLY,"申请",100L,0L,null)))).isInstanceOf(BizException.class).hasMessageContaining("体验成交记录");
+        assertThatThrownBy(()->refunds.createRefund(orderRepository.findById(order.id()).orElseThrow(),null,100,0)).isInstanceOf(BizException.class).hasMessageContaining("体验成交记录");
+    }
+
     private com.maimai.catalog.dto.CatalogDtos.ProductUpdateRequest edit(String title,List<String> provinces) {
         return new com.maimai.catalog.dto.CatalogDtos.ProductUpdateRequest(title,1L,"修订商品描述","GOOD","已披露缺陷",10000L,null,"上海市",List.of("EXPRESS","MEETUP"),1200L,"按约售后",provinces,new java.math.BigDecimal("31.23"),new java.math.BigDecimal("121.47"));
     }

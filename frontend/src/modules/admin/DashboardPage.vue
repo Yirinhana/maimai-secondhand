@@ -20,7 +20,7 @@
       <div class="mm-admin-overview__finance">
         <div>
           <span>平台服务费累计</span>
-          <p>以平台订单记录为准，模拟交易不代表真实资金结算。</p>
+          <p>仅统计非模拟付款及退款；全部订单数量包含体验记录。</p>
         </div>
         <PriceText :cents="stats.platformFeeSumCents" /></div
     ></template>
@@ -57,8 +57,8 @@ const metrics: {
   { key: 'userCount', label: '注册用户', icon: 'user' },
   { key: 'productOnSaleCount', label: '在售商品', icon: 'box' },
   { key: 'orderCount', label: '全部订单', icon: 'bag' },
-  { key: 'paidOrderCount', label: '已支付订单', icon: 'check' },
-  { key: 'refundSuccessCount', label: '成功退款记录', icon: 'refresh' },
+  { key: 'paidOrderCount', label: '真实已支付订单', icon: 'check' },
+  { key: 'refundSuccessCount', label: '真实成功退款', icon: 'refresh' },
 ];
 const queues = computed(() =>
   [

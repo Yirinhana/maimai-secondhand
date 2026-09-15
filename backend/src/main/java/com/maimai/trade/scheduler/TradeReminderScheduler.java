@@ -23,7 +23,7 @@ public class TradeReminderScheduler {
         for(Long id:reminders.candidates()) {
             try {reminders.check(id);}catch(RuntimeException error){log.warn("Trade reminder failed, orderId={}",id);}
         }
-        var missing=jdbc.queryForList("SELECT o.id FROM orders o WHERE o.pay_status='PAID' AND NOT EXISTS(SELECT 1 FROM finance_allocation_expectations a WHERE a.order_id=o.id) ORDER BY o.id LIMIT 100",Long.class);
+        var missing=jdbc.queryForList("SELECT o.id FROM orders o WHERE o.pay_status='PAID' AND o.experience_source IS NULL AND NOT EXISTS(SELECT 1 FROM finance_allocation_expectations a WHERE a.order_id=o.id) ORDER BY o.id LIMIT 100",Long.class);
         for(Long id:missing) {
             try {finance.captureExpectedAllocation(id);}catch(RuntimeException error){log.warn("Expected allocation capture failed, orderId={}",id);}
         }

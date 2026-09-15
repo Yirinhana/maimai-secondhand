@@ -281,6 +281,9 @@ class CommunityServiceIT {
         SecurityContextHolder.clearContext();
         var publicReview = service.listReceivedRatings(seller, 0, 20).items().getFirst();
         assertThat(publicReview.refundStatus()).isEqualTo("PARTIAL");
+        assertThat(publicReview.simulated()).isFalse();
+        jdbc.update("UPDATE orders SET experience_source='experience-test' WHERE id=?",order);
+        assertThat(service.listReceivedRatings(seller,0,20).items().getFirst().simulated()).isTrue();
         assertThat(java.util.Arrays.stream(PublicRatingItem.class.getRecordComponents()).map(java.lang.reflect.RecordComponent::getName)).doesNotContain("orderId", "phone", "address");
     }
 

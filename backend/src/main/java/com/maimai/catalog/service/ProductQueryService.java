@@ -41,15 +41,17 @@ public class ProductQueryService {
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
     private final ProductAssembler assembler;
+    private final org.springframework.jdbc.core.JdbcTemplate jdbc;
 
     public ProductQueryService(ProductRepository productRepository,
                                CategoryRepository categoryRepository,
                                UserRepository userRepository,
-                               ProductAssembler assembler) {
+                               ProductAssembler assembler, org.springframework.jdbc.core.JdbcTemplate jdbc) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.userRepository = userRepository;
         this.assembler = assembler;
+        this.jdbc = jdbc;
     }
 
     /** 公开商品搜索：固定 ON_SALE，支持关键词/分类（含子分类）/成色/价格区间/地区/交付方式筛选。 */
@@ -123,8 +125,8 @@ public class ProductQueryService {
                 product.getStockAvailable(), product.getRegion(),
                 ProductAssembler.splitDeliveryMethods(product.getDeliveryMethods()),
                 product.getFreightCents(), product.getReturnPromise(), product.getStatus().name(),
-                assembler.images(product.getId()), new SellerBrief(product.getSellerId(), nickname),
-                product.getCreatedAt(),ProductShipping.split(product.getShippingProvinces()),product.getLatitude(),product.getLongitude());
+                assembler.images(product.getId()), new SellerBrief(product.getSellerId(), nickname, avatar(product.getSellerId())),
+                product.getCreatedAt(),ProductShipping.split(product.getShippingProvinces()),product.getLatitude(),product.getLongitude(),product.getExperienceSource(),product.getSupplyNote());
     }
 
     public SellerProfile sellerProfile(Long sellerId) {
@@ -134,7 +136,11 @@ public class ProductQueryService {
                 cb.equal(root.get("sellerId"), sellerId),
                 cb.equal(root.get("status"), Product.Status.ON_SALE));
         long onSaleCount = productRepository.count(onSale);
-        return new SellerProfile(seller.getId(), seller.getNickname(), seller.getCreatedAt(), onSaleCount);
+        return new SellerProfile(seller.getId(), seller.getNickname(), seller.getCreatedAt(), onSaleCount, avatar(sellerId));
+    }
+
+    private String avatar(long userId) {
+        return jdbc.query("SELECT CONCAT('/api/v1/avatars/',filename) FROM user_avatars WHERE user_id=?", (rs,row)->rs.getString(1),userId).stream().findFirst().orElse(null);
     }
 
     public PageResult<ProductSummary> sellerProducts(Long sellerId, Integer page, Integer size) {

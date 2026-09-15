@@ -15,6 +15,13 @@ import java.time.Instant;
 @Table(name = "orders")
 public class Order {
 
+    @Column(name="experience_source",length=80)
+    private String experienceSource;
+    public String getExperienceSource() { return experienceSource; }
+    public void requireLiveRecord() {
+        if (experienceSource != null) throw com.maimai.common.BizException.conflict("EXPERIENCE_READ_ONLY", "这是体验成交记录，未发生真实付款，不受理资金与履约操作");
+    }
+
     public enum FulfillmentStatus {PENDING_PAYMENT, PAID_PENDING_SHIP, SHIPPED, AWAITING_MEETUP, COMPLETED, CLOSED}
 
     public enum PayStatus {UNPAID, PAYING, PAID, CLOSED}

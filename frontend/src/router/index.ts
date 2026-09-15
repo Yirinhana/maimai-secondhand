@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
 import { useAuthStore } from '../shared/stores/auth';
+import { waitForAnchor } from '../shared/anchorScroll';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -77,6 +78,12 @@ const routes: RouteRecordRaw[] = [
     path: '/publish/:id',
     name: 'publish-edit',
     component: () => import('../modules/catalog/ProductEditPage.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/seller',
+    name: 'seller-dashboard',
+    component: () => import('../modules/catalog/SellerDashboardPage.vue'),
     meta: { requiresAuth: true },
   },
   {
@@ -255,7 +262,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/:pathMatch(.*)*',
     name: 'not-found',
-    component: () => import('../modules/catalog/SearchPage.vue'),
+    component: () => import('../shared/components/NotFoundPage.vue'),
   },
 ];
 
@@ -264,7 +271,11 @@ export const router = createRouter({
   routes,
   scrollBehavior: (to, from, savedPosition) => {
     if (savedPosition) return savedPosition;
-    if (to.hash) return { el: to.hash, top: 20 };
+    if (to.hash)
+      return waitForAnchor(
+        to.hash,
+        () => router.currentRoute.value.fullPath === to.fullPath,
+      );
     if (to.path === from.path) return false;
     return { top: 0 };
   },

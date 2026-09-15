@@ -28,11 +28,11 @@ public class AdminStatsService {
         long userCount = userRepository.count();
         long orderCount = orderRepository.count();
         long productOnSaleCount = count("SELECT COUNT(*) FROM products WHERE status = 'ON_SALE'");
-        long paidOrderCount = count("SELECT COUNT(*) FROM orders WHERE pay_status = 'PAID'");
-        long refundSuccessCount = count("SELECT COUNT(*) FROM refunds WHERE status = 'SUCCESS'");
+        long paidOrderCount = count("SELECT COUNT(*) FROM orders o WHERE pay_status = 'PAID' AND o.experience_source IS NULL AND NOT EXISTS(SELECT 1 FROM payment_requests p WHERE p.order_id=o.id AND p.simulated=1)");
+        long refundSuccessCount = count("SELECT COUNT(*) FROM refunds WHERE status = 'SUCCESS' AND simulated=0");
         Long feeSum = jdbcTemplate.queryForObject(
-                "SELECT (SELECT COALESCE(SUM(platform_fee_cents),0) FROM orders WHERE pay_status='PAID')"
-                        + " - (SELECT COALESCE(SUM(platform_fee_refund_cents),0) FROM refunds WHERE status='SUCCESS')",
+                "SELECT (SELECT COALESCE(SUM(platform_fee_cents),0) FROM orders o WHERE pay_status='PAID' AND o.experience_source IS NULL AND NOT EXISTS(SELECT 1 FROM payment_requests p WHERE p.order_id=o.id AND p.simulated=1))"
+                        + " - (SELECT COALESCE(SUM(platform_fee_refund_cents),0) FROM refunds WHERE status='SUCCESS' AND simulated=0)",
                 Long.class);
         return new AdminDtos.StatsOverview(userCount, productOnSaleCount, orderCount,
                 paidOrderCount, refundSuccessCount, feeSum == null ? 0 : feeSum);

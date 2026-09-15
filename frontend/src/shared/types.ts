@@ -140,6 +140,7 @@ export interface ProductSummary {
 }
 
 export interface ProductSeller {
+  avatarUrl?: string | null
   id: number
   nickname: string
 }
@@ -151,6 +152,8 @@ export interface ProductImage {
 }
 
 export interface ProductDetail {
+  experienceSource?: string | null
+  supplyNote?: string | null
   id: number
   categoryId?: number
   latitude: number | null
@@ -173,6 +176,7 @@ export interface ProductDetail {
 }
 
 export interface SellerProfile {
+  avatarUrl?: string | null
   id: number
   nickname: string
   joinedAt: string
@@ -320,6 +324,7 @@ export type RefundStatus = 'NONE' | 'PARTIAL' | 'FULL'
 export type SettleStatus = 'NONE' | 'PENDING' | 'SETTLED'
 
 export interface OrderDto {
+  experienceSource?: string | null
   id: number
   orderNo: string
   buyerId: number

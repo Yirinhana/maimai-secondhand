@@ -18,7 +18,7 @@ import java.util.List;
 public class FinanceService {
     private static final String SELECT = """
         SELECT o.*, COALESCE(r.goods,0) refunded_goods, COALESCE(r.freight,0) refunded_freight,
-          COALESCE(r.fee,0) refunded_fee, p.channel payment_channel, COALESCE(p.simulated,0) simulated,
+          COALESCE(r.fee,0) refunded_fee, p.channel payment_channel, (o.experience_source IS NOT NULL OR COALESCE(p.simulated,0)) simulated,
           COALESCE(a.status,'NOT_RECORDED') allocation_status
         FROM orders o
         LEFT JOIN (SELECT order_id,SUM(goods_refund_cents) goods,SUM(freight_refund_cents) freight,
@@ -85,6 +85,7 @@ public class FinanceService {
         jdbc.queryForList("SELECT id FROM orders WHERE id=? FOR UPDATE",orderId);
         Summary value=summary(orderId);
         if(!"PAID".equals(value.payStatus()))return;
+        if (jdbc.queryForObject("SELECT experience_source IS NOT NULL FROM orders WHERE id=?",Boolean.class,orderId)) return;
         jdbc.update("""
             INSERT INTO finance_allocation_expectations(order_id,goods_remaining_cents,freight_remaining_cents,
               platform_expected_cents,seller_expected_cents,channel_fee_cents,channel_fee_confirmed,simulated,status)

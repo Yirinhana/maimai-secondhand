@@ -17,6 +17,12 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    /** Navigating away cancels streamed photos; the disconnected response cannot carry JSON. */
+    @ExceptionHandler(org.springframework.web.context.request.async.AsyncRequestNotUsableException.class)
+    public void handleDisconnectedStream(org.springframework.web.context.request.async.AsyncRequestNotUsableException ex) {
+        org.slf4j.LoggerFactory.getLogger(GlobalExceptionHandler.class).debug("Client disconnected from streamed response");
+    }
+
     @ExceptionHandler(BizException.class)
     public ResponseEntity<ApiError> handleBiz(BizException ex) {
         return ResponseEntity.status(ex.getStatus())

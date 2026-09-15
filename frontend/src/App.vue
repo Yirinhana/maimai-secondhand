@@ -1,16 +1,23 @@
 <template>
   <div class="mm-app" :class="`mm-app--${section}`">
     <ConfirmationDialog />
-    <TinaSupportDock />
+    <TinaSupportDock v-if="!adminWorkspace" />
     <a href="#main-content" class="mm-skip">跳到正文</a>
     <header ref="headerRoot" class="mm-header">
       <div class="mm-header__inner">
-        <RouterLink to="/" class="mm-brand" aria-label="麦麦二手首页"
+        <RouterLink
+          :to="adminWorkspace ? '/admin' : '/'"
+          class="mm-brand"
+          :aria-label="adminWorkspace ? '管理后台首页' : '麦麦二手首页'"
           ><img src="/brand/maimai-symbol.svg" alt="" /><span
             >麦麦二手<small>MAIMAI MARKET</small></span
           ></RouterLink
         >
+        <div v-if="adminWorkspace" class="mm-header__workspace">
+          <span>平台管理</span><strong>{{ title }}</strong>
+        </div>
         <form
+          v-else
           class="mm-header__search"
           role="search"
           @submit.prevent="onSearch"
@@ -30,7 +37,14 @@
           ><button type="submit" aria-label="搜索">搜索</button>
         </form>
         <div class="mm-header__actions">
-          <RouterLink to="/cart" class="mm-header__cart" aria-label="购物车"
+          <RouterLink v-if="adminWorkspace" to="/" class="mm-header__cart"
+            >浏览商城</RouterLink
+          >
+          <RouterLink
+            v-else
+            to="/cart"
+            class="mm-header__cart"
+            aria-label="购物车"
             ><MmIcon name="cart" /><span>购物车</span></RouterLink
           >
           <div v-if="auth.me" ref="userRoot" class="mm-user">
@@ -64,7 +78,13 @@
                 />
                 <div>
                   <strong>{{ auth.me.nickname }}</strong
-                  ><span>我的麦麦</span>
+                  ><span>{{
+                    adminWorkspace
+                      ? '平台管理账号'
+                      : auth.isSeller
+                        ? '买家与卖家账号'
+                        : '买家账号'
+                  }}</span>
                 </div>
               </div>
               <RouterLink role="menuitem" to="/"
@@ -72,11 +92,17 @@
               >
               <RouterLink role="menuitem" to="/me"
                 ><MmIcon name="user" />个人中心</RouterLink
-              ><RouterLink role="menuitem" to="/orders"
+              ><RouterLink v-if="!adminWorkspace" role="menuitem" to="/orders"
                 ><MmIcon name="bag" />我买到的</RouterLink
-              ><RouterLink role="menuitem" to="/seller/products"
+              ><RouterLink
+                v-if="auth.isSeller && !adminWorkspace"
+                role="menuitem"
+                to="/seller"
                 ><MmIcon name="box" />卖家工作台</RouterLink
-              ><RouterLink role="menuitem" to="/me/community"
+              ><RouterLink
+                v-if="!adminWorkspace"
+                role="menuitem"
+                to="/me/community"
                 ><MmIcon name="heart" />收藏与关注</RouterLink
               ><RouterLink role="menuitem" to="/messages"
                 ><MmIcon name="message" />私信</RouterLink
@@ -100,6 +126,7 @@
             >登录 / 注册</RouterLink
           >
           <button
+            v-if="!adminWorkspace"
             ref="navTrigger"
             class="mm-header__menu-toggle"
             :aria-expanded="menuOpen"
@@ -111,7 +138,7 @@
           </button>
         </div>
       </div>
-      <div class="mm-header__nav-wrap">
+      <div v-if="!adminWorkspace" class="mm-header__nav-wrap">
         <nav
           id="mm-main-nav"
           ref="navRoot"
@@ -123,8 +150,10 @@
             v-for="item in primaryNav"
             :key="item.to"
             :to="item.to"
-            :class="{ 'is-active': section === item.section }"
-            :aria-current="section === item.section ? 'page' : undefined"
+            :class="{ 'is-active': navActive(item.to, item.section) }"
+            :aria-current="
+              navActive(item.to, item.section) ? 'page' : undefined
+            "
             ><MmIcon :name="item.icon" />{{ item.label }}</RouterLink
           ><RouterLink
             v-if="auth.isAdmin"
@@ -132,14 +161,17 @@
             :class="{ 'is-active': section === 'admin' }"
             :aria-current="section === 'admin' ? 'page' : undefined"
             ><MmIcon name="shield" />管理后台</RouterLink
-          ><RouterLink to="/publish" class="mm-header__publish"
+          ><RouterLink
+            v-if="section !== 'seller'"
+            to="/publish"
+            class="mm-header__publish"
             ><MmIcon name="plus" />发布闲置</RouterLink
           >
         </nav>
       </div>
     </header>
     <SectionNavigation
-      v-if="route.name !== 'home' && section !== 'auth'"
+      v-if="['buyer', 'seller', 'account', 'transaction'].includes(section)"
       :section="section"
       :title="title"
     />
@@ -151,7 +183,7 @@
     >
       <router-view />
     </main>
-    <footer class="mm-footer">
+    <footer v-if="!adminWorkspace" class="mm-footer">
       <div class="mm-footer__top">
         <div>
           <RouterLink to="/" class="mm-footer__brand">麦麦二手</RouterLink>
@@ -241,24 +273,34 @@ const info = computed(() => {
 });
 const section = computed(() => info.value.section),
   title = computed(() => info.value.title);
-const primaryNav = [
-  { to: '/', label: '逛逛闲置', section: 'market', icon: 'bag' },
-  {
-    to: '/community/demands',
-    label: '求购社区',
-    section: 'community',
-    icon: 'heart',
-  },
-  { to: '/orders', label: '买家交易', section: 'buyer', icon: 'cart' },
-  {
-    to: '/seller/products',
-    label: '卖家工作台',
-    section: 'seller',
-    icon: 'box',
-  },
-  { to: '/messages', label: '消息', section: 'messages', icon: 'message' },
-  { to: '/official', label: '麦麦官方', section: 'official', icon: 'book' },
-];
+const adminWorkspace = computed(() => section.value === 'admin');
+function navActive(to: string, area: string) {
+  return to === '/'
+    ? route.name === 'home'
+    : area === 'market'
+      ? section.value === 'market' && route.name !== 'home'
+      : section.value === area;
+}
+const primaryNav = computed(() =>
+  [
+    { to: '/', label: '首页', section: 'market', icon: 'grid' },
+    { to: '/search', label: '全部闲置', section: 'market', icon: 'bag' },
+    {
+      to: '/community/demands',
+      label: '求购社区',
+      section: 'community',
+      icon: 'heart',
+    },
+    { to: '/orders', label: '我的交易', section: 'buyer', icon: 'cart' },
+    {
+      to: '/seller',
+      label: '卖家工作台',
+      section: 'seller',
+      icon: 'box',
+    },
+    { to: '/messages', label: '消息', section: 'messages', icon: 'message' },
+  ].filter((item) => item.section !== 'seller' || auth.isSeller),
+);
 async function openUser() {
   userOpen.value = true;
   menuOpen.value = false;
@@ -385,6 +427,25 @@ watch(
 );
 </script>
 <style scoped>
+.mm-header__workspace {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-left: 1px solid var(--mm-border);
+  padding-left: 24px;
+}
+.mm-header__workspace span {
+  font-size: 12px;
+  color: var(--mm-muted);
+}
+.mm-header__workspace strong {
+  font-size: 19px;
+}
+.mm-app--admin .mm-header__inner {
+  max-width: 1520px;
+}
+
 .mm-app {
   min-height: 100vh;
   display: flex;

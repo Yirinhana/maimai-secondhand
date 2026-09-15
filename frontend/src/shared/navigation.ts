@@ -62,6 +62,7 @@ export const pageInfo: Record<string, { title: string; section: string }> = {
   'my-community': { title: '收藏与关注', section: 'account' },
   publish: { title: '发布闲置', section: 'seller' },
   'publish-edit': { title: '编辑商品', section: 'seller' },
+  'seller-dashboard': { title: '店铺概览', section: 'seller' },
   'my-products': { title: '我的商品', section: 'seller' },
   'seller-orders': { title: '我卖出的', section: 'seller' },
   'seller-bargains': { title: '收到的议价', section: 'seller' },
@@ -140,7 +141,7 @@ export const sectionInfo: Record<
     ],
   },
   buyer: {
-    label: '买家交易',
+    label: '我的交易',
     links: [
       { to: '/orders', label: '我买到的' },
       { to: '/cart', label: '购物车' },
@@ -151,6 +152,7 @@ export const sectionInfo: Record<
   seller: {
     label: '卖家工作台',
     links: [
+      { to: '/seller', label: '店铺概览' },
       { to: '/seller/products', label: '商品管理' },
       { to: '/seller/orders', label: '我卖出的' },
       { to: '/seller/bargains', label: '收到的议价' },
@@ -163,7 +165,7 @@ export const sectionInfo: Record<
     links: [
       { to: '/me', label: '资料与地址' },
       { to: '/me/community', label: '收藏与关注' },
-      { to: '/orders', label: '买家交易' },
+      { to: '/orders', label: '我的交易' },
       { to: '/seller/products', label: '卖家工作台' },
     ],
   },
