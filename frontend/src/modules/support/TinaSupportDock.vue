@@ -123,11 +123,14 @@ onBeforeUnmount(() => dialog.value?.close());
     ref="launcher"
     type="button"
     class="tina-launcher"
-    :class="{ 'is-dragging': dock.dragging.value }"
+    :class="{
+      'is-dragging': dock.dragging.value,
+      'is-snapping': dock.snapping.value,
+    }"
     :style="dock.style.value"
     aria-label="打开麦仔客服"
     aria-describedby="maizai-position-help"
-    title="拖动麦仔，调整位置"
+    title="拖动麦仔，松手自动贴边"
     aria-haspopup="dialog"
     :aria-expanded="opened"
     aria-controls="tina-dialog"
@@ -145,13 +148,15 @@ onBeforeUnmount(() => dialog.value?.close());
     <MaizaiMascot
       class="tina-launcher__mascot"
       :greeting="greeting"
-      :active="animated && !opened"
+      :active="
+        animated && !opened && !dock.dragging.value && !dock.snapping.value
+      "
     />
     <span class="tina-launcher__label">麦仔客服</span
     ><span v-if="unread" class="tina-unread" aria-label="有新回复"></span>
   </button>
   <span id="maizai-position-help" class="mm-visually-hidden"
-    >拖动可沿屏幕左右边缘移动。键盘方向键调整位置，Home恢复右下角，回车打开客服。</span
+    >拖动时自由移动，松手后吸附到最近的左右边缘。键盘方向键调整位置，Home恢复右下角，回车打开客服。</span
   >
   <dialog
     id="tina-dialog"
@@ -383,14 +388,22 @@ onBeforeUnmount(() => dialog.value?.close());
 .tina-launcher.is-dragging {
   cursor: grabbing;
 }
-.tina-launcher.is-dragging :deep(*) {
-  animation: none !important;
-  transition: none !important;
+.tina-launcher.is-snapping {
+  transition:
+    left 460ms cubic-bezier(0.2, 0.75, 0.2, 1),
+    top 460ms cubic-bezier(0.2, 0.75, 0.2, 1);
 }
 .tina-launcher .tina-launcher__mascot {
   width: 72px;
   height: 66px;
   filter: drop-shadow(0 4px 5px #292b2614);
+  transition:
+    transform 180ms ease-out,
+    filter 180ms ease-out;
+}
+.tina-launcher.is-dragging .tina-launcher__mascot {
+  transform: translateY(-4px) scale(1.08);
+  filter: drop-shadow(0 12px 10px #292b2638);
 }
 .tina-launcher__label {
   font-size: 10px;
@@ -831,6 +844,13 @@ onBeforeUnmount(() => dialog.value?.close());
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  .tina-launcher,
+  .tina-launcher .tina-launcher__mascot {
+    transition: none !important;
+  }
+  .tina-launcher.is-dragging .tina-launcher__mascot {
+    transform: none;
+  }
   .tina-launcher:hover {
     transform: none;
   }
