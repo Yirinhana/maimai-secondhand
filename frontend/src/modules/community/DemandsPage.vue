@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { askConfirmation } from '../../shared/confirm';
-import { onMounted, ref, watch } from 'vue';
+import { nextTick, onMounted, reactive, ref, watch } from 'vue';
+import { parseYuan } from '../../shared/moneyInput';
 import { useRoute, useRouter } from 'vue-router';
 import { get, post, put, type ApiError } from '../../shared/api';
 import { useAuthStore } from '../../shared/stores/auth';
@@ -34,6 +35,13 @@ const blank = () => ({
     region: '',
   }),
   form = ref(blank());
+const formElement = ref<HTMLFormElement | null>(null);
+const fieldErrors = reactive({
+  title: '',
+  description: '',
+  budgetMin: '',
+  budgetMax: '',
+});
 async function load() {
   loading.value = true;
   error.value = '';
@@ -68,21 +76,52 @@ function edit(item?: Demand) {
         region: item.region || '',
       }
     : blank();
+  Object.assign(fieldErrors, {
+    title: '',
+    description: '',
+    budgetMin: '',
+    budgetMax: '',
+  });
+  error.value = '';
   showForm.value = true;
 }
 async function submit() {
-  busy.value = true;
+  if (busy.value) return;
   error.value = '';
+  const min = parseYuan(form.value.budgetMin),
+    max = parseYuan(form.value.budgetMax);
+  fieldErrors.title = form.value.title.trim() ? '' : '请填写想要的物品';
+  fieldErrors.description = form.value.description.trim()
+    ? ''
+    : '请补充具体需求';
+  fieldErrors.budgetMin =
+    min === null
+      ? '最低预算须为非负金额，最多两位小数'
+      : min > 100_000_000
+        ? '最低预算不能超过 100 万元'
+        : '';
+  fieldErrors.budgetMax =
+    max === null
+      ? '最高预算须为非负金额，最多两位小数'
+      : max > 100_000_000
+        ? '最高预算不能超过 100 万元'
+        : min !== null && max < min
+          ? '最高预算不能低于最低预算'
+          : '';
+  if (Object.values(fieldErrors).some(Boolean)) {
+    await nextTick();
+    formElement.value
+      ?.querySelector<HTMLInputElement>('[aria-invalid="true"]')
+      ?.focus();
+    return;
+  }
+  busy.value = true;
   try {
-    const min = Number(form.value.budgetMin),
-      max = Number(form.value.budgetMax);
-    if (!Number.isFinite(min) || !Number.isFinite(max) || min < 0 || max < min)
-      throw new Error('请填写合理的预算区间');
     const payload = {
       title: form.value.title,
       description: form.value.description,
-      budgetMinCents: Math.round(min * 100),
-      budgetMaxCents: Math.round(max * 100),
+      budgetMinCents: min,
+      budgetMaxCents: max,
       region: form.value.region,
       categoryId: null,
     };
@@ -93,7 +132,13 @@ async function submit() {
     mine.value = true;
     await load();
   } catch (e) {
-    error.value = (e as ApiError).message;
+    if ((e as ApiError).code === 'BUDGET_INVALID') {
+      fieldErrors.budgetMax = (e as ApiError).message;
+      await nextTick();
+      formElement.value
+        ?.querySelector<HTMLInputElement>('[aria-invalid="true"]')
+        ?.focus();
+    } else error.value = (e as ApiError).message;
   } finally {
     busy.value = false;
   }
@@ -154,33 +199,91 @@ onMounted(async () => {
     </p>
     <p v-if="error" class="mm-error" role="alert">{{ error }}</p>
     <p v-if="hint" class="mm-notice" role="status">{{ hint }}</p>
-    <form v-if="showForm" class="mm-panel mm-form" @submit.prevent="submit">
+    <form
+      v-if="showForm"
+      ref="formElement"
+      class="mm-panel mm-form"
+      novalidate
+      @submit.prevent="submit"
+    >
       <h2>{{ editId ? '编辑求购' : '发布求购' }}</h2>
       <label
-        >想要什么<input v-model="form.title" required maxlength="120" /></label
+        >想要什么<input
+          v-model="form.title"
+          :aria-invalid="!!fieldErrors.title"
+          :aria-describedby="
+            fieldErrors.title ? 'demand-title-error' : undefined
+          "
+          @input="fieldErrors.title = ''"
+          required
+          maxlength="120"
+        /><span
+          v-if="fieldErrors.title"
+          id="demand-title-error"
+          class="mm-error"
+          role="alert"
+          >{{ fieldErrors.title }}</span
+        ></label
       ><label
         >具体需求<textarea
           v-model="form.description"
+          :aria-invalid="!!fieldErrors.description"
+          :aria-describedby="
+            fieldErrors.description ? 'demand-description-error' : undefined
+          "
+          @input="fieldErrors.description = ''"
           required
           maxlength="800"
-        />
+        /><span
+          v-if="fieldErrors.description"
+          id="demand-description-error"
+          class="mm-error"
+          role="alert"
+          >{{ fieldErrors.description }}</span
+        >
       </label>
       <div class="mm-grid">
         <label
           >最低预算（元）<input
             v-model="form.budgetMin"
-            type="number"
-            min="0"
-            step="0.01"
-            required /></label
-        ><label
-          >最高预算（元）<input
-            v-model="form.budgetMax"
-            type="number"
+            :aria-invalid="!!fieldErrors.budgetMin"
+            :aria-describedby="
+              fieldErrors.budgetMin ? 'demand-budgetMin-error' : undefined
+            "
+            @input="fieldErrors.budgetMin = ''"
+            type="text"
+            inputmode="decimal"
             min="0"
             step="0.01"
             required
-        /></label>
+          /><span
+            v-if="fieldErrors.budgetMin"
+            id="demand-budgetMin-error"
+            class="mm-error"
+            role="alert"
+            >{{ fieldErrors.budgetMin }}</span
+          ></label
+        ><label
+          >最高预算（元）<input
+            v-model="form.budgetMax"
+            :aria-invalid="!!fieldErrors.budgetMax"
+            :aria-describedby="
+              fieldErrors.budgetMax ? 'demand-budgetMax-error' : undefined
+            "
+            @input="fieldErrors.budgetMax = ''"
+            type="text"
+            inputmode="decimal"
+            min="0"
+            step="0.01"
+            required
+          /><span
+            v-if="fieldErrors.budgetMax"
+            id="demand-budgetMax-error"
+            class="mm-error"
+            role="alert"
+            >{{ fieldErrors.budgetMax }}</span
+          ></label
+        >
       </div>
       <label>地区<input v-model="form.region" maxlength="100" /></label>
       <div class="mm-actions">
@@ -251,6 +354,13 @@ onMounted(async () => {
   </section>
 </template>
 <style scoped>
+.mm-form [aria-invalid='true'] {
+  border-color: var(--mm-danger);
+}
+.mm-form .mm-error {
+  font-size: 13px;
+  line-height: 1.6;
+}
 .mm-demand-author {
   display: flex;
   align-items: center;

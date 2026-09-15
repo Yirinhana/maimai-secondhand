@@ -5,6 +5,9 @@
     </p>
     <p v-else-if="!detail" class="mm-aftersale-detail__hint">加载中…</p>
     <template v-else>
+      <p v-if="detail.experience" class="mm-aftersale-detail__notice">
+        体验售后：退款只更新体验记录，不发生实际资金退回；退货步骤也不需要寄送真实物品。
+      </p>
       <MmCard class="mm-aftersale-detail__card">
         <div class="mm-aftersale-detail__head">
           <div>

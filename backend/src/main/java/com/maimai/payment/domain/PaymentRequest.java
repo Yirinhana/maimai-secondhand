@@ -15,7 +15,7 @@ import java.time.Instant;
 @Table(name = "payment_requests")
 public class PaymentRequest {
 
-    public enum Channel {MOCK_LOCAL, WECHAT}
+    public enum Channel {MOCK_LOCAL, WECHAT, EXPERIENCE_QR}
 
     public enum Status {CREATED, PAID, CLOSED, FAILED}
 

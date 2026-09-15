@@ -20,11 +20,35 @@
         关键信息（标题/描述/分类/图片/成色/缺陷/价格/交付/运费）修改后将重新审核，审核期间暂停新成交；仅调整库存不会触发重新审核。
       </p>
 
-      <form class="mm-edit__form" @submit.prevent>
+      <div class="mm-edit__draft-strip">
+        <div>
+          <strong>未完成内容自动保留</strong>
+          <p>
+            按账号保存在当前浏览器，回来可继续填写。完整草稿保存后可在「我的商品」管理。
+          </p>
+          <p
+            v-if="draftNotice"
+            :class="{ 'mm-edit__field-error': draftFailure }"
+            role="status"
+          >
+            {{ draftNotice }}
+          </p>
+        </div>
+        <MmButton
+          v-if="!isEdit"
+          variant="ghost"
+          :disabled="savingDraft || savingSubmit"
+          @click="clearForm"
+          >一键清空</MmButton
+        >
+      </div>
+      <form ref="formElement" class="mm-edit__form" novalidate @submit.prevent>
         <MmCard title="基本信息" class="mm-edit__section">
           <div class="mm-edit__fields">
             <MmInput
+              id="product-title"
               v-model="form.title"
+              @update:model-value="fieldErrors.title = ''"
               label="标题"
               :maxlength="120"
               placeholder="一句话说明这件闲置"
@@ -32,7 +56,16 @@
             />
             <label class="mm-edit__field">
               <span class="mm-edit__label">分类</span>
-              <select v-model="form.categoryId">
+              <select
+                v-model="form.categoryId"
+                @input="fieldErrors.categoryId = ''"
+                :aria-invalid="!!fieldErrors.categoryId"
+                :aria-describedby="
+                  fieldErrors.categoryId
+                    ? 'product-categoryId-error'
+                    : undefined
+                "
+              >
                 <option value="" disabled>请选择分类</option>
                 <option
                   v-for="opt in categoryOptions"
@@ -45,6 +78,7 @@
 
               <span
                 v-if="fieldErrors.categoryId"
+                id="product-categoryId-error"
                 class="mm-edit__field-error"
                 role="alert"
                 >{{ fieldErrors.categoryId }}</span
@@ -90,13 +124,20 @@
               <span class="mm-edit__label">价格（元）</span>
               <input
                 v-model="form.priceYuan"
-                type="number"
+                @input="fieldErrors.priceYuan = ''"
+                :aria-invalid="!!fieldErrors.priceYuan"
+                :aria-describedby="
+                  fieldErrors.priceYuan ? 'product-priceYuan-error' : undefined
+                "
+                type="text"
+                inputmode="decimal"
                 min="0.01"
                 step="0.01"
                 placeholder="如 25.00"
               />
               <span
                 v-if="fieldErrors.priceYuan"
+                id="product-priceYuan-error"
                 class="mm-edit__field-error"
                 role="alert"
                 >{{ fieldErrors.priceYuan }}</span
@@ -105,13 +146,20 @@
             <label v-if="!isEdit" class="mm-edit__field">
               <span class="mm-edit__label">库存</span>
               <input
-                v-model.number="form.stock"
-                type="number"
+                v-model="form.stock"
+                @input="fieldErrors.stock = ''"
+                :aria-invalid="!!fieldErrors.stock"
+                :aria-describedby="
+                  fieldErrors.stock ? 'product-stock-error' : undefined
+                "
+                type="text"
+                inputmode="decimal"
                 min="0"
                 step="1"
               />
               <span
                 v-if="fieldErrors.stock"
+                id="product-stock-error"
                 class="mm-edit__field-error"
                 role="alert"
                 >{{ fieldErrors.stock }}</span
@@ -121,12 +169,18 @@
               <span class="mm-edit__label">所在地区</span>
               <input
                 v-model="form.region"
+                @input="fieldErrors.region = ''"
+                :aria-invalid="!!fieldErrors.region"
+                :aria-describedby="
+                  fieldErrors.region ? 'product-region-error' : undefined
+                "
                 type="text"
                 maxlength="100"
                 placeholder="如：成都市 武侯区"
               />
               <span
                 v-if="fieldErrors.region"
+                id="product-region-error"
                 class="mm-edit__field-error"
                 role="alert"
                 >{{ fieldErrors.region }}</span
@@ -143,6 +197,7 @@
                 用于附近商品排序。请选择公共场所，不要标记私人住址；地图距离不用于计算快递运费。
               </p>
               <MapPicker
+                :key="mapResetKey"
                 :initial-latitude="form.latitude"
                 :initial-longitude="form.longitude"
                 @select="setPublicLocation"
@@ -170,6 +225,8 @@
               <label class="mm-edit__checkbox">
                 <input
                   v-model="form.deliveryMethods"
+                  :aria-invalid="!!fieldErrors.deliveryMethods"
+                  aria-describedby="product-delivery-error"
                   type="checkbox"
                   value="EXPRESS"
                 />
@@ -178,6 +235,8 @@
               <label class="mm-edit__checkbox">
                 <input
                   v-model="form.deliveryMethods"
+                  :aria-invalid="!!fieldErrors.deliveryMethods"
+                  aria-describedby="product-delivery-error"
                   type="checkbox"
                   value="MEETUP"
                 />
@@ -185,6 +244,7 @@
               </label>
               <span
                 v-if="fieldErrors.deliveryMethods"
+                id="product-delivery-error"
                 class="mm-edit__field-error"
                 role="alert"
                 >{{ fieldErrors.deliveryMethods }}</span
@@ -196,13 +256,22 @@
               >
               <input
                 v-model="form.freightYuan"
-                type="number"
+                @input="fieldErrors.freightYuan = ''"
+                :aria-invalid="!!fieldErrors.freightYuan"
+                :aria-describedby="
+                  fieldErrors.freightYuan
+                    ? 'product-freightYuan-error'
+                    : undefined
+                "
+                type="text"
+                inputmode="decimal"
                 min="0"
                 step="0.01"
                 placeholder="如 8.00"
               />
               <span
                 v-if="fieldErrors.freightYuan"
+                id="product-freightYuan-error"
                 class="mm-edit__field-error"
                 role="alert"
                 >{{ fieldErrors.freightYuan }}</span
@@ -213,6 +282,8 @@
               <label class="mm-edit__checkbox"
                 ><input
                   v-model="limitShipping"
+                  :aria-invalid="!!fieldErrors.shippingProvinces"
+                  aria-describedby="product-shipping-error"
                   type="checkbox"
                 />仅配送到选定省份（不勾选表示全国）</label
               >
@@ -230,6 +301,13 @@
               </div>
               <p v-if="provinceError" class="mm-edit__field-error">
                 {{ provinceError }}
+              </p>
+              <p
+                v-if="fieldErrors.shippingProvinces"
+                id="product-shipping-error"
+                class="mm-edit__field-error"
+              >
+                {{ fieldErrors.shippingProvinces }}
               </p>
               <p v-if="limitShipping" class="mm-edit__hint">
                 请至少选一项。收货地区须填写省级名称，系统将在下单时核对是否支持配送。
@@ -391,7 +469,10 @@ import MapPicker, {
   type SelectedAddress,
 } from '../../shared/components/MapPicker.vue';
 import ProductRevisions from './ProductRevisions.vue';
-import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue';
+import { useAuthStore } from '../../shared/stores/auth';
+import { parseYuan } from '../../shared/moneyInput';
+import { askConfirmation } from '../../shared/confirm';
 import { useRoute, useRouter } from 'vue-router';
 import { del, get, post, put, upload, type ApiError } from '../../shared/api';
 import EmptyState from '../../shared/components/EmptyState.vue';
@@ -414,6 +495,13 @@ const IMAGE_TYPES = ['image/jpeg', 'image/png'];
 
 const route = useRoute();
 const router = useRouter();
+const auth = useAuthStore();
+const formElement = ref<HTMLFormElement | null>(null);
+const draftNotice = ref('');
+const draftFailure = ref(false);
+const mapResetKey = ref(0);
+let activeDraftKey = '';
+let trackDraft = false;
 
 const productId = computed(() => {
   const id = route.params.id;
@@ -431,14 +519,14 @@ const product = ref<ProductDetail | null>(null);
 const pageLoading = ref(true);
 const pageError = ref('');
 
-const form = reactive({
+const emptyForm = () => ({
   title: '',
   categoryId: '',
   description: '',
   condition: 'GOOD' as Condition,
   defects: '',
   priceYuan: '',
-  stock: 1,
+  stock: '1',
   region: '',
   deliveryMethods: ['EXPRESS'] as DeliveryMethod[],
   freightYuan: '0',
@@ -447,6 +535,7 @@ const form = reactive({
   longitude: null as number | null,
   shippingProvinces: [] as string[],
 });
+const form = reactive(emptyForm());
 const limitShipping = ref(false),
   provinceOptions = ref<string[]>([]),
   provinceError = ref('');
@@ -464,6 +553,7 @@ const fieldErrors = reactive({
   region: '',
   deliveryMethods: '',
   freightYuan: '',
+  shippingProvinces: '',
 });
 
 const savingDraft = ref(false);
@@ -509,10 +599,11 @@ function fillForm(p: ProductDetail) {
   limitShipping.value = form.shippingProvinces.length > 0;
 }
 
-async function loadProduct() {
+async function loadProduct(preserveInput = false) {
   if (productId.value === null) return;
   const p = await get<ProductDetail>(`/seller/products/${productId.value}`);
   product.value = p;
+  if (preserveInput) return;
   fillForm(p);
   form.categoryId = String(p.categoryId ?? '');
 }
@@ -540,35 +631,155 @@ onMounted(async () => {
       pageError.value = (e as ApiError).message || '商品加载失败';
     }
   }
+  restoreDraft();
   pageLoading.value = false;
 });
 
-function yuanToCents(yuan: string): number | null {
-  const n = Number(yuan);
-  if (!yuan.trim() || !Number.isFinite(n)) return null;
-  return Math.round(n * 100);
-}
-
-function validate(): boolean {
-  if (limitShipping.value && form.shippingProvinces.length === 0) {
-    saveError.value = '请至少选择一个配送省份，或取消限定配送';
+const yuanToCents = parseYuan;
+function persistDraft(): boolean {
+  if (!trackDraft || !activeDraftKey) return false;
+  try {
+    localStorage.setItem(
+      activeDraftKey,
+      JSON.stringify({ schema: 1, form, limitShipping: limitShipping.value }),
+    );
+    draftFailure.value = false;
+    draftNotice.value = '填写内容已自动保留在本机';
+    return true;
+  } catch {
+    draftFailure.value = true;
+    draftNotice.value =
+      '浏览器未能保留内容，请勿关闭页面；请检查存储空间或浏览器隐私设置。';
     return false;
   }
+}
+function restoreDraft() {
+  activeDraftKey = auth.me
+    ? `maimai:product-form:v1:${auth.me.id}:${productId.value ?? 'new'}`
+    : '';
+  try {
+    const saved = activeDraftKey ? localStorage.getItem(activeDraftKey) : null;
+    if (saved) {
+      const data = JSON.parse(saved);
+      if (data.schema === 1 && data.form && typeof data.form === 'object') {
+        const defaults = emptyForm();
+        // Read only known field shapes; browser storage is not trusted as a request payload.
+        for (const key of Object.keys(defaults) as (keyof typeof defaults)[]) {
+          const value = data.form[key];
+          if (
+            typeof defaults[key] === 'string' &&
+            (typeof value === 'string' || typeof value === 'number')
+          )
+            Object.assign(form, { [key]: String(value) });
+        }
+        form.deliveryMethods = Array.isArray(data.form.deliveryMethods)
+          ? data.form.deliveryMethods.filter(
+              (v: unknown) => v === 'EXPRESS' || v === 'MEETUP',
+            )
+          : defaults.deliveryMethods;
+        form.shippingProvinces = Array.isArray(data.form.shippingProvinces)
+          ? data.form.shippingProvinces.filter(
+              (v: unknown) => typeof v === 'string',
+            )
+          : [];
+        form.latitude =
+          typeof data.form.latitude === 'number' &&
+          Math.abs(data.form.latitude) <= 90
+            ? data.form.latitude
+            : null;
+        form.longitude =
+          typeof data.form.longitude === 'number' &&
+          Math.abs(data.form.longitude) <= 180
+            ? data.form.longitude
+            : null;
+        limitShipping.value = data.limitShipping === true;
+        draftNotice.value = '已恢复上次未完成的内容，请核对后继续填写';
+      }
+    }
+  } catch {
+    draftNotice.value = '上次本机草稿暂时无法读取，可以重新填写';
+  }
+  trackDraft = true;
+}
+function removeSavedDraft() {
+  try {
+    if (activeDraftKey) localStorage.removeItem(activeDraftKey);
+  } catch {
+    /* Keep form available if storage is restricted. */
+  }
+}
+watch(
+  [form, limitShipping],
+  () => {
+    if (trackDraft) persistDraft();
+  },
+  { deep: true, flush: 'sync' },
+);
+async function clearForm() {
+  if (
+    !(await askConfirmation(
+      '清空当前未发布内容并重新填写？已保存到「我的商品」的商品不受影响。',
+    ))
+  )
+    return;
+  trackDraft = false;
+  Object.assign(form, emptyForm());
+  mapResetKey.value++;
+  limitShipping.value = false;
+  pendingFiles.value = [];
+  if (fileInput.value) fileInput.value.value = '';
+  for (const key of Object.keys(fieldErrors) as (keyof typeof fieldErrors)[])
+    fieldErrors[key] = '';
+  saveError.value = '';
+  saveMessage.value = '';
+  imageError.value = '';
+  removeSavedDraft();
+  draftNotice.value = '已清空，可以重新填写';
+  draftFailure.value = false;
+  trackDraft = true;
+  await nextTick();
+  formElement.value?.querySelector<HTMLInputElement>('#product-title')?.focus();
+}
+async function focusFirstMissing() {
+  await nextTick();
+  const input = formElement.value?.querySelector<HTMLElement>(
+    '[aria-invalid="true"]',
+  );
+  input?.focus({ preventScroll: true });
+  input?.scrollIntoView({
+    block: 'center',
+    behavior: matchMedia('(prefers-reduced-motion: reduce)').matches
+      ? 'instant'
+      : 'smooth',
+  });
+}
+function validate(): boolean {
   fieldErrors.title = form.title.trim() ? '' : '请填写标题';
-  fieldErrors.categoryId = form.categoryId ? '' : '请选择分类';
+  fieldErrors.categoryId = categoryOptions.value.some(
+    (c) => String(c.id) === form.categoryId,
+  )
+    ? ''
+    : '请选择分类';
   const price = yuanToCents(form.priceYuan);
   fieldErrors.priceYuan =
-    price !== null && price >= 1 ? '' : '请输入有效价格（≥0.01 元）';
+    price !== null && price >= 1
+      ? ''
+      : '价格须大于 0，最多保留两位小数，例如 25.00';
   fieldErrors.stock =
-    !isEdit.value && (!Number.isInteger(form.stock) || form.stock < 0)
-      ? '库存须为不小于 0 的整数'
+    !isEdit.value &&
+    (!/^\d+$/.test(String(form.stock)) || Number(form.stock) > 2147483647)
+      ? '库存须为 0～2147483647 的整数，例如 1；不能填写小数或负数'
       : '';
   fieldErrors.region = form.region.trim() ? '' : '请填写所在地区';
   fieldErrors.deliveryMethods =
     form.deliveryMethods.length > 0 ? '' : '请至少选择一种交付方式';
   const freight = yuanToCents(form.freightYuan);
   fieldErrors.freightYuan =
-    freight !== null && freight >= 0 ? '' : '请输入有效运费（≥0）';
+    freight !== null ? '' : '运费须为非负金额，最多两位小数；免运费请填 0';
+  fieldErrors.shippingProvinces =
+    limitShipping.value && !form.shippingProvinces.length
+      ? '请选择配送省份，或取消限定配送'
+      : '';
   return Object.values(fieldErrors).every((e) => !e);
 }
 
@@ -591,7 +802,17 @@ function buildBasePayload() {
 }
 
 async function save(submit: boolean) {
-  if (!validate()) return;
+  if (savingDraft.value || savingSubmit.value) return;
+  const retained = persistDraft();
+  if (!validate()) {
+    saveError.value = '';
+    saveMessage.value =
+      !submit && retained
+        ? '草稿已保留，已定位到首个待补充项目。下次进入可继续填写。'
+        : '';
+    await focusFirstMissing();
+    return;
+  }
   saveError.value = '';
   saveMessage.value = '';
   if (submit) savingSubmit.value = true;
@@ -600,10 +821,12 @@ async function save(submit: boolean) {
     if (!isEdit.value) {
       const payload: ProductUpsertRequest = {
         ...buildBasePayload(),
-        stock: form.stock,
+        stock: Number(form.stock),
         submit,
       };
       const res = await post<{ id: number }>('/seller/products', payload);
+      trackDraft = false;
+      removeSavedDraft();
       if (submit) {
         saveMessage.value = '已提交审核，可在「我的商品」查看进度';
         router.replace(`/seller/products`);
@@ -614,7 +837,11 @@ async function save(submit: boolean) {
     } else {
       const payload: ProductUpdateRequest = buildBasePayload();
       await put(`/seller/products/${productId.value}`, payload);
+      trackDraft = false;
+      removeSavedDraft();
       await loadProduct();
+      trackDraft = true;
+      draftNotice.value = '完整内容已保存到我的商品';
       saveMessage.value =
         product.value?.status === 'CHANGES_REVIEW'
           ? '已保存，商品进入变更审核，审核期间暂停新成交'
@@ -623,13 +850,19 @@ async function save(submit: boolean) {
   } catch (e) {
     saveError.value = (e as ApiError).message || '保存失败，请稍后重试';
   } finally {
+    if (isEdit.value) trackDraft = true;
     savingDraft.value = false;
     savingSubmit.value = false;
   }
 }
 
 async function saveAndSubmit() {
-  if (!validate() || productId.value === null) return;
+  if (savingDraft.value || savingSubmit.value) return;
+  persistDraft();
+  if (!validate() || productId.value === null) {
+    await focusFirstMissing();
+    return;
+  }
   saveError.value = '';
   saveMessage.value = '';
   savingSubmit.value = true;
@@ -640,7 +873,10 @@ async function saveAndSubmit() {
     );
     await post(`/seller/products/${productId.value}/submit`);
     saveMessage.value = '已提交审核，可在「我的商品」查看进度';
+    trackDraft = false;
+    removeSavedDraft();
     await loadProduct();
+    trackDraft = true;
   } catch (e) {
     saveError.value = (e as ApiError).message || '提交失败，请稍后重试';
   } finally {
@@ -682,7 +918,7 @@ async function uploadImages() {
     await upload(`/seller/products/${productId.value}/images`, data);
     pendingFiles.value = [];
     if (fileInput.value) fileInput.value.value = '';
-    await loadProduct();
+    await loadProduct(true);
   } catch (e) {
     imageError.value = (e as ApiError).message || '上传失败，请稍后重试';
   } finally {
@@ -696,7 +932,7 @@ async function deleteImage(imageId: number) {
   imageError.value = '';
   try {
     await del(`/seller/products/${productId.value}/images/${imageId}`);
-    await loadProduct();
+    await loadProduct(true);
   } catch (e) {
     imageError.value = (e as ApiError).message || '删除失败，请稍后重试';
   } finally {
@@ -706,8 +942,8 @@ async function deleteImage(imageId: number) {
 
 async function adjustStock() {
   if (productId.value === null || stockDelta.value === null) return;
-  const delta = Math.floor(stockDelta.value);
-  if (!Number.isFinite(delta) || delta === 0) {
+  const delta = Number(stockDelta.value);
+  if (!Number.isInteger(delta) || delta === 0) {
     stockError.value = '请输入非零整数调整量';
     return;
   }
@@ -718,7 +954,7 @@ async function adjustStock() {
     await put(`/seller/products/${productId.value}/stock`, { delta });
     stockMessage.value = `库存已调整（${delta > 0 ? '+' : ''}${delta}）`;
     stockDelta.value = null;
-    await loadProduct();
+    await loadProduct(true);
   } catch (e) {
     stockError.value = (e as ApiError).message || '库存调整失败';
   } finally {
@@ -728,21 +964,68 @@ async function adjustStock() {
 watch(
   () => route.params.id,
   async (id, previous) => {
-    if (id === previous || !id) return;
+    if (id === previous) return;
+    trackDraft = false;
     pageLoading.value = true;
     pageError.value = '';
     try {
-      await loadProduct();
+      if (id) await loadProduct();
+      else {
+        product.value = null;
+        Object.assign(form, emptyForm());
+        limitShipping.value = false;
+      }
+      restoreDraft();
     } catch (e) {
       pageError.value = (e as ApiError).message;
     } finally {
       pageLoading.value = false;
+    }
+    if (!previous && id && !pageError.value) {
+      await nextTick();
+      saveMessage.value =
+        '草稿已保存，请继续添加至少一张商品图片，再提交审核。';
+      fileInput.value?.focus({ preventScroll: true });
+      fileInput.value?.scrollIntoView({ block: 'center' });
     }
   },
 );
 </script>
 
 <style scoped>
+.mm-edit__draft-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  border: 1px solid var(--mm-border);
+  border-radius: 10px;
+  background: var(--mm-canvas);
+}
+.mm-edit__draft-strip p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--mm-muted);
+  line-height: 1.7;
+}
+.mm-edit__draft-strip button {
+  flex-shrink: 0;
+}
+.mm-edit__field [aria-invalid='true'] {
+  border-color: var(--mm-danger);
+}
+.mm-edit__field-error {
+  line-height: 1.6;
+}
+@media (max-width: 600px) {
+  .mm-edit__draft-strip {
+    align-items: start;
+    flex-direction: column;
+  }
+}
+
 .mm-edit__province-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));

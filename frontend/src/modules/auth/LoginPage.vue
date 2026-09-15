@@ -1,8 +1,70 @@
 <template>
   <div class="mm-auth">
     <AuthIntro />
-    <MmCard title="登录麦麦二手" class="mm-auth__card">
-      <p class="mm-auth__lead">欢迎回来，继续看看你的闲置与交易。</p>
+    <MmCard
+      :title="switching ? '切换账号' : '登录麦麦二手'"
+      class="mm-auth__card"
+    >
+      <p class="mm-auth__lead">
+        {{
+          switching
+            ? '选择本机登录过的账号，验证密码后即可切换。'
+            : '欢迎回来，继续看看你的闲置与交易。'
+        }}
+      </p>
+      <section
+        v-if="deviceAccounts.length"
+        class="mm-remembered"
+        aria-label="本机登录过的账号"
+      >
+        <div class="mm-remembered__heading">
+          <strong>本机账号</strong><span>最多保留 5 个</span>
+        </div>
+        <div
+          v-for="account in deviceAccounts"
+          :key="account.id"
+          class="mm-remembered__row"
+          :class="{ 'is-selected': form.email === account.email }"
+        >
+          <button
+            type="button"
+            class="mm-remembered__choose"
+            :disabled="submitting"
+            :aria-label="`选择账号 ${account.email}`"
+            @click="chooseAccount(account)"
+          >
+            <UserAvatar
+              :src="account.avatarUrl"
+              :nickname="account.nickname"
+              :size="38"
+            />
+            <span
+              ><strong
+                >{{ account.nickname
+                }}<small v-if="auth.me?.id === account.id">当前</small></strong
+              ><span>{{ account.email }}</span></span
+            >
+          </button>
+          <button
+            type="button"
+            class="mm-remembered__forget"
+            :disabled="submitting"
+            :aria-label="`移除本机记录 ${account.email}`"
+            @click="forgetAccount(account.id)"
+          >
+            移除
+          </button>
+        </div>
+        <p>只记住头像、昵称和邮箱，不保存密码。移除记录不会注销账号。</p>
+        <button
+          type="button"
+          class="mm-remembered__other"
+          :disabled="submitting"
+          @click="chooseOther"
+        >
+          使用其他账号
+        </button>
+      </section>
       <form
         ref="formElement"
         class="mm-auth__form"
@@ -38,7 +100,14 @@
           <p v-if="formError" class="mm-auth__error" role="alert">
             {{ formError }}
           </p>
-          <MmButton type="submit" :loading="submitting">登录</MmButton>
+          <MmButton type="submit" :loading="submitting">{{
+            switching ? '切换并登录' : '登录'
+          }}</MmButton>
+          <RouterLink
+            v-if="switching && auth.me"
+            :to="auth.isAdmin ? '/admin' : auth.isSeller ? '/seller' : '/'"
+            >返回当前账号</RouterLink
+          >
           <div class="mm-auth__links">
             <RouterLink to="/register">还没有账号？去注册</RouterLink>
             <RouterLink to="/forgot">忘记密码</RouterLink>
@@ -51,17 +120,23 @@
 
 <script setup lang="ts">
 import AuthIntro from '../../shared/components/AuthIntro.vue';
-import { nextTick, onUnmounted, reactive, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { computed, nextTick, onUnmounted, reactive, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import MmButton from '../../shared/components/MmButton.vue';
 import MmCard from '../../shared/components/MmCard.vue';
 import MmInput from '../../shared/components/MmInput.vue';
 import type { ApiError } from '../../shared/api';
 import { useAuthStore } from '../../shared/stores/auth';
+import UserAvatar from '../../shared/components/UserAvatar.vue';
+import {
+  deviceAccounts,
+  forgetAccount,
+  type DeviceAccount,
+} from '../../shared/stores/deviceAccounts';
 
-const router = useRouter();
 const route = useRoute();
 const auth = useAuthStore();
+const switching = computed(() => route.query.switch === '1');
 
 const form = reactive({ email: '', password: '' });
 const errors = reactive({ email: '', password: '' });
@@ -69,6 +144,28 @@ const formError = ref('');
 const submitting = ref(false);
 const formElement = ref<HTMLFormElement | null>(null);
 let disposed = false;
+async function chooseAccount(account: DeviceAccount) {
+  form.email = account.email;
+  form.password = '';
+  errors.email = '';
+  errors.password = '';
+  formError.value = '';
+  await nextTick();
+  formElement.value
+    ?.querySelector<HTMLInputElement>('[autocomplete="current-password"]')
+    ?.focus();
+}
+async function chooseOther() {
+  form.email = '';
+  form.password = '';
+  errors.email = '';
+  errors.password = '';
+  formError.value = '';
+  await nextTick();
+  formElement.value
+    ?.querySelector<HTMLInputElement>('[autocomplete="email"]')
+    ?.focus();
+}
 async function focusInvalidField() {
   await nextTick();
   formElement.value
@@ -108,13 +205,16 @@ async function onSubmit() {
           : auth.isSeller
             ? '/seller'
             : '/';
-    router.push(
-      redirect.startsWith('/') &&
-        !redirect.startsWith('//') &&
-        !redirect.includes('\\')
-        ? redirect
-        : '/',
-    );
+    let destination = '/';
+    try {
+      const url = new URL(redirect, window.location.origin);
+      if (redirect.startsWith('/') && url.origin === window.location.origin)
+        destination = url.pathname + url.search + url.hash;
+    } catch {
+      /* Invalid redirect uses the home page. */
+    }
+    // A fresh document closes old conversations and discards all previous account stores.
+    window.location.assign(destination);
   } catch (e) {
     if (disposed) return;
     formError.value = (e as ApiError).message || '登录失败，请稍后重试';
@@ -125,6 +225,74 @@ async function onSubmit() {
 </script>
 
 <style scoped>
+.mm-remembered {
+  margin-bottom: 24px;
+}
+.mm-remembered__heading {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+.mm-remembered__heading > span,
+.mm-remembered > p {
+  font-size: 12px;
+  color: var(--mm-muted);
+  line-height: 1.7;
+}
+.mm-remembered__row {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--mm-border);
+  border-radius: 8px;
+  margin: 8px 0;
+  background: var(--mm-white);
+}
+.mm-remembered__row.is-selected {
+  border-color: var(--mm-primary);
+  background: var(--mm-accent-soft);
+}
+.mm-remembered__choose {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  text-align: left;
+  padding: 12px;
+  min-width: 0;
+  flex: 1;
+  background: none;
+  border: 0;
+}
+.mm-remembered__choose > span {
+  min-width: 0;
+}
+.mm-remembered__choose strong,
+.mm-remembered__choose span span {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.mm-remembered__choose span span {
+  color: var(--mm-muted);
+  font-size: 12px;
+  margin-top: 4px;
+}
+.mm-remembered small {
+  margin-left: 8px;
+  color: var(--mm-primary);
+  font-weight: 400;
+}
+.mm-remembered__forget,
+.mm-remembered__other {
+  border: 0;
+  background: none;
+  color: var(--mm-muted);
+  padding: 10px;
+  font-size: 13px;
+}
+.mm-remembered__other {
+  padding-left: 0;
+  color: var(--mm-primary);
+}
 .mm-auth {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 460px);

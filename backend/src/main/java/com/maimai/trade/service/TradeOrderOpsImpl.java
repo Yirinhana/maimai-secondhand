@@ -71,9 +71,11 @@ public class TradeOrderOpsImpl implements TradeOrderOps {
 
         boolean express = order.getDeliveryMethod() == Order.DeliveryMethod.EXPRESS;
         notificationService.notify(order.getSellerId(), "ORDER",
-                express ? "新订单待发货" : "新订单待面交",
-                "订单 " + order.getOrderNo() + " 已支付，"
-                        + (express ? "请在72小时内发货" : "请与买家确认面交约定"));
+                order.isInteractiveExperience() ? "体验订单已付款" : (express ? "新订单待发货" : "新订单待面交"),
+                order.isInteractiveExperience()
+                        ? "订单 " + order.getOrderNo() + " 已完成体验付款，不发生实际扣款，请勿安排真实发货。"
+                        : "订单 " + order.getOrderNo() + " 已支付，"
+                          + (express ? "请在72小时内发货" : "请与买家确认面交约定"));
         return true;
     }
 

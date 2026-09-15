@@ -63,6 +63,7 @@ public class MockPaymentService {
     public PaymentDtos.MockPayResultResponse confirm(PaymentDtos.MockPayConfirmRequest request) {
         PaymentRequest payment = paymentRequestRepository.lockByPayNo(request.payNo())
                 .orElseThrow(() -> BizException.notFound("支付单不存在"));
+        requireLocalPayment(payment);
         if (request.amountCents() != null && request.amountCents() != payment.getAmountCents()) {
             // 告警事件独立事务落库；业务状态不做任何变更
             paymentAlertRecorder.recordAmountMismatch(payment.getChannel().name(), payment.getPayNo(),
@@ -120,6 +121,7 @@ public class MockPaymentService {
     public PaymentDtos.MockPayResultResponse fail(PaymentDtos.MockPayFailRequest request) {
         PaymentRequest payment = paymentRequestRepository.lockByPayNo(request.payNo())
                 .orElseThrow(() -> BizException.notFound("支付单不存在"));
+        requireLocalPayment(payment);
         if (payment.getStatus() == PaymentRequest.Status.FAILED) {
             return new PaymentDtos.MockPayResultResponse(payment.getPayNo(), payment.getStatus().name(),
                     payment.isSimulated(), "支付单已是失败状态，幂等返回");
@@ -145,6 +147,12 @@ public class MockPaymentService {
         entry.setRefType(refType);
         entry.setRefId(refId);
         ledgerEntryRepository.save(entry);
+    }
+
+    private void requireLocalPayment(PaymentRequest payment) {
+        if (payment.getChannel() != PaymentRequest.Channel.MOCK_LOCAL || !payment.isSimulated()
+                || orderRepository.findById(payment.getOrderId()).orElseThrow().getExperienceSource() != null)
+            throw BizException.forbidden("该支付单不允许使用本地开发确认入口");
     }
 
     private List<Long> superAdminIds() {

@@ -1,7 +1,9 @@
 <template>
   <div class="mm-app" :class="`mm-app--${section}`">
     <ConfirmationDialog />
-    <TinaSupportDock v-if="!adminWorkspace" />
+    <TinaSupportDock
+      v-if="!adminWorkspace && route.name !== 'experience-cashier'"
+    />
     <a href="#main-content" class="mm-skip">跳到正文</a>
     <header ref="headerRoot" class="mm-header">
       <div class="mm-header__inner">
@@ -108,6 +110,9 @@
                 ><MmIcon name="message" />私信</RouterLink
               ><RouterLink v-if="auth.isAdmin" role="menuitem" to="/admin"
                 ><MmIcon name="grid" />管理后台</RouterLink
+              >
+              <RouterLink role="menuitem" to="/login?switch=1"
+                ><MmIcon name="user" />切换账号</RouterLink
               >
               <button
                 role="menuitem"

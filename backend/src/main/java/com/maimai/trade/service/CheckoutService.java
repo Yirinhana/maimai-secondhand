@@ -96,6 +96,15 @@ public class CheckoutService {
 
     @Transactional(isolation=org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
     public CheckoutResponse checkout(Long userId, CheckoutRequest request) {
+        return checkoutInternal(userId, request, false);
+    }
+
+    @Transactional(isolation=org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
+    public CheckoutResponse checkoutExperience(Long userId, CheckoutRequest request) {
+        return checkoutInternal(userId, request, true);
+    }
+
+    private CheckoutResponse checkoutInternal(Long userId, CheckoutRequest request, boolean experience) {
         if (request.items() == null || request.items().isEmpty() || request.items().size() > 100) {
             throw BizException.badRequest("CHECKOUT_ITEMS_INVALID", "每次结算需要1至100个商品项");
         }
@@ -111,7 +120,7 @@ public class CheckoutService {
         Optional<CheckoutBatch> existing =
                 checkoutBatchRepository.findByUserIdAndIdempotencyKey(userId, request.idempotencyKey());
         if (existing.isPresent()) {
-            return responseOf(existing.get());
+            return responseOf(existing.get(), experience);
         }
         CheckoutBatch batch;
         try {
@@ -120,11 +129,11 @@ public class CheckoutService {
             // 并发下同幂等键已由其他请求创建：回查返回原批次
             return responseOf(checkoutBatchRepository
                     .findByUserIdAndIdempotencyKey(userId, request.idempotencyKey())
-                    .orElseThrow(() -> e));
+                    .orElseThrow(() -> e), experience);
         }
 
         Address address = null;
-        List<Line> lines = resolveLines(userId, request);
+        List<Line> lines = resolveLines(userId, request, experience);
         if (lines.stream().anyMatch(l -> l.method() == Order.DeliveryMethod.EXPRESS)) {
             if (request.addressId() == null) {
                 throw BizException.badRequest("ADDRESS_REQUIRED", "快递交付必须选择收货地址");
@@ -146,7 +155,7 @@ public class CheckoutService {
         List<Order> orders = new ArrayList<>();
         Instant now = Instant.now();
         for (List<Line> group : groups.values()) {
-            orders.add(createGroupOrder(userId, batch, group, request, address, now));
+            orders.add(createGroupOrder(userId, batch, group, request, address, now, experience));
         }
 
         if (request.removeCartItemIds() != null && !request.removeCartItemIds().isEmpty()) {
@@ -161,15 +170,17 @@ public class CheckoutService {
                 orders.stream().map(orderDtoMapper::toDto).toList());
     }
 
-    private CheckoutResponse responseOf(CheckoutBatch batch) {
+    private CheckoutResponse responseOf(CheckoutBatch batch, boolean experience) {
         List<OrderDto> orders = orderQueryRepository.findByBatchIdOrderById(batch.getId()).stream()
                 .map(orderDtoMapper::toDto)
                 .toList();
+        if (orders.stream().anyMatch(order -> experience != Order.INTERACTIVE_EXPERIENCE.equals(order.experienceSource())))
+            throw BizException.conflict("CHECKOUT_MODE_MISMATCH", "该提交标识已用于另一种订单，请刷新后重新提交");
         return new CheckoutResponse(batch.getBatchNo(), orders);
     }
 
     /** 解析并校验每个结算项：商品在售、交付方式支持、议价有效并确定成交单价。 */
-    private List<Line> resolveLines(Long userId, CheckoutRequest request) {
+    private List<Line> resolveLines(Long userId, CheckoutRequest request, boolean experience) {
         List<Line> lines = new ArrayList<>();
         Set<Long> usedBargainIds = new HashSet<>();
         Instant now = Instant.now();
@@ -178,11 +189,13 @@ public class CheckoutService {
             Product product = productRepository.lockById(item.productId())
                     .orElseThrow(() -> BizException.notFound("商品不存在"));
             if (product.getSellerId().equals(userId)) throw BizException.badRequest("SELF_PURCHASE", "不能购买自己的商品");
-            if (product.getExperienceSource() != null)
+            if (experience && !"maimai-experience-045".equals(product.getExperienceSource()))
+                throw BizException.conflict("EXPERIENCE_ONLY", "体验结算只能选择体验商品，请与普通商品分开结算");
+            if (!experience && product.getExperienceSource() != null)
                 throw BizException.conflict("EXPERIENCE_PRODUCT", "该商品使用体验库存，可浏览、收藏和交流，不生成真实付款订单");
             var eligibility = jdbc.queryForList("SELECT status,channel_status FROM seller_applications WHERE user_id=? ORDER BY created_at DESC,id DESC LIMIT 1", product.getSellerId());
             if (eligibility.isEmpty() || !"APPROVED".equals(eligibility.getFirst().get("status"))
-                    || !"QUALIFIED".equals(eligibility.getFirst().get("channel_status"))) {
+                    || (!experience && !"QUALIFIED".equals(eligibility.getFirst().get("channel_status")))) {
                 throw BizException.conflict("SELLER_NOT_QUALIFIED", "卖家当前资格不允许成交");
             }
             if (product.getStatus() != Product.Status.ON_SALE) {
@@ -255,7 +268,7 @@ public class CheckoutService {
     }
 
     private Order createGroupOrder(Long userId, CheckoutBatch batch, List<Line> group,
-                                   CheckoutRequest request, Address address, Instant now) {
+                                   CheckoutRequest request, Address address, Instant now, boolean experience) {
         Line first = group.get(0);
         long goodsAmountCents = 0;
         long freightCents = 0;
@@ -267,6 +280,7 @@ public class CheckoutService {
         long platformFeeCents = FeeCalculator.platformFee(goodsAmountCents);
 
         Order order = new Order();
+        if (experience) order.setExperienceSource(Order.INTERACTIVE_EXPERIENCE);
         order.setOrderNo(NoGenerator.next("MM"));
         order.setBatchId(batch.getId());
         order.setBuyerId(userId);

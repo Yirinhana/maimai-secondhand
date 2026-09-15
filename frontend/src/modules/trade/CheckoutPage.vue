@@ -229,6 +229,10 @@
         <p class="mm-checkout__split-note">
           提交后进入付款步骤；不同子订单分别付款。
         </p>
+        <label v-if="isExperienceCheckout" class="mm-checkout__experience">
+          <input v-model="experienceAccepted" type="checkbox" />
+          <span>我了解这是体验订单，扫码不扣款，也不安排实际发货。</span>
+        </label>
         <p v-if="submissionHint" class="mm-checkout__submission-hint">
           {{ submissionHint }}
         </p>
@@ -236,9 +240,9 @@
           <strong>订单尚未提交成功</strong>
           <p>{{ error }}</p>
         </div>
-        <MmButton type="submit" :loading="submitting" :disabled="!canSubmit"
-          >提交订单</MmButton
-        >
+        <MmButton type="submit" :loading="submitting" :disabled="!canSubmit">{{
+          isExperienceCheckout ? '提交体验订单' : '提交订单'
+        }}</MmButton>
         <p class="mm-checkout__note">
           提交时会再次核对价格和库存。若任一商品库存不足，本次整批订单不会提交，请调整后重试。
         </p>
@@ -264,6 +268,7 @@ import ItemImage from '../../shared/components/ItemImage.vue';
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { get, post, type ApiError } from '../../shared/api';
+import { EXPERIENCE_PRODUCT_SOURCE } from './experiencePayment';
 import {
   DELIVERY_METHOD_TEXT,
   type Address,
@@ -321,6 +326,19 @@ const route = useRoute();
 const router = useRouter();
 
 const lines = ref<PreviewLine[]>([]);
+const experienceAccepted = ref(false);
+const isExperienceCheckout = computed(
+  () =>
+    lines.value.length > 0 &&
+    lines.value.every(
+      (line) => line.experienceSource === EXPERIENCE_PRODUCT_SOURCE,
+    ),
+);
+const mixedExperience = computed(
+  () =>
+    lines.value.some((line) => !!line.experienceSource) &&
+    !isExperienceCheckout.value,
+);
 const cartItemIds = ref<number[]>([]);
 const loading = ref(true);
 const error = ref('');
@@ -386,8 +404,9 @@ const totalUnits = computed(() =>
   lines.value.reduce((sum, line) => sum + line.quantity, 0),
 );
 const submissionHint = computed(() => {
-  if (lines.value.some((line) => line.experienceSource))
-    return '所选商品含体验库存，可查看结算结构，不生成真实付款订单';
+  if (mixedExperience.value) return '体验商品与普通商品请分开结算';
+  if (isExperienceCheckout.value && !experienceAccepted.value)
+    return '请先确认体验订单说明';
   if (addressLoading.value) return '正在刷新收货地址，请稍候';
   if (needsExpress.value && (addressId.value === null || addressError.value))
     return '请先选择有效的收货地址';
@@ -406,7 +425,11 @@ const meetupTimeValid = computed(() => {
 });
 
 const canSubmit = computed(() => {
-  if (lines.value.some((line) => line.experienceSource)) return false;
+  if (
+    mixedExperience.value ||
+    (isExperienceCheckout.value && !experienceAccepted.value)
+  )
+    return false;
   if (
     submitting.value ||
     loading.value ||
@@ -583,22 +606,25 @@ async function submit() {
       deliveryMethod: l.deliveryMethod,
       bargainId: l.bargainId,
     }));
-    const res = await post<CheckoutResponse>('/checkout', {
-      idempotencyKey,
-      items,
-      addressId: needsExpress.value
-        ? (addressId.value ?? undefined)
-        : undefined,
-      meetupLocation: needsMeetup.value
-        ? meetupLocation.value.trim()
-        : undefined,
-      meetupTime: needsMeetup.value
-        ? new Date(meetupTime.value).toISOString()
-        : undefined,
-      removeCartItemIds: cartItemIds.value.length
-        ? cartItemIds.value
-        : undefined,
-    });
+    const res = await post<CheckoutResponse>(
+      isExperienceCheckout.value ? '/experience/checkout' : '/checkout',
+      {
+        idempotencyKey,
+        items,
+        addressId: needsExpress.value
+          ? (addressId.value ?? undefined)
+          : undefined,
+        meetupLocation: needsMeetup.value
+          ? meetupLocation.value.trim()
+          : undefined,
+        meetupTime: needsMeetup.value
+          ? new Date(meetupTime.value).toISOString()
+          : undefined,
+        removeCartItemIds: cartItemIds.value.length
+          ? cartItemIds.value
+          : undefined,
+      },
+    );
     if (res.orders.length === 1) {
       router.replace({
         name: 'order-detail',
@@ -650,6 +676,25 @@ onMounted(load);
 </script>
 
 <style scoped>
+.mm-checkout__experience {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 12px;
+  line-height: 1.8;
+  padding: 12px;
+  margin: 14px 0;
+  border-radius: 10px;
+  color: #366047;
+  background: #f0f6ef;
+}
+.mm-checkout__experience input {
+  width: 16px;
+  height: 16px;
+  margin-top: 3px;
+  flex-shrink: 0;
+  accent-color: #286044;
+}
 .mm-checkout {
   max-width: 1160px;
   margin: 0 auto;

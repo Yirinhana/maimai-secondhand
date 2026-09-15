@@ -69,6 +69,7 @@ export const pageInfo: Record<string, { title: string; section: string }> = {
   'seller-aftersales': { title: '卖家售后', section: 'seller' },
   cart: { title: '购物车', section: 'buyer' },
   checkout: { title: '确认订单', section: 'buyer' },
+  'experience-cashier': { title: '体验收银台', section: 'payment' },
   'my-orders': { title: '我买到的', section: 'buyer' },
   'order-detail': { title: '订单详情', section: 'transaction' },
   'my-bargains': { title: '我的议价', section: 'buyer' },

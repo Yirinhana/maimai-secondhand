@@ -98,9 +98,11 @@
       </div>
       <p v-if="order.simulated" class="mm-order-detail__simulation">
         {{
-          order.experienceSource
-            ? '体验成交记录，仅供查看交易与评价效果，不受理退款和履约操作。'
-            : '本地模拟交易，未发生真实扣款、退款或分账。'
+          order.experienceSource === EXPERIENCE_ORDER_SOURCE
+            ? '体验订单：扫码、交付与退款仅记录体验状态，不发生真实扣款、发货或资金转账。'
+            : order.experienceSource
+              ? '体验成交记录，仅供查看交易与评价效果，不受理退款和履约操作。'
+              : '本地模拟交易，未发生真实扣款、退款或分账。'
         }}
       </p>
 
@@ -114,45 +116,61 @@
               <h2>付款</h2>
               <span>下一步</span>
             </div>
-            <p class="mm-muted">
-              核对费用明细后发起支付，付款结果以订单状态为准。
-            </p>
-            <div class="mm-actions">
-              <MmButton
-                :loading="activeAction === 'pay'"
-                :disabled="busy || loading"
-                @click="startPay"
-                >发起支付</MmButton
-              ><MmButton
-                variant="ghost"
-                :disabled="busy || loading"
-                @click="cancel"
-                >取消订单</MmButton
-              >
-            </div>
-            <div v-if="payment" class="mm-order-detail__payment">
-              <p>{{ payment.message }}</p>
-              <template v-if="payment.simulated"
-                ><p>
-                  <strong
-                    >本地模拟支付，不会扣款，也不代表微信支付已开通。</strong
-                  >
-                </p>
-                <div class="mm-actions">
-                  <MmButton
-                    :loading="activeAction === 'mock'"
-                    :disabled="busy"
-                    @click="mockPay(true)"
-                    >模拟支付成功</MmButton
-                  ><MmButton
-                    variant="ghost"
-                    :disabled="busy"
-                    @click="mockPay(false)"
-                    >模拟支付失败</MmButton
-                  >
-                </div></template
-              >
-            </div>
+            <ExperiencePaymentPanel
+              v-if="order.experienceSource === EXPERIENCE_ORDER_SOURCE"
+              :key="order.orderNo"
+              :order-no="order.orderNo"
+              @paid="load"
+            />
+            <template v-else>
+              <p class="mm-muted">
+                核对费用明细后发起支付，付款结果以订单状态为准。
+              </p>
+              <div class="mm-actions">
+                <MmButton
+                  :loading="activeAction === 'pay'"
+                  :disabled="busy || loading"
+                  @click="startPay"
+                  >发起支付</MmButton
+                ><MmButton
+                  variant="ghost"
+                  :disabled="busy || loading"
+                  @click="cancel"
+                  >取消订单</MmButton
+                >
+              </div>
+              <div v-if="payment" class="mm-order-detail__payment">
+                <p>{{ payment.message }}</p>
+                <template v-if="payment.simulated"
+                  ><p>
+                    <strong
+                      >本地模拟支付，不会扣款，也不代表微信支付已开通。</strong
+                    >
+                  </p>
+                  <div class="mm-actions">
+                    <MmButton
+                      :loading="activeAction === 'mock'"
+                      :disabled="busy"
+                      @click="mockPay(true)"
+                      >模拟支付成功</MmButton
+                    ><MmButton
+                      variant="ghost"
+                      :disabled="busy"
+                      @click="mockPay(false)"
+                      >模拟支付失败</MmButton
+                    >
+                  </div></template
+                >
+              </div>
+            </template>
+            <MmButton
+              v-if="order.experienceSource === EXPERIENCE_ORDER_SOURCE"
+              variant="ghost"
+              :disabled="busy || loading"
+              style="margin-top: 14px"
+              @click="cancel"
+              >取消体验订单</MmButton
+            >
           </section>
 
           <form
@@ -164,7 +182,13 @@
               <h2>登记快递</h2>
               <span>下一步</span>
             </div>
-            <p class="mm-muted">填写实际承运商和运单号，让买家查看配送进度。</p>
+            <p class="mm-muted">
+              {{
+                order.experienceSource === EXPERIENCE_ORDER_SOURCE
+                  ? '登记体验运单即可继续流程，请勿实际寄件；体验订单不查询真实物流。'
+                  : '填写实际承运商和运单号，让买家查看配送进度。'
+              }}
+            </p>
             <fieldset :disabled="busy || loading">
               <legend class="mm-visually-hidden">发货信息</legend>
               <label
@@ -217,10 +241,12 @@
               }}</span>
               <p v-if="shipment.queryErrorCode" class="mm-notice">
                 {{
-                  shipment.queryErrorCode === 'LOGISTICS_NOT_CONFIGURED'
-                    ? '真实物流服务待配置。'
-                    : '本次轨迹查询暂不可用。'
-                }}以下显示最近保存的记录，请稍后重试。
+                  shipment.queryErrorCode === 'EXPERIENCE_NO_TRACKING'
+                    ? '体验订单未实际寄件，不查询真实物流。'
+                    : shipment.queryErrorCode === 'LOGISTICS_NOT_CONFIGURED'
+                      ? '真实物流服务待配置，以下显示已保存的记录。'
+                      : '本次轨迹查询暂不可用，以下显示最近保存的记录，请稍后重试。'
+                }}
               </p>
               <p class="mm-order-detail__traces">
                 {{ shipment.traces || '暂无轨迹记录' }}
@@ -399,7 +425,8 @@
 
           <section
             v-if="
-              !order.experienceSource &&
+              (!order.experienceSource ||
+                order.experienceSource === EXPERIENCE_ORDER_SOURCE) &&
               order.payStatus === 'PAID' &&
               isBuyer &&
               order.refundStatus !== 'FULL'
@@ -564,6 +591,8 @@
 
 <script setup lang="ts">
 import ItemImage from '../../shared/components/ItemImage.vue';
+import ExperiencePaymentPanel from './components/ExperiencePaymentPanel.vue';
+import { EXPERIENCE_ORDER_SOURCE } from './experiencePayment';
 import { askConfirmation } from '../../shared/confirm';
 import { computed, nextTick, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';

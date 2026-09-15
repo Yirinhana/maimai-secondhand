@@ -30,7 +30,7 @@
             }}<small
               v-if="order.experienceSource"
               style="margin-left: 10px; color: var(--mm-muted)"
-              >体验成交</small
+              >体验订单</small
             ></span
           >
           <MmTag

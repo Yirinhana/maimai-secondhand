@@ -444,6 +444,7 @@ export interface AftersaleLogItem {
 
 /** 售后单详情（含处理日志） */
 export interface AftersaleDetail {
+  experience?: boolean
   id: number
   aftersaleNo: string
   orderId: number

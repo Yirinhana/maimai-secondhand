@@ -123,13 +123,16 @@ public class AuthService {
         return new AuthenticatedUser(user.getId(), user.getEmail(), user.getNickname(), Set.of(Role.USER.name()));
     }
 
-    /** 登录校验：每 IP 每分钟最多 10 次；失败一律返回统一模糊错误。成功返回登录主体。 */
+    /** 先验证密码，再向账号持有人解释停用状态；错误密码不泄露账号状态。 */
     public AuthenticatedUser login(LoginRequest request, String ip) {
         rateLimiter.require("login:" + ip, 10, 60, "登录尝试过于频繁，请稍后再试");
         User user = userRepository.findByEmail(request.email()).orElse(null);
-        if (user == null || user.getStatus() != Status.ACTIVE
-                || !passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+        if (user == null || !passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             throw BizException.badRequest("BAD_CREDENTIALS", BAD_CREDENTIALS_MESSAGE);
+        }
+        if (user.getStatus() != Status.ACTIVE) {
+            throw new BizException("ACCOUNT_DISABLED", "该账号已被停用，请联系平台客服了解原因或申请恢复。",
+                    org.springframework.http.HttpStatus.FORBIDDEN);
         }
         Set<String> roles = rolesOf(user.getId());
         return new AuthenticatedUser(user.getId(), user.getEmail(), user.getNickname(), roles);

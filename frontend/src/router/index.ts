@@ -110,6 +110,12 @@ const routes: RouteRecordRaw[] = [
   },
   // 交易（trade）
   {
+    path: '/experience-pay/:token',
+    name: 'experience-cashier',
+    component: () => import('../modules/trade/ExperienceCashierPage.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/me/bargains',
     name: 'my-bargains',
     component: () => import('../modules/trade/MyBargainsPage.vue'),

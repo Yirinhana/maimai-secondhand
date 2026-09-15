@@ -75,7 +75,7 @@ public class AftersaleService {
         Order order = orderRepository.lockByOrderNo(orderNo)
                 .orElseThrow(() -> BizException.notFound("订单不存在"));
         SecurityUtils.requireOwner(order.getBuyerId());
-        order.requireLiveRecord();
+        order.requireMutableRecord();
         if (order.getFulfillmentStatus() == Order.FulfillmentStatus.PENDING_PAYMENT
                 || order.getFulfillmentStatus() == Order.FulfillmentStatus.CLOSED
                 || order.getPayStatus() != Order.PayStatus.PAID) {
@@ -174,7 +174,7 @@ public class AftersaleService {
                 aftersale.getReturnCarrier(), aftersale.getReturnTrackingNo(),
                 aftersale.getCreatedAt(), aftersale.getUpdatedAt(), logs,
                 aftersale.getReturnRecipient(), aftersale.getReturnPhone(), aftersale.getReturnAddress(),
-                aftersale.getReturnShippedAt(), aftersale.getReturnReceivedAt(), aftersale.getReturnInspectionDeadline());
+                aftersale.getReturnShippedAt(), aftersale.getReturnReceivedAt(), aftersale.getReturnInspectionDeadline(), order.isInteractiveExperience());
     }
 
     /** 卖家响应：拒绝 → SELLER_REJECTED；同意仅退款 → 直接创建退款并解决；同意退货 → 进入 7 天寄回窗口。 */

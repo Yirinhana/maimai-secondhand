@@ -26,11 +26,16 @@ class AuthHttpIntegrationTest {
     @Autowired PasswordEncoder passwords;
     @Autowired Environment environment;
     @Autowired EmailCodeVerifier verifier;
+    @Autowired com.maimai.common.SimpleRateLimiter limiter;
     String email;
     long userId;
 
     @BeforeEach void createUser() {
         assertThat(db.queryForObject("SELECT DATABASE()", String.class)).isEqualTo("maimai_test");
+        // Each HTTP scenario gets its own local rate-limit window; production limits remain active.
+        synchronized (limiter) {
+            ((Map<?,?>) org.springframework.test.util.ReflectionTestUtils.getField(limiter,"windows")).clear();
+        }
         email = "auth-" + UUID.randomUUID() + "@example.invalid";
         db.update("INSERT INTO users(email,password_hash,nickname,status) VALUES(?,?,?,'ACTIVE')",
                 email, passwords.encode("TestAuth#123"), "认证测试");
@@ -174,6 +179,46 @@ class AuthHttpIntegrationTest {
         userId=db.queryForObject("SELECT id FROM users WHERE email=?",Long.class,email);
         assertThat(db.queryForObject("SELECT COUNT(*) FROM user_policy_acceptances WHERE user_id=? AND policy_version=?",Long.class,userId,com.maimai.identity.service.PolicyConsentService.CURRENT_VERSION)).isEqualTo(1);
         assertThat(browser.call("GET","/auth/me",null,null).statusCode()).isEqualTo(200);
+    }
+
+    @Test void disabledAccountExplainsStatusOnlyAfterCorrectPassword() throws Exception {
+        db.update("UPDATE users SET status='DISABLED' WHERE id=?",userId);
+        Browser browser = new Browser(); browser.call("GET","/auth/csrf",null,null);
+        String wrong="{\"email\":\""+email+"\",\"password\":\"WrongPassword#9\"}";
+        var invalid=browser.call("POST","/auth/login",wrong,browser.csrf());
+        assertThat(invalid.statusCode()).isEqualTo(400);
+        assertThat(invalid.body()).contains("BAD_CREDENTIALS").doesNotContain("ACCOUNT_DISABLED");
+        String correct="{\"email\":\""+email+"\",\"password\":\"TestAuth#123\"}";
+        var disabled=browser.call("POST","/auth/login",correct,browser.csrf());
+        assertThat(disabled.statusCode()).isEqualTo(403);
+        assertThat(disabled.body()).contains("ACCOUNT_DISABLED","该账号已被停用","平台客服");
+        assertThat(browser.call("GET","/auth/me",null,null).statusCode()).isEqualTo(401);
+    }
+
+    @Test void switchingAccountReplacesPrincipalAndRotatesSessionAndCsrf() throws Exception {
+        String secondEmail="switch-"+UUID.randomUUID()+"@example.invalid";
+        db.update("INSERT INTO users(email,password_hash,nickname,status) VALUES(?,?,?,'ACTIVE')",secondEmail,passwords.encode("Switch#123"),"切换账号测试");
+        long secondId=db.queryForObject("SELECT id FROM users WHERE email=?",Long.class,secondEmail);
+        db.update("INSERT INTO user_roles(user_id,role) VALUES(?,'USER')",secondId);
+        try {
+            Browser browser=new Browser(); browser.login("TestAuth#123");
+            String oldCsrf=browser.csrf();
+            String oldSession=browser.cookies.getCookieStore().getCookies().stream().filter(c->c.getName().equals("SESSION")).map(HttpCookie::getValue).findFirst().orElseThrow();
+            var invalid=browser.call("POST","/auth/login","{\"email\":\""+secondEmail+"\",\"password\":\"wrong\"}",oldCsrf);
+            assertThat(invalid.statusCode()).isEqualTo(400);
+            assertThat(browser.call("GET","/auth/me",null,null).body()).contains(email);
+            var switched=browser.call("POST","/auth/login","{\"email\":\""+secondEmail+"\",\"password\":\"Switch#123\"}",oldCsrf);
+            assertThat(switched.statusCode()).withFailMessage(switched.body()).isEqualTo(200);
+            assertThat(browser.call("GET","/auth/me",null,null).body()).contains(secondEmail).doesNotContain(email);
+            assertThat(browser.csrf()).isNotEqualTo(oldCsrf);
+            assertThat(browser.cookies.getCookieStore().getCookies().stream().filter(c->c.getName().equals("SESSION")).map(HttpCookie::getValue)).doesNotContain(oldSession);
+            assertThat(browser.call("POST","/auth/logout","{}",oldCsrf).statusCode()).isEqualTo(403);
+            assertThat(db.queryForObject("SELECT COUNT(*) FROM SPRING_SESSION WHERE PRINCIPAL_NAME=?",Long.class,email)).isZero();
+        } finally {
+            db.update("DELETE FROM SPRING_SESSION WHERE PRINCIPAL_NAME=?",secondEmail);
+            db.update("DELETE FROM user_roles WHERE user_id=?",secondId);
+            db.update("DELETE FROM users WHERE id=?",secondId);
+        }
     }
 
     void insertCode(String code) {

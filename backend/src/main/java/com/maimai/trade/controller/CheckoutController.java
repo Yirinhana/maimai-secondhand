@@ -25,4 +25,9 @@ public class CheckoutController {
     public CheckoutResponse checkout(@RequestBody @Valid CheckoutRequest request) {
         return checkoutService.checkout(SecurityUtils.currentUserId(), request);
     }
+
+    @PostMapping("/experience/checkout")
+    public CheckoutResponse experience(@RequestBody @Valid CheckoutRequest request) {
+        return checkoutService.checkoutExperience(SecurityUtils.currentUserId(), request);
+    }
 }

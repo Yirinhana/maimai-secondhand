@@ -54,7 +54,7 @@ public final class AftersaleDtos {
                                   List<AftersaleLogItem> logs,
                                   String returnRecipient, String returnPhone, String returnAddress,
                                   Instant returnShippedAt, Instant returnReceivedAt,
-                                  Instant returnInspectionDeadline) {
+                                  Instant returnInspectionDeadline, boolean experience) {
     }
 
     /** 售后处理日志项。 */

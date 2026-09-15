@@ -179,15 +179,15 @@
                 class="mm-muted"
                 style="font-size: 12px"
               >
-                体验库存用于浏览与交流，不生成真实付款订单。
+                体验库存支持下单与扫码体验，不发生扣款或实际发货。
               </p>
               <div class="mm-detail__buttons">
                 <MmButton
-                  :disabled="
-                    cartLoading || bargainLoading || !!product.experienceSource
-                  "
+                  :disabled="cartLoading || bargainLoading"
                   @click="buyNow"
-                  >立即购买</MmButton
+                  >{{
+                    product.experienceSource ? '体验下单' : '立即购买'
+                  }}</MmButton
                 ><MmButton
                   variant="ghost"
                   :loading="cartLoading"

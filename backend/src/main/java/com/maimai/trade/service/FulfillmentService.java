@@ -83,8 +83,9 @@ public class FulfillmentService {
         if (order.getShipDeadline() != null && now.isAfter(order.getShipDeadline())) {
             notifySuperAdmins(order);
         }
-        notificationService.notify(order.getBuyerId(), "ORDER", "订单已发货",
-                "订单 " + orderNo + " 已发货，承运商 " + carrier);
+        notificationService.notify(order.getBuyerId(), "ORDER", order.isInteractiveExperience() ? "体验发货已登记" : "订单已发货",
+                order.isInteractiveExperience() ? "订单 " + orderNo + " 已登记体验发货，未安排实际寄送。"
+                        : "订单 " + orderNo + " 已发货，承运商 " + carrier);
         return toDto(shipment);
     }
 
@@ -94,6 +95,8 @@ public class FulfillmentService {
         requireVisible(order, viewerId);
         Shipment shipment = shipmentRepository.findByOrderId(order.getId())
                 .orElseThrow(() -> BizException.notFound("运单不存在"));
+        if (order.isInteractiveExperience()) return new ShipmentDto(shipment.getCarrier(), shipment.getTrackingNo(),
+                shipment.getStatus().name(), null, null, "EXPERIENCE_NO_TRACKING", null);
         var trace = logisticsCache.query(shipment.getCarrier(), shipment.getTrackingNo(), order.getPhone());
         if (trace.fetchedAt() != null) {
             Shipment.Status status;

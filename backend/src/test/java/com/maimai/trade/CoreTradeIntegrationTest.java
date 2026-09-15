@@ -32,6 +32,7 @@ class CoreTradeIntegrationTest {
     @Autowired CheckoutService checkout;
     @Autowired PaymentService payments;
     @Autowired MockPaymentService mockPayments;
+    @Autowired com.maimai.payment.service.ExperiencePaymentService experiencePayments;
     @Autowired RefundService refunds;
     @Autowired DeliveryCodeService delivery;
     @Autowired TradeOrderOps orders;
@@ -390,6 +391,11 @@ class CoreTradeIntegrationTest {
         parallel(8,()->{sellerProducts.update(seller,product,edit("修订-"+UUID.randomUUID(),List.of("上海市")));return true;});
         var history=as(seller,()->revisions.list(product,0,50,false));
         assertThat(history.totalElements()).isEqualTo(9);
+        String displayJson=new tools.jackson.databind.json.JsonMapper().writeValueAsString(history);
+        assertThat(displayJson).doesNotContain("actorId","categoryId","experienceSource","latitude","longitude","BASELINE","\"action\"","\"id\"");
+        assertThat(displayJson).contains("首次记录","categoryName","actionLabel");
+        // Raw immutable audit content is still retained internally.
+        assertThat(db.queryForObject("SELECT content FROM product_revisions WHERE product_id=? AND version=1",String.class,product)).contains("categoryId");
         assertThat(history.content().stream().map(com.maimai.catalog.service.ProductRevisionService.Revision::version)).containsExactly(9,8,7,6,5,4,3,2,1);
         assertThat(history.content().getLast().content().title()).isEqualTo("集成测试商品");
         assertThat(history.content().getFirst().content().shippingProvinces()).containsExactly("上海市");
@@ -458,6 +464,92 @@ class CoreTradeIntegrationTest {
         assertThatThrownBy(()->as(buyer,()->payments.pay(order.orderNo()))).isInstanceOf(BizException.class).hasMessageContaining("体验成交记录");
         assertThatThrownBy(()->as(buyer,()->aftersales.create(order.orderNo(),new CreateAftersaleRequest(Aftersale.Type.REFUND_ONLY,"申请",100L,0L,null)))).isInstanceOf(BizException.class).hasMessageContaining("体验成交记录");
         assertThatThrownBy(()->refunds.createRefund(orderRepository.findById(order.id()).orElseThrow(),null,100,0)).isInstanceOf(BizException.class).hasMessageContaining("体验成交记录");
+    }
+
+    @Test void experienceCheckoutAndQrRequireBuyerAndNeverUseRealPaymentChannel() throws Exception {
+        db.update("UPDATE products SET experience_source='maimai-experience-045' WHERE id=?",product);
+        db.update("UPDATE seller_applications SET channel_status='PENDING' WHERE user_id=?",seller);
+        String key=UUID.randomUUID().toString();
+        var order=checkout.checkoutExperience(buyer,request(key,"MEETUP",1)).orders().getFirst();
+        assertThat(order.experienceSource()).isEqualTo(com.maimai.trade.domain.Order.INTERACTIVE_EXPERIENCE);
+        assertThat(order.simulated()).isTrue();
+        assertThat(checkout.checkoutExperience(buyer,request(key,"MEETUP",1)).orders().getFirst().id()).isEqualTo(order.id());
+        assertThatThrownBy(()->checkout.checkout(buyer,request(key,"MEETUP",1))).isInstanceOf(BizException.class);
+        assertThatThrownBy(()->as(otherBuyer,()->experiencePayments.create(order.orderNo()))).isInstanceOf(BizException.class);
+        var session=as(buyer,()->experiencePayments.create(order.orderNo()));
+        assertThat(as(buyer,()->experiencePayments.create(order.orderNo())).token()).isEqualTo(session.token());
+        assertThat(session.amountCents()).isEqualTo(order.totalCents());
+        assertThatThrownBy(()->as(otherBuyer,()->experiencePayments.get(session.token()))).isInstanceOf(BizException.class);
+        assertThatThrownBy(()->as(seller,()->experiencePayments.qr(session.token()))).isInstanceOf(BizException.class);
+        assertThatThrownBy(()->as(otherBuyer,()->experiencePayments.finish(session.token(),com.maimai.payment.dto.ExperiencePaymentDtos.Result.SUCCESS))).isInstanceOf(BizException.class);
+        assertThatThrownBy(()->as(buyer,()->payments.pay(order.orderNo()))).isInstanceOf(BizException.class);
+        assertThatThrownBy(()->mockPayments.confirm(new MockPayConfirmRequest(session.payNo(),session.amountCents()))).isInstanceOf(BizException.class);
+        var picture=javax.imageio.ImageIO.read(new java.io.ByteArrayInputStream(as(buyer,()->experiencePayments.qr(session.token()))));
+        int[] pixels=picture.getRGB(0,0,picture.getWidth(),picture.getHeight(),null,0,picture.getWidth());
+        var source=new com.google.zxing.RGBLuminanceSource(picture.getWidth(),picture.getHeight(),pixels);
+        String decoded=new com.google.zxing.qrcode.QRCodeReader().decode(new com.google.zxing.BinaryBitmap(new com.google.zxing.common.HybridBinarizer(source))).getText();
+        assertThat(decoded).isEqualTo(java.net.URI.create(properties.getFrontendOrigin()).resolve(session.checkoutPath()).toString());
+        assertThat(decoded).doesNotContain("weixin:","wxp://");
+        parallel(8,()->as(buyer,()->experiencePayments.finish(session.token(),com.maimai.payment.dto.ExperiencePaymentDtos.Result.SUCCESS)));
+        assertThat(count("SELECT stock_sold FROM products WHERE id=?",product)).isEqualTo(1);
+        assertThat(count("SELECT stock_reserved FROM products WHERE id=?",product)).isZero();
+        assertThat(count("SELECT COUNT(*) FROM ledger_entries WHERE order_id=?",order.id())).isZero();
+        assertThat(count("SELECT COUNT(*) FROM finance_allocation_expectations WHERE order_id=?",order.id())).isZero();
+        assertThat(count("SELECT COUNT(*) FROM payment_requests WHERE order_id=? AND simulated=0",order.id())).isZero();
+    }
+
+    @Test void experienceCancelFailureRetryAndExpiredQrDoNotAdvanceInventory() {
+        db.update("UPDATE products SET experience_source='maimai-experience-045' WHERE id=?",product);
+        var order=checkout.checkoutExperience(buyer,request(UUID.randomUUID().toString(),"MEETUP",1)).orders().getFirst();
+        var first=as(buyer,()->experiencePayments.create(order.orderNo()));
+        assertThat(as(buyer,()->experiencePayments.finish(first.token(),com.maimai.payment.dto.ExperiencePaymentDtos.Result.CANCEL)).status()).isEqualTo("CANCELLED");
+        as(buyer,()->experiencePayments.finish(first.token(),com.maimai.payment.dto.ExperiencePaymentDtos.Result.CANCEL));
+        var second=as(buyer,()->experiencePayments.create(order.orderNo()));
+        assertThat(second.token()).isNotEqualTo(first.token());
+        as(buyer,()->experiencePayments.finish(second.token(),com.maimai.payment.dto.ExperiencePaymentDtos.Result.FAIL));
+        assertThatThrownBy(()->as(buyer,()->experiencePayments.finish(first.token(),com.maimai.payment.dto.ExperiencePaymentDtos.Result.SUCCESS))).isInstanceOf(BizException.class);
+        assertThatThrownBy(()->as(buyer,()->experiencePayments.finish(second.token(),com.maimai.payment.dto.ExperiencePaymentDtos.Result.SUCCESS))).isInstanceOf(BizException.class);
+        var third=as(buyer,()->experiencePayments.create(order.orderNo()));
+        db.update("UPDATE orders SET expires_at=? WHERE id=?",java.sql.Timestamp.from(Instant.now().minusSeconds(2)),order.id());
+        assertThat(as(buyer,()->experiencePayments.get(third.token())).status()).isEqualTo("EXPIRED");
+        assertThatThrownBy(()->as(buyer,()->experiencePayments.finish(third.token(),com.maimai.payment.dto.ExperiencePaymentDtos.Result.SUCCESS))).isInstanceOf(BizException.class);
+        orders.closeUnpaid(order.id(),"体验超时"); orders.closeUnpaid(order.id(),"重复超时");
+        assertThat(count("SELECT stock_available FROM products WHERE id=?",product)).isEqualTo(3);
+        assertThat(count("SELECT stock_reserved FROM products WHERE id=?",product)).isZero();
+    }
+
+    @Test void experienceRefundRunsThroughSellerAftersaleAndNeverWritesRealFunds() {
+        db.update("UPDATE products SET experience_source='maimai-experience-045' WHERE id=?",product);
+        var order=checkout.checkoutExperience(buyer,request(UUID.randomUUID().toString(),"EXPRESS",1)).orders().getFirst();
+        var session=as(buyer,()->experiencePayments.create(order.orderNo()));
+        as(buyer,()->experiencePayments.finish(session.token(),com.maimai.payment.dto.ExperiencePaymentDtos.Result.SUCCESS));
+        var partial=as(buyer,()->aftersales.create(order.orderNo(),new CreateAftersaleRequest(Aftersale.Type.REFUND_ONLY,"体验部分退款",4000L,0L,null)));
+        assertThat(partial.experience()).isTrue();
+        as(seller,()->aftersales.respond(partial.id(),new RespondRequest(true,"同意体验退款")));
+        assertThat(as(buyer,()->experiencePayments.get(session.token())).refundStatus()).isEqualTo("PARTIAL");
+        var rest=as(buyer,()->aftersales.create(order.orderNo(),new CreateAftersaleRequest(Aftersale.Type.REFUND_ONLY,"体验剩余退款",6000L,1200L,null)));
+        as(seller,()->aftersales.respond(rest.id(),new RespondRequest(true,"同意剩余退款")));
+        assertThat(as(buyer,()->experiencePayments.get(session.token())).status()).isEqualTo("REFUNDED");
+        assertThat(count("SELECT COUNT(*) FROM refunds WHERE order_id=? AND simulated=1 AND channel='EXPERIENCE_QR' AND status='SUCCESS'",order.id())).isEqualTo(2);
+        assertThat(count("SELECT COUNT(*) FROM ledger_entries WHERE order_id=?",order.id())).isZero();
+        assertThat(count("SELECT COUNT(*) FROM finance_allocation_expectations WHERE order_id=?",order.id())).isZero();
+        assertThat(count("SELECT stock_available FROM products WHERE id=?",product)).isEqualTo(3);
+        assertThatThrownBy(()->refunds.createRefund(orderRepository.findById(order.id()).orElseThrow(),null,1,0)).isInstanceOf(BizException.class);
+    }
+
+    @Test void realAndImportedOrdersCannotBecomeExperiencePaymentsAndMixedCheckoutRollsBack() {
+        var normal=create("MEETUP");
+        assertThatThrownBy(()->as(buyer,()->experiencePayments.create(normal.orderNo()))).isInstanceOf(BizException.class);
+        db.update("UPDATE orders SET experience_source='maimai-experience-045' WHERE id=?",normal.id());
+        assertThatThrownBy(()->as(buyer,()->experiencePayments.create(normal.orderNo()))).isInstanceOf(BizException.class);
+        assertThatThrownBy(()->checkout.checkoutExperience(buyer,request(UUID.randomUUID().toString(),"MEETUP",1))).isInstanceOf(BizException.class);
+        db.update("UPDATE products SET experience_source='maimai-experience-045' WHERE id=?",product);
+        long other=createProduct(seller,5000,0);
+        String key=UUID.randomUUID().toString();
+        var mixed=new CheckoutRequest(key,List.of(new CheckoutItem(product,1,"MEETUP",null),new CheckoutItem(other,1,"MEETUP",null)),null,"公共地点",Instant.now().plusSeconds(3600),null);
+        assertThatThrownBy(()->checkout.checkoutExperience(buyer,mixed)).isInstanceOf(BizException.class);
+        assertThat(count("SELECT COUNT(*) FROM checkout_batches WHERE idempotency_key=?",key)).isZero();
+        assertThat(count("SELECT stock_reserved FROM products WHERE id=?",other)).isZero();
     }
 
     private com.maimai.catalog.dto.CatalogDtos.ProductUpdateRequest edit(String title,List<String> provinces) {

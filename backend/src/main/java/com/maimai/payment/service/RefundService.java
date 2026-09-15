@@ -64,7 +64,7 @@ public class RefundService {
     public Refund createRefund(Order order, Long aftersaleId, long goodsCents, long freightCents) {
         Order locked = orderRepository.lockById(order.getId())
                 .orElseThrow(() -> BizException.notFound("订单不存在"));
-        locked.requireLiveRecord();
+        locked.requireMutableRecord();
         if (locked.getPayStatus() != Order.PayStatus.PAID) {
             throw BizException.conflict("REFUND_NOT_PAID", "订单未支付成功，不能退款");
         }
@@ -121,7 +121,7 @@ public class RefundService {
         refund.setSimulated(payment.isSimulated());
         refundRepository.save(refund);
 
-        execute(refund);
+        execute(refund, locked);
 
         // 更新订单退款状态：商品款与运费均累计退满 → FULL，否则 PARTIAL
         boolean goodsFull = refundedGoods + goodsCents >= locked.getGoodsAmountCents();
@@ -133,26 +133,30 @@ public class RefundService {
         orderRepository.saveAndFlush(locked);
         finance.captureExpectedAllocation(locked.getId());
 
-        if (goodsCents > 0) {
+        if (goodsCents > 0 && !locked.isInteractiveExperience()) {
             saveLedger(locked.getId(), "REFUND_GOODS", goodsCents, refund.getId());
         }
-        if (freightCents > 0) {
+        if (freightCents > 0 && !locked.isInteractiveExperience()) {
             saveLedger(locked.getId(), "REFUND_FREIGHT", freightCents, refund.getId());
         }
-        if (feeDelta > 0) {
+        if (feeDelta > 0 && !locked.isInteractiveExperience()) {
             saveLedger(locked.getId(), "REFUND_PLATFORM_FEE", feeDelta, refund.getId());
         }
         notificationService.notify(locked.getBuyerId(), "REFUND", "退款完成",
                 "退款单 " + refund.getRefundNo() + " 已完成：商品款 " + goodsCents + " 分，运费 "
                         + freightCents + " 分，平台服务费 " + feeDelta + " 分"
-                        + (refund.isSimulated() ? "（本地隔离环境模拟退款，未发生真实资金）" : ""));
+                        + (refund.isSimulated() ? "（体验退款，未发生真实资金退回）" : ""));
         return refund;
     }
 
     /** 执行退款：模拟渠道走完整 REQUESTED→PROCESSING→SUCCESS 流转；微信渠道拒绝（待真实接入）。 */
-    private void execute(Refund refund) {
-        if (!PaymentRequest.Channel.MOCK_LOCAL.name().equals(refund.getChannel()) || !refund.isSimulated()
-                || !environment.acceptsProfiles(org.springframework.core.env.Profiles.of("local", "test"))) {
+    private void execute(Refund refund, Order order) {
+        boolean experience = order.isInteractiveExperience()
+                && PaymentRequest.Channel.EXPERIENCE_QR.name().equals(refund.getChannel());
+        boolean local = order.getExperienceSource() == null
+                && PaymentRequest.Channel.MOCK_LOCAL.name().equals(refund.getChannel())
+                && environment.acceptsProfiles(org.springframework.core.env.Profiles.of("local", "test"));
+        if (!refund.isSimulated() || (!experience && !local)) {
             throw new BizException("REFUND_NOT_CONFIGURED", "微信退款真实接入待渠道开通，已拒绝",
                     HttpStatus.SERVICE_UNAVAILABLE);
         }
