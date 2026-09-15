@@ -1,95 +1,42 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import type { ProductSummary } from "../../../shared/types";
-import ItemImage from "../../../shared/components/ItemImage.vue";
-import MmIcon from "../../../shared/components/MmIcon.vue";
-import PriceText from "../../../shared/components/PriceText.vue";
-import { useHomeMotion } from "../useHomeMotion";
+import { computed, ref } from 'vue';
+import type { ProductSummary } from '../../../shared/types';
+import ItemImage from '../../../shared/components/ItemImage.vue';
+import MmIcon from '../../../shared/components/MmIcon.vue';
+import PriceText from '../../../shared/components/PriceText.vue';
+import { useHomeMotion } from '../useHomeMotion';
 
 const props = defineProps<{ products: ProductSummary[] }>();
 const introduction = ref<HTMLElement | null>(null);
-const { firstVisit, scrollToSection } = useHomeMotion(introduction);
+useHomeMotion(introduction);
+defineEmits<{ enter: [event: MouseEvent] }>();
 const discoveries = computed(() =>
   props.products.filter((item) => item.coverImage).slice(0, 3),
 );
 const steps = [
   {
-    number: "01",
-    icon: "eye",
-    title: "先看清，再心动",
-    text: "翻翻照片，看看成色与瑕疵。喜欢一件旧物，也了解它用过的痕迹。",
+    number: '01',
+    icon: 'eye',
+    title: '先看清，再心动',
+    text: '翻翻照片，看看成色与瑕疵。喜欢一件旧物，也了解它用过的痕迹。',
   },
   {
-    number: "02",
-    icon: "message",
-    title: "有疑问，直接聊",
-    text: "从商品页联系卖家，带着商品卡片问细节、商量价格，沟通更明白。",
+    number: '02',
+    icon: 'message',
+    title: '有疑问，直接聊',
+    text: '从商品页联系卖家，带着商品卡片问细节、商量价格，沟通更明白。',
   },
   {
-    number: "03",
-    icon: "box",
-    title: "约好方式，再交付",
-    text: "快递寄送，或同城见一面。提前确认时间地点，在订单里留下交付记录。",
+    number: '03',
+    icon: 'box',
+    title: '约好方式，再交付',
+    text: '快递寄送，或同城见一面。提前确认时间地点，在订单里留下交付记录。',
   },
 ];
 </script>
 
 <template>
-  <div
-    ref="introduction"
-    class="home-introduction"
-    :class="{ 'is-first-visit': firstVisit }"
-  >
-    <section class="home-opening" aria-labelledby="home-title">
-      <div class="home-opening__topline">
-        <span aria-hidden="true">MAIMAI MARKET</span>
-        <RouterLink to="/search">直接逛商品 ↗</RouterLink>
-      </div>
-      <div class="home-opening__center">
-        <img
-          class="home-opening__symbol"
-          src="/brand/maimai-symbol.svg"
-          alt=""
-          width="64"
-          height="64"
-        />
-        <h1 id="home-title" aria-label="麦麦二手">
-          <span
-            v-for="(letter, index) in '麦麦二手'"
-            :key="index"
-            :style="{ '--letter': index }"
-            aria-hidden="true"
-            >{{ letter }}</span
-          >
-        </h1>
-        <p class="home-opening__tagline">让好物，继续被喜欢。</p>
-        <p class="home-opening__description">
-          为日常添一份喜欢，也给闲置一个新的去处。
-        </p>
-        <div class="home-opening__actions">
-          <a
-            class="home-link home-link--filled"
-            href="#home-market"
-            @click="scrollToSection($event, 'home-market')"
-            >开始逛逛 <MmIcon name="arrow"
-          /></a>
-          <RouterLink class="home-link home-link--quiet" to="/publish"
-            >发布我的闲置 <MmIcon name="plus"
-          /></RouterLink>
-        </div>
-      </div>
-      <div class="home-opening__bottomline">
-        <span>好东西，值得再相遇</span>
-        <a
-          class="home-opening__scroll"
-          href="#home-story"
-          @click="scrollToSection($event, 'home-story')"
-          >往下，认识麦麦 <span><MmIcon name="arrow" /></span
-        ></a>
-        <span aria-hidden="true">旧物 · 新日常</span>
-      </div>
-    </section>
-
+  <div ref="introduction" class="home-introduction">
     <section
       id="home-story"
       class="home-story"
@@ -106,10 +53,7 @@ const steps = [
         <p class="home-story__text">
           一本读到一半的书，一把换下来的椅子，一台陪人记录过风景的相机。它们的故事还没结束，也许正适合现在的你。
         </p>
-        <a
-          class="home-text-link"
-          href="#home-market"
-          @click="scrollToSection($event, 'home-market')"
+        <a class="home-text-link" href="/" @click="$emit('enter', $event)"
           >去找我的下一件喜欢 <MmIcon name="arrow"
         /></a>
       </div>
@@ -192,79 +136,6 @@ const steps = [
   --home-paper: #faf9f6;
   --home-accent: #b94e18;
 }
-.home-opening {
-  min-height: calc(100svh - 154px);
-  display: flex;
-  flex-direction: column;
-  background: var(--home-paper);
-}
-.home-opening__topline,
-.home-opening__bottomline {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 18px;
-  color: var(--mm-muted);
-  font-size: 11px;
-}
-.home-opening__topline {
-  padding-top: 28px;
-  letter-spacing: 2px;
-}
-.home-opening__topline > a {
-  color: var(--mm-muted);
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  letter-spacing: 1px;
-}
-.home-opening__center {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 52px 0 60px;
-}
-.home-opening__symbol {
-  width: 58px;
-  height: 58px;
-  margin-bottom: 26px;
-}
-.home-opening h1 {
-  display: flex;
-  justify-content: center;
-  font-size: clamp(64px, 8vw, 108px);
-  font-weight: 750;
-  line-height: 1.22;
-  letter-spacing: 0.1em;
-  padding-left: 0.1em;
-  margin-bottom: 22px;
-}
-.home-opening h1 span {
-  display: inline-block;
-  animation: home-name-in 180ms ease-out both;
-}
-.home-opening__tagline {
-  font-size: clamp(22px, 2.5vw, 30px);
-  letter-spacing: 0.12em;
-  font-weight: 500;
-}
-.home-opening__description {
-  color: var(--mm-muted);
-  margin-top: 15px;
-  font-size: 14px;
-  line-height: 1.9;
-}
-.home-opening__actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 16px;
-  margin-top: 34px;
-}
 .home-link {
   display: inline-flex;
   align-items: center;
@@ -300,45 +171,6 @@ const steps = [
 .home-link .mm-icon {
   width: 18px;
   height: 18px;
-}
-.home-opening__bottomline {
-  padding: 20px 0 27px;
-  border-bottom: 1px solid var(--mm-border);
-}
-.home-opening__bottomline > span {
-  flex: 1;
-}
-.home-opening__bottomline > span:last-child {
-  text-align: right;
-  color: var(--mm-muted);
-}
-.home-opening__scroll {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  color: var(--mm-ink);
-  font-size: 12px;
-  min-height: 44px;
-}
-.home-opening__scroll > span {
-  display: inline-flex;
-  animation: home-scroll-cue 1.8s ease-in-out 3;
-}
-.home-opening__scroll .mm-icon {
-  transform: rotate(90deg);
-  width: 18px;
-  height: 18px;
-}
-.is-first-visit .home-opening h1 span {
-  animation: home-name-in 1.05s cubic-bezier(0.2, 0.7, 0.2, 1) both;
-  animation-delay: calc(100ms + var(--letter) * 110ms);
-}
-.is-first-visit .home-opening__symbol {
-  animation: home-name-in 850ms ease-out both;
-}
-.is-first-visit .home-opening__tagline,
-.is-first-visit .home-opening__description {
-  animation: home-name-in 950ms ease-out 350ms both;
 }
 .home-section-label {
   display: flex;
@@ -607,8 +439,8 @@ const steps = [
 }
 [data-reveal] {
   transition:
-    opacity 650ms ease,
-    transform 750ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    opacity 1100ms ease,
+    transform 1400ms cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 [data-reveal].is-waiting {
   opacity: 0;
@@ -617,25 +449,6 @@ const steps = [
 [data-reveal]:focus-within {
   opacity: 1;
   transform: none;
-}
-@keyframes home-name-in {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-@keyframes home-scroll-cue {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(5px);
-  }
 }
 @media (max-width: 1000px) {
   .home-story {
@@ -656,84 +469,7 @@ const steps = [
     gap: 28px;
   }
 }
-@media (min-width: 761px) and (max-height: 850px) {
-  .home-opening__topline {
-    padding-top: 18px;
-  }
-  .home-opening__center {
-    padding: 16px 0 20px;
-  }
-  .home-opening__symbol {
-    width: 44px;
-    height: 44px;
-    margin-bottom: 14px;
-  }
-  .home-opening h1 {
-    font-size: 82px;
-    margin-bottom: 12px;
-  }
-  .home-opening__tagline {
-    font-size: 24px;
-  }
-  .home-opening__description {
-    margin-top: 10px;
-  }
-  .home-opening__actions {
-    margin-top: 24px;
-  }
-  .home-opening__bottomline {
-    padding: 10px 0 15px;
-  }
-}
 @media (max-width: 760px) {
-  .home-opening {
-    min-height: max(590px, calc(100svh - 145px));
-  }
-  .home-opening__topline {
-    padding-top: 21px;
-    font-size: 10px;
-  }
-  .home-opening__center {
-    padding: 40px 0 48px;
-  }
-  .home-opening__symbol {
-    width: 48px;
-    height: 48px;
-    margin-bottom: 28px;
-  }
-  .home-opening h1 {
-    font-size: clamp(52px, 12.5vw, 84px);
-    margin-bottom: 22px;
-  }
-  .home-opening__tagline {
-    font-size: 22px;
-    letter-spacing: 0.06em;
-  }
-  .home-opening__description {
-    font-size: 12px;
-    max-width: 270px;
-  }
-  .home-opening__actions {
-    margin-top: 28px;
-    gap: 8px;
-  }
-  .home-link {
-    gap: 16px;
-    padding: 12px 17px;
-    font-size: 13px;
-  }
-  .home-opening__bottomline {
-    padding-bottom: 17px;
-  }
-  .home-opening__bottomline > span {
-    display: none;
-  }
-  .home-opening__bottomline {
-    justify-content: center;
-  }
-  .home-opening__scroll {
-    font-size: 11px;
-  }
   .home-story {
     grid-template-columns: 1fr;
     padding: 58px 0;
@@ -848,12 +584,6 @@ const steps = [
   [data-reveal].is-waiting {
     opacity: 1;
     transform: none;
-  }
-  .home-opening h1 span,
-  .home-opening__symbol,
-  .home-opening__tagline,
-  .home-opening__description {
-    animation: none !important;
   }
 }
 </style>

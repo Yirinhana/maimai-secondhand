@@ -1,5 +1,6 @@
 <template>
-  <div class="mm-app" :class="`mm-app--${section}`">
+  <router-view v-if="route.meta.standalone" />
+  <div v-else class="mm-app" :class="`mm-app--${section}`">
     <ConfirmationDialog />
     <TinaSupportDock
       v-if="!adminWorkspace && route.name !== 'experience-cashier'"
@@ -333,6 +334,7 @@ function focusOutside(event: FocusEvent) {
     menuOpen.value = false;
 }
 function escape(event: KeyboardEvent) {
+  if (route.meta.standalone) return;
   if (
     event.key === '/' &&
     !event.ctrlKey &&

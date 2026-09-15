@@ -1,7 +1,8 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHistory, START_LOCATION } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
 import { useAuthStore } from '../shared/stores/auth';
 import { waitForAnchor } from '../shared/anchorScroll';
+import { hasSeenWelcome } from '../modules/catalog/welcomeSession';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -48,6 +49,12 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   // 商品（catalog）
+  {
+    path: '/welcome',
+    name: 'welcome',
+    component: () => import('../modules/catalog/WelcomePage.vue'),
+    meta: { standalone: true, title: '认识麦麦' },
+  },
   {
     path: '/',
     name: 'home',
@@ -287,7 +294,17 @@ export const router = createRouter({
   },
 });
 
-router.beforeEach(async (to) => {
+router.beforeEach(async (to, from) => {
+  // Only greet a fresh visit to the root. Shared links keep their destination.
+  if (
+    to.name === 'home' &&
+    from === START_LOCATION &&
+    !to.hash &&
+    Object.keys(to.query).length === 0 &&
+    !hasSeenWelcome()
+  )
+    return { name: 'welcome', replace: true };
+
   if (!to.meta.requiresAuth && !to.meta.admin) return true;
 
   const auth = useAuthStore();
