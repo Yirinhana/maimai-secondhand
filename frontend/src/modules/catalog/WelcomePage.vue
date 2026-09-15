@@ -1,21 +1,22 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
+import { nextTick, onMounted, onUnmounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import WelcomeOpening from './components/WelcomeOpening.vue';
 import HomeIntroduction from './components/HomeIntroduction.vue';
-import WelcomeMascot from './components/WelcomeMascot.vue';
+import MaizaiMascot from '../../shared/components/MaizaiMascot.vue';
 import MmIcon from '../../shared/components/MmIcon.vue';
 import { get } from '../../shared/api';
 import type { Page, ProductSummary } from '../../shared/types';
 import { rememberWelcome } from './welcomeSession';
-import { useHomeMotion } from './useHomeMotion';
+import { useMascotMotion } from '../../shared/useMascotMotion';
+import { useWelcomeGestures } from './useWelcomeGestures';
 
 const router = useRouter();
 const root = ref<HTMLElement | null>(null);
 const mascot = ref<HTMLElement | null>(null);
 const sceneRoot = ref<HTMLElement | null>(null);
 const { animated, paused, reduced, greeting, point, reset, greet } =
-  useHomeMotion(root, mascot);
+  useMascotMotion(root, mascot);
 const products = ref<ProductSummary[]>([]);
 const savedStage: unknown = window.history.state?.maimaiWelcomeStage;
 const stage = ref(
@@ -27,15 +28,19 @@ const stage = ref(
     : 0,
 );
 const stages = ['初见', '发现', '了解', '流转'];
-const direction = ref('scene-forward');
+const transitioning = ref(false);
 const leaving = ref(false);
 const navigationError = ref('');
-const nextLabel = computed(() =>
-  stage.value === 0 ? '认识麦麦' : stage.value === 3 ? '开始逛逛' : '下一幕',
-);
 let exitTimer: ReturnType<typeof setTimeout> | undefined;
+let transitionTimer: ReturnType<typeof setTimeout> | undefined;
 let disposed = false;
 let restoreSceneFocus = false;
+const gestures = useWelcomeGestures(
+  sceneRoot,
+  () => transitioning.value || leaving.value,
+  () => (stage.value < 3 ? void go(stage.value + 1) : startExit()),
+  () => void go(stage.value - 1),
+);
 
 onMounted(async () => {
   rememberWelcome();
@@ -48,11 +53,11 @@ onMounted(async () => {
 });
 async function go(index: number) {
   const target = Math.max(0, Math.min(stages.length - 1, index));
-  if (target === stage.value || leaving.value) return;
+  if (target === stage.value || leaving.value || transitioning.value) return;
   restoreSceneFocus = Boolean(
     sceneRoot.value?.contains(document.activeElement),
   );
-  direction.value = target > stage.value ? 'scene-forward' : 'scene-backward';
+  transitioning.value = true;
   stage.value = target;
   try {
     // Preserve this scene when returning from a product; a new replay starts at 0.
@@ -65,25 +70,21 @@ async function go(index: number) {
   }
   await nextTick();
   sceneRoot.value?.scrollTo({ top: 0 });
+  // Also unlock when motion is disabled mid-transition or the tab becomes hidden.
+  if (transitioning.value)
+    transitionTimer = setTimeout(sceneEntered, animated.value ? 1500 : 0);
 }
 function sceneEntered() {
+  if (transitionTimer) clearTimeout(transitionTimer);
+  transitioning.value = false;
   if (restoreSceneFocus) sceneRoot.value?.focus({ preventScroll: true });
   restoreSceneFocus = false;
 }
-function keyboard(event: KeyboardEvent) {
-  if (
-    event.ctrlKey ||
-    event.metaKey ||
-    event.altKey ||
-    event.shiftKey ||
-    (event.target instanceof HTMLElement &&
-      event.target.closest('input,textarea,select,[contenteditable="true"]'))
-  )
-    return;
-  if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
-    event.preventDefault();
-    void go(stage.value + (event.key === 'ArrowRight' ? 1 : -1));
-  }
+function sceneLeaving(element: Element) {
+  // Both scenes overlap visually, but only the incoming one remains interactive.
+  if (restoreSceneFocus) sceneRoot.value?.focus({ preventScroll: true });
+  element.setAttribute('inert', '');
+  element.setAttribute('aria-hidden', 'true');
 }
 async function finish() {
   try {
@@ -103,6 +104,9 @@ function enter(event: MouseEvent, skip = false) {
   )
     return;
   event.preventDefault();
+  startExit(skip);
+}
+function startExit(skip = false) {
   if (leaving.value) return;
   rememberWelcome();
   if (skip || !animated.value) {
@@ -115,6 +119,7 @@ function enter(event: MouseEvent, skip = false) {
 onUnmounted(() => {
   disposed = true;
   if (exitTimer) clearTimeout(exitTimer);
+  if (transitionTimer) clearTimeout(transitionTimer);
 });
 </script>
 
@@ -127,7 +132,6 @@ onUnmounted(() => {
     @pointermove="point"
     @pointerdown="point"
     @pointerleave="reset"
-    @keydown="keyboard"
   >
     <div class="welcome-atmosphere" aria-hidden="true">
       <span
@@ -173,11 +177,22 @@ onUnmounted(() => {
       class="welcome-scenes"
       role="region"
       aria-label="麦麦介绍"
-      tabindex="-1"
+      aria-describedby="welcome-gesture-hint"
+      :aria-busy="transitioning"
+      tabindex="0"
+      @pointerdown="gestures.pointerDown"
+      @pointermove="gestures.pointerMove"
+      @pointercancel="gestures.pointerCancel"
+      @click="gestures.click"
+      @keydown="gestures.keyboard"
     >
-      <Transition :name="direction" mode="out-in" @after-enter="sceneEntered">
+      <Transition
+        name="scene-dissolve"
+        @before-leave="sceneLeaving"
+        @after-enter="sceneEntered"
+      >
         <div :key="stage" class="welcome-scene">
-          <WelcomeOpening v-if="stage === 0" @enter="enter" />
+          <WelcomeOpening v-if="stage === 0" />
           <HomeIntroduction v-else :stage="stage" :products="products" />
         </div>
       </Transition>
@@ -192,7 +207,7 @@ onUnmounted(() => {
           aria-label="和麦仔打招呼"
           @click="greet"
         >
-          <WelcomeMascot :greeting="greeting" />
+          <MaizaiMascot :greeting="greeting" :active="animated" />
         </button>
         <div class="welcome-companion__words">
           <strong>{{ greeting ? '嗨，见到你真好。' : '麦仔陪你逛' }}</strong
@@ -201,39 +216,23 @@ onUnmounted(() => {
           }}</span>
         </div>
       </div>
-      <nav class="welcome-progress" aria-label="开场进度">
-        <button
-          v-for="(name, index) in stages"
-          :key="name"
-          type="button"
-          :aria-label="'第' + (index + 1) + '幕：' + name"
-          :aria-current="stage === index ? 'step' : undefined"
-          @click="go(index)"
+      <div class="welcome-progress" aria-hidden="true">
+        <span
+          v-for="(_, index) in stages"
+          :key="index"
+          :class="{ 'is-current': stage === index }"
+        ></span>
+      </div>
+      <div class="welcome-guidance">
+        <span class="welcome-scene-count"
+          >0{{ stage + 1 }} <span>/ 04</span> · {{ stages[stage] }}</span
         >
-          <span></span><span>{{ name }}</span>
-        </button>
-      </nav>
-      <div class="welcome-controls__actions">
-        <button
-          class="welcome-previous"
-          type="button"
-          aria-label="上一幕"
-          :disabled="stage === 0"
-          @click="go(stage - 1)"
-        >
-          <MmIcon name="arrow" />
-        </button>
-        <button
-          v-if="stage < 3"
-          class="welcome-next"
-          type="button"
-          @click="go(stage + 1)"
-        >
-          {{ nextLabel }} <MmIcon name="arrow" />
-        </button>
-        <a v-else class="welcome-next" href="/" @click="enter"
-          >{{ nextLabel }} <MmIcon name="arrow"
-        /></a>
+        <p id="welcome-gesture-hint">
+          <span class="welcome-desktop-hint">滚动或轻点画面</span
+          ><span class="welcome-touch-hint">轻点画面</span>，{{
+            stage === 3 ? '进入麦麦' : '继续认识麦麦'
+          }}
+        </p>
       </div>
     </footer>
     <p class="mm-visually-hidden" role="status" aria-live="polite">
@@ -365,7 +364,13 @@ onUnmounted(() => {
 .welcome-scenes:focus {
   outline: none;
 }
+.welcome-scenes:focus-visible {
+  outline: 1px dashed #a0a58f;
+  outline-offset: -6px;
+}
 .welcome-scene {
+  grid-area: 1 / 1;
+  transform-origin: center;
   align-self: center;
   min-width: 0;
   width: 100%;
@@ -409,82 +414,47 @@ onUnmounted(() => {
 .welcome-progress {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
-.welcome-progress button {
-  min-height: 48px;
-  min-width: 34px;
-  padding: 6px 2px;
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-  justify-content: center;
-  gap: 9px;
-  border: 0;
-  background: none;
-  color: #949789;
-  font-size: 10px;
-}
-.welcome-progress button > span:first-child {
-  display: block;
-  width: 6px;
-  height: 6px;
+.welcome-progress > span {
+  width: 5px;
+  height: 5px;
   background: #cfd1c4;
   border-radius: 10px;
   transition:
-    width 300ms,
-    background-color 300ms;
+    width 900ms ease,
+    background-color 900ms ease;
 }
-.welcome-progress button[aria-current='step'] {
-  color: #414937;
-}
-.welcome-progress button[aria-current='step'] > span:first-child {
-  width: 24px;
+.welcome-progress > .is-current {
+  width: 25px;
   background: #656f54;
 }
-.welcome-controls__actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
+.welcome-guidance {
+  text-align: right;
 }
-.welcome-controls__actions .mm-icon {
-  width: 18px;
-  height: 18px;
+.welcome-scene-count {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: #545a48;
 }
-.welcome-previous {
-  display: grid;
-  place-items: center;
-  min-width: 44px;
-  min-height: 46px;
-  border: 1px solid #dedfd3;
-  border-radius: 50%;
-  background: transparent;
-  color: #656a59;
+.welcome-scene-count > span {
+  color: #969a8a;
 }
-.welcome-previous .mm-icon {
-  transform: rotate(180deg);
+.welcome-guidance p {
+  margin: 10px 0 0;
+  font-size: 11px;
+  color: #777c6b;
 }
-.welcome-previous:disabled {
-  opacity: 0.35;
-  cursor: default;
+.welcome-touch-hint {
+  display: none;
 }
-.welcome-next {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 30px;
-  min-height: 46px;
-  padding: 10px 18px;
-  border: 1px solid #afb39f;
-  background: transparent;
-  color: #343b2b;
-  border-radius: 4px;
-  font-size: 12px;
-}
-.welcome-next:hover {
-  text-decoration: none;
-  background: #eaece1;
+@media (pointer: coarse) {
+  .welcome-desktop-hint {
+    display: none;
+  }
+  .welcome-touch-hint {
+    display: inline;
+  }
 }
 .welcome-page :deep(button:focus-visible),
 .welcome-page :deep(a:focus-visible) {
@@ -495,23 +465,28 @@ onUnmounted(() => {
   animation: none !important;
   transition: none !important;
 }
-.scene-forward-enter-active,
-.scene-forward-leave-active,
-.scene-backward-enter-active,
-.scene-backward-leave-active {
+.scene-dissolve-enter-active {
   transition:
-    opacity 270ms ease,
-    transform 360ms cubic-bezier(0.2, 0.6, 0.2, 1);
+    opacity 1100ms 220ms ease,
+    transform 1400ms cubic-bezier(0.16, 0.65, 0.2, 1),
+    filter 1100ms 180ms ease;
 }
-.scene-forward-enter-from,
-.scene-backward-leave-to {
-  opacity: 0;
-  transform: translateX(22px);
+.scene-dissolve-leave-active {
+  pointer-events: none;
+  transition:
+    opacity 1000ms ease,
+    transform 1250ms cubic-bezier(0.3, 0, 0.2, 1),
+    filter 1000ms ease;
 }
-.scene-forward-leave-to,
-.scene-backward-enter-from {
+.scene-dissolve-enter-from {
   opacity: 0;
-  transform: translateX(-22px);
+  transform: scale(1.12);
+  filter: blur(7px);
+}
+.scene-dissolve-leave-to {
+  opacity: 0;
+  transform: scale(0.76);
+  filter: blur(5px);
 }
 .welcome-navigation-error {
   position: absolute;
@@ -594,31 +569,20 @@ onUnmounted(() => {
     grid-column: 2;
     grid-row: 1;
     justify-content: flex-end;
-    gap: 5px;
+    align-self: end;
+    margin-bottom: 10px;
   }
-  .welcome-progress button {
-    min-width: 36px;
-    min-height: 37px;
-    flex-direction: row;
-    padding: 4px 0;
-  }
-  .welcome-progress button > span:last-child {
-    display: none;
-  }
-  .welcome-controls__actions {
+  .welcome-guidance {
     grid-column: 2;
     grid-row: 2;
-    gap: 10px;
+    align-self: start;
   }
-  .welcome-previous {
-    min-height: 42px;
-    min-width: 42px;
+  .welcome-guidance p {
+    font-size: 10px;
+    margin-top: 7px;
   }
-  .welcome-next {
-    min-height: 42px;
-    padding: 9px 14px;
-    gap: 26px;
-    font-size: 11px;
+  .welcome-scene-count {
+    font-size: 10px;
   }
   .welcome-atmosphere__orbit--one {
     width: 140vw;

@@ -4,6 +4,8 @@ import { useRoute } from 'vue-router';
 import { askConfirmation } from '../../shared/confirm';
 import { useTinaChat } from './useTinaChat';
 import { plainReply } from './plainText';
+import MaizaiMascot from '../../shared/components/MaizaiMascot.vue';
+import { useMascotMotion } from '../../shared/useMascotMotion';
 const route = useRoute();
 const {
   auth,
@@ -27,6 +29,10 @@ const transcript = ref<HTMLElement | null>(null),
 const opened = ref(false),
   tab = ref<'chat' | 'faq'>('chat'),
   unread = ref(false);
+const { animated, greeting, point, reset, greet } = useMascotMotion(
+  launcher,
+  launcher,
+);
 let previousFocus: HTMLElement | null = null;
 async function open() {
   previousFocus = document.activeElement as HTMLElement | null;
@@ -66,7 +72,7 @@ function navigateTab(event: KeyboardEvent) {
 async function clearHistory() {
   if (sending.value || !turns.value.length) return;
   const owner = auth.me?.id;
-  if (await askConfirmation('清空你与缇娜的全部对话记录？人工工单不受影响。')) {
+  if (await askConfirmation('清空你与麦仔的全部对话记录？人工工单不受影响。')) {
     if (owner && owner === auth.me?.id) await clear();
   }
 }
@@ -108,16 +114,22 @@ onBeforeUnmount(() => dialog.value?.close());
     ref="launcher"
     type="button"
     class="tina-launcher"
-    aria-label="打开缇娜客服"
+    aria-label="打开麦仔客服"
     aria-haspopup="dialog"
     :aria-expanded="opened"
     aria-controls="tina-dialog"
     @click="open"
+    @pointermove="point"
+    @pointerenter="greet"
+    @pointerleave="reset"
+    @focus="greet"
   >
-    <span class="tina-face" aria-hidden="true"
-      >T<span class="tina-face__spark">✦</span></span
-    >
-    <span>缇娜客服<small>有问题，来聊聊</small></span
+    <MaizaiMascot
+      class="tina-launcher__mascot"
+      :greeting="greeting"
+      :active="animated && !opened"
+    />
+    <span class="tina-launcher__label">麦仔客服</span
     ><span v-if="unread" class="tina-unread" aria-label="有新回复"></span>
   </button>
   <dialog
@@ -130,17 +142,15 @@ onBeforeUnmount(() => dialog.value?.close());
   >
     <div class="tina-panel">
       <header class="tina-header">
-        <span class="tina-face tina-face--large" aria-hidden="true"
-          >T<span class="tina-face__spark">✦</span></span
-        >
+        <MaizaiMascot class="tina-face tina-face--large" :active="false" />
         <div>
-          <h2 id="tina-heading">缇娜 <span>AI 客服</span></h2>
+          <h2 id="tina-heading">麦仔 <span>AI 客服</span></h2>
           <p>麦麦二手 · 问清楚，再做决定</p>
         </div>
         <button
           type="button"
           class="tina-icon-button"
-          aria-label="关闭缇娜客服"
+          aria-label="关闭麦仔客服"
           autofocus
           @click="close"
         >
@@ -158,7 +168,7 @@ onBeforeUnmount(() => dialog.value?.close());
           @keydown="navigateTab"
           @click="tab = 'chat'"
         >
-          问缇娜
+          问麦仔
         </button>
         <button
           id="tina-faq-tab"
@@ -207,14 +217,14 @@ onBeforeUnmount(() => dialog.value?.close());
         aria-labelledby="tina-chat-tab"
       >
         <div v-if="!turns.length" class="tina-welcome">
-          <span class="tina-eyebrow">你好，我是缇娜</span>
+          <span class="tina-eyebrow">你好，我是麦仔</span>
           <h3>关于麦麦，有什么想问的？</h3>
           <p>
             我可以解释交易规则、指引页面操作。涉及具体订单的处理，可以转人工工单。
           </p>
         </div>
         <div v-if="!auth.me" class="tina-state">
-          <strong>登录后与缇娜对话</strong>
+          <strong>登录后与麦仔对话</strong>
           <p>你的对话记录仅在自己的账号中显示，常见问题无需登录。</p>
           <RouterLink
             :to="{ path: '/login', query: { redirect: route.fullPath } }"
@@ -223,7 +233,7 @@ onBeforeUnmount(() => dialog.value?.close());
           >
         </div>
         <div v-else-if="assistant && !assistant.enabled" class="tina-state">
-          <strong>缇娜暂未接通</strong>
+          <strong>麦仔暂未接通</strong>
           <p>你可以先查看常见问题，或提交人工工单。接通后即可在这里交流。</p>
           <button type="button" @click="tab = 'faq'">查看常见问题 →</button>
         </div>
@@ -231,7 +241,7 @@ onBeforeUnmount(() => dialog.value?.close());
         <p v-if="turns.length" class="tina-history-note">
           最近 {{ turns.length }} 条提问 · 当前账号的私密对话
         </p>
-        <ol class="tina-messages" aria-label="与缇娜的对话记录">
+        <ol class="tina-messages" aria-label="与麦仔的对话记录">
           <li v-for="turn in turns" :key="turn.requestId">
             <div class="tina-message tina-message--user">
               <span class="tina-author">你</span>
@@ -241,7 +251,7 @@ onBeforeUnmount(() => dialog.value?.close());
               v-if="turn.status === 'COMPLETE'"
               class="tina-message tina-message--assistant"
             >
-              <span class="tina-author">缇娜 · AI</span>
+              <span class="tina-author">麦仔 · AI</span>
               <p>{{ plainReply(turn.answer) }}</p>
             </div>
             <div v-else-if="turn.status === 'FAILED'" class="tina-failure">
@@ -255,9 +265,9 @@ onBeforeUnmount(() => dialog.value?.close());
               </button>
             </div>
             <div v-else class="tina-thinking" role="status">
-              <span class="tina-face" aria-hidden="true">T</span>
+              <MaizaiMascot class="tina-face" :active="animated" />
               <div>
-                <span>缇娜正在思考</span
+                <span>麦仔正在思考</span
                 ><span class="tina-dots" aria-hidden="true"
                   ><i></i><i></i><i></i
                 ></span>
@@ -274,7 +284,7 @@ onBeforeUnmount(() => dialog.value?.close());
         @submit.prevent="submit"
       >
         <label for="tina-question" class="mm-visually-hidden"
-          >给缇娜的问题</label
+          >给麦仔的问题</label
         >
         <textarea
           id="tina-question"
@@ -328,57 +338,46 @@ onBeforeUnmount(() => dialog.value?.close());
 .tina-launcher {
   position: fixed;
   right: max(18px, calc((100vw - 1380px) / 2));
-  bottom: max(22px, env(safe-area-inset-bottom));
+  bottom: max(18px, env(safe-area-inset-bottom));
   z-index: 40;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  border: 1px solid #d8cfc2;
-  border-radius: 16px;
-  background: #fffdf9;
-  color: var(--mm-ink);
-  padding: 10px 15px 10px 10px;
-  box-shadow: 0 7px 25px #24252220;
-  font-weight: 700;
+  width: 86px;
+  padding: 0;
+  border: 0;
+  border-radius: 20px;
+  background: transparent;
+  color: #393c32;
   cursor: pointer;
+  transition: transform 250ms ease;
 }
 .tina-launcher:hover {
-  border-color: var(--mm-primary);
   transform: translateY(-2px);
 }
-.tina-launcher small {
-  display: block;
-  margin-top: 2px;
-  color: var(--mm-muted);
+.tina-launcher .tina-launcher__mascot {
+  width: 72px;
+  height: 66px;
+  filter: drop-shadow(0 4px 5px #292b2614);
+}
+.tina-launcher__label {
   font-size: 10px;
-  font-weight: 400;
+  font-weight: 600;
+  letter-spacing: 1px;
+  padding: 4px 9px;
+  border: 1px solid #e0e2d5;
+  border-radius: 20px;
+  background: #fffef9;
+  box-shadow: 0 3px 10px #292b260c;
 }
 .tina-face {
-  position: relative;
   width: 34px;
   height: 34px;
-  border-radius: 12px 12px 12px 3px;
-  background: #c4531a;
-  color: #fff8ef;
-  display: grid;
-  place-items: center;
-  font:
-    700 23px Georgia,
-    serif;
   flex: none;
 }
-.tina-face__spark {
-  position: absolute;
-  right: -3px;
-  top: -6px;
-  color: #d4a86c;
-  font: 17px sans-serif;
-  text-shadow: 0 1px #fff;
-}
 .tina-face--large {
-  width: 42px;
-  height: 42px;
-  font-size: 29px;
+  width: 50px;
+  height: 46px;
 }
 .tina-unread {
   position: absolute;
@@ -763,20 +762,13 @@ onBeforeUnmount(() => dialog.value?.close());
 }
 @media (max-width: 600px) {
   .tina-launcher {
-    right: 12px;
-    bottom: max(18px, env(safe-area-inset-bottom));
-    padding: 9px 11px;
-    gap: 8px;
-    border-radius: 14px;
-    font-size: 12px;
+    right: 10px;
+    bottom: max(14px, env(safe-area-inset-bottom));
+    width: 76px;
   }
-  .tina-launcher small {
-    display: none;
-  }
-  .tina-face {
-    width: 29px;
-    height: 29px;
-    font-size: 20px;
+  .tina-launcher .tina-launcher__mascot {
+    width: 64px;
+    height: 58px;
   }
   .tina-dialog {
     left: 10px;

@@ -80,6 +80,8 @@ class TinaChatTest {
             }
         };
         var service=new TinaChatService(store,gateway,new SimpleRateLimiter());var request=key();
+        assertThat(service.assistant().name()).isEqualTo("麦仔");
+        assertThat(service.assistant().enabled()).isTrue();
         assertThat(service.send(request,"费用规则").answer()).isEqualTo("平台费不含运费。");
         service.send(request,"费用规则");assertThat(calls).hasValue(1);
         SupportAiGateway offline=topic->{throw new AssertionError("must not call offline gateway");};

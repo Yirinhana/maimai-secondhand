@@ -6,6 +6,6 @@ public interface SupportAiGateway {
     record ChatMessage(String role, String content) { }
     default boolean configured() { return false; }
     default String chat(java.util.List<ChatMessage> history) {
-        throw new com.maimai.common.BizException("AI_NOT_CONFIGURED", "缇娜暂未接通，请查看常见问题或联系人工", org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE);
+        throw new com.maimai.common.BizException("AI_NOT_CONFIGURED", "麦仔暂未接通，请查看常见问题或联系人工", org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE);
     }
 }

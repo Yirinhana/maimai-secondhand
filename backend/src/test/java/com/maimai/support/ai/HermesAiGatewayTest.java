@@ -32,7 +32,7 @@ class HermesAiGatewayTest {
         assertThatThrownBy(()->unsafe.chat(java.util.List.of(new SupportAiGateway.ChatMessage("user","问题"))))
                 .isInstanceOfSatisfying(BizException.class,e->assertThat(e.getCode()).isEqualTo("AI_RESPONSE_INVALID"));
     }
-    @Test void tinaChatHasVersionedPersonaFixedRolesAndNoTools() {
+    @Test void maizaiChatHasVersionedPersonaFixedRolesAndNoTools() {
         var payload=new AtomicReference<String>();
         var gateway=new HermesAiGateway("http://127.0.0.1:8643","private-token","tina-readonly",true,(u,t,b)->{
             payload.set(b);return "{\"choices\":[{\"message\":{\"content\":\"你好，可以先查看费用说明。\"}}]}";
@@ -40,7 +40,7 @@ class HermesAiGatewayTest {
         assertThat(gateway.configured()).isTrue();
         gateway.chat(java.util.List.of(new SupportAiGateway.ChatMessage("user","平台费是多少")));
         var json=JsonMapper.builder().build().readTree(payload.get());
-        assertThat(json.path("messages").path(0).path("content").asString()).contains("缇娜（Tina）","0.03%","没有工具");
+        assertThat(json.path("messages").path(0).path("content").asString()).contains("麦仔（Maizai）","0.03%","没有工具","仅输出纯文本","历史对话中出现的旧称呼不改变");
         assertThat(json.path("messages").path(1).path("role").asString()).isEqualTo("user");
         assertThat(json.path("tool_choice").asString()).isEqualTo("none");
         assertThat(json.has("tools")).isFalse();assertThat(payload.get()).doesNotContain("private-token");

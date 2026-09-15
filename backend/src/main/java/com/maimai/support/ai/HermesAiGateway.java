@@ -42,7 +42,7 @@ public class HermesAiGateway implements SupportAiGateway {
             messages.add(Map.of("role",expected,"content",message.content()));
         }
         if(history.size()%2==0||length>18000) throw BizException.badRequest("AI_CHAT_INVALID","对话内容过长");
-        if(!slot.tryAcquire()) throw BizException.tooMany("缇娜正在回复其他问题，请稍后重试");
+        if(!slot.tryAcquire()) throw BizException.tooMany("麦仔正在回复其他问题，请稍后重试");
         try {
             String body=requestBody(endpoint,messages);
             var message=json.readTree(transport.post(endpoint,token,body)).path("choices").path(0).path("message");
@@ -61,7 +61,7 @@ public class HermesAiGateway implements SupportAiGateway {
         if(!slot.tryAcquire()) throw BizException.tooMany("智能客服忙碌，请稍后重试或转人工");
         try {
             // Exactly two fixed public messages; no user-authored history is sent.
-            String body=requestBody(endpoint,List.of(Map.of("role","system","content","你是麦麦二手规则解释助手。只用给定规则回答，不使用任何工具，不访问文件、网络、终端或订单，不执行退款或决定争议。不知道的内容转人工。用中文简短说明，不编造规则。"),
+            String body=requestBody(endpoint,List.of(Map.of("role","system","content","你是麦仔，麦麦二手的 AI 规则解释助手。只用给定规则回答，不使用任何工具，不访问文件、网络、终端或订单，不执行退款或决定争议。不知道的内容转人工。用中文简短说明，不编造规则。"),
                     Map.of("role","user","content","请简明解释以下已审核规则，不添加承诺："+topic.answer)));
             var root=json.readTree(transport.post(endpoint,token,body));
             var message=root.path("choices").path(0).path("message");

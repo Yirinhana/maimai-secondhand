@@ -1,7 +1,7 @@
 import { computed, onMounted, onUnmounted, ref, watch, type Ref } from 'vue';
 
-/** Pointer motion is local to the welcome page and never runs an idle JS loop. */
-export function useHomeMotion(
+/** Scoped mascot motion; shared by the opening and support, without an idle JS loop. */
+export function useMascotMotion(
   root: Ref<HTMLElement | null>,
   mascot: Ref<HTMLElement | null>,
 ) {

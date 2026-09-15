@@ -340,14 +340,15 @@ const steps = [
   margin: 0;
 }
 .welcome-story__publish {
-  background: #34372e;
-  color: #faf9f6;
-  border-radius: 4px;
+  color: #424935;
+  text-decoration: underline;
+  text-decoration-color: #c1c6b4;
+  text-underline-offset: 7px;
   display: inline-flex;
   align-items: center;
   gap: 20px;
   min-height: 48px;
-  padding: 12px 20px;
+  padding: 12px 0;
   font-size: 13px;
 }
 .welcome-circulation {

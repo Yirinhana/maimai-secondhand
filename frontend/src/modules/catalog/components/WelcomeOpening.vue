@@ -1,15 +1,8 @@
-<script setup lang="ts">
-import MmIcon from '../../../shared/components/MmIcon.vue';
-defineEmits<{ enter: [event: MouseEvent] }>();
-</script>
 <template>
   <section class="welcome-opening" aria-labelledby="welcome-title">
     <p class="welcome-opening__eyebrow">旧物的新故事，从这里开始</p>
     <h1 id="welcome-title">麦麦二手<span aria-hidden="true">。</span></h1>
     <p class="welcome-opening__line">让好物，<span>继续被喜欢。</span></p>
-    <a class="welcome-opening__enter" href="/" @click="$emit('enter', $event)"
-      >进入麦麦 <MmIcon name="arrow"
-    /></a>
   </section>
 </template>
 <style scoped>
@@ -61,33 +54,6 @@ defineEmits<{ enter: [event: MouseEvent] }>();
 .welcome-opening__line span {
   color: #9a451d;
 }
-.welcome-opening__enter {
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  gap: 50px;
-  min-height: 50px;
-  padding: 13px 24px;
-  color: #faf9f6;
-  background: #292b26;
-  border-radius: 4px;
-  font-size: 13px;
-  margin-top: 25px;
-  position: relative;
-  z-index: 1;
-  transition:
-    background-color 250ms,
-    transform 250ms;
-}
-.welcome-opening__enter:hover {
-  background: #984518;
-  text-decoration: none;
-  transform: translateY(-2px);
-}
-.welcome-opening .mm-icon {
-  width: 18px;
-  height: 18px;
-}
 @keyframes welcome-arrival {
   0% {
     opacity: 0;
@@ -134,10 +100,6 @@ defineEmits<{ enter: [event: MouseEvent] }>();
     letter-spacing: 0.05em;
     margin-top: 26px;
   }
-  .welcome-opening__enter {
-    margin-top: 28px;
-    min-height: 48px;
-  }
 }
 @media (max-height: 550px) and (min-width: 761px) {
   .welcome-opening h1 {
@@ -149,9 +111,6 @@ defineEmits<{ enter: [event: MouseEvent] }>();
   .welcome-opening__line {
     margin-top: 12px;
     font-size: 18px;
-  }
-  .welcome-opening__enter {
-    margin-top: 14px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

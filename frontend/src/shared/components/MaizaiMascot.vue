@@ -1,11 +1,14 @@
 <script setup lang="ts">
-defineProps<{ greeting: boolean }>();
+withDefaults(defineProps<{ greeting?: boolean; active?: boolean }>(), {
+  greeting: false,
+  active: true,
+});
 </script>
 
 <template>
   <svg
     class="welcome-mascot"
-    :class="{ 'is-greeting': greeting }"
+    :class="{ 'is-greeting': greeting, 'is-idle': !active }"
     viewBox="0 0 180 165"
     fill="none"
     aria-hidden="true"
@@ -72,6 +75,10 @@ defineProps<{ greeting: boolean }>();
   height: auto;
   overflow: visible;
   color: #393c32;
+}
+.welcome-mascot.is-idle * {
+  animation: none !important;
+  transition: none !important;
 }
 .welcome-mascot__float {
   transform-origin: 90px 130px;
