@@ -140,12 +140,13 @@ class CommunityServiceIT {
 
     @Test
     void followUsesLatestQualificationAndCannotFollowSelfOrImpersonate() {
+        jdbc.update("UPDATE seller_applications SET channel_status='PENDING' WHERE user_id=?",seller);
         service.followSeller(buyer, seller); service.followSeller(buyer, seller);
         assertThat(service.listMyFollows(buyer, 0, 20).total()).isEqualTo(1);
         code("FOLLOW_SELF", () -> service.followSeller(buyer, buyer));
         forbidden(() -> service.followSeller(stranger, seller));
         service.unfollowSeller(buyer, seller);
-        jdbc.update("INSERT INTO seller_applications(user_id, status, channel_status) VALUES (?, 'SUSPENDED', 'QUALIFIED')", seller);
+        jdbc.update("INSERT INTO seller_applications(user_id, status, channel_status,created_at) SELECT user_id,'SUSPENDED','QUALIFIED',created_at FROM seller_applications WHERE user_id=? ORDER BY id DESC LIMIT 1", seller);
         forbidden(() -> service.followSeller(buyer, seller));
         assertThat(service.listMyFollows(buyer, 0, 20).total()).isZero();
     }

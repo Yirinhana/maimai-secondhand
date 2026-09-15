@@ -95,8 +95,8 @@ public class FulfillmentService {
         requireVisible(order, viewerId);
         Shipment shipment = shipmentRepository.findByOrderId(order.getId())
                 .orElseThrow(() -> BizException.notFound("运单不存在"));
-        if (order.isInteractiveExperience()) return new ShipmentDto(shipment.getCarrier(), shipment.getTrackingNo(),
-                shipment.getStatus().name(), null, null, "EXPERIENCE_NO_TRACKING", null);
+        if (order.getExperienceSource()!=null) return new ShipmentDto(shipment.getCarrier(), shipment.getTrackingNo(),
+                shipment.getStatus().name(), shipment.getTraces(), shipment.getLastTraceAt(), "EXPERIENCE_NO_TRACKING", null);
         var trace = logisticsCache.query(shipment.getCarrier(), shipment.getTrackingNo(), order.getPhone());
         if (trace.fetchedAt() != null) {
             Shipment.Status status;

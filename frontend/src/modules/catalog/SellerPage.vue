@@ -15,6 +15,9 @@
           />
           <div>
             <h1 class="mm-seller-page__name">{{ seller.nickname }}</h1>
+            <p class="mm-seller-page__identity">
+              {{ seller.sellerApproved ? '平台卖家审核已通过' : '用户主页' }}
+            </p>
             <p class="mm-seller-page__joined">
               {{ formatTime(seller.joinedAt) }} 加入麦麦二手
             </p>
@@ -23,7 +26,11 @@
         </div>
       </MmCard>
 
-      <SellerSocial :key="seller.id" :seller-id="seller.id" />
+      <SellerSocial
+        :key="seller.id"
+        :seller-id="seller.id"
+        :can-follow="seller.sellerApproved"
+      />
       <h2 class="mm-seller-page__heading">在售商品</h2>
       <p v-if="productError" class="mm-seller-page__error" role="alert">
         {{ productError }}
@@ -34,7 +41,9 @@
       </p>
       <EmptyState
         v-else-if="products.length === 0"
-        title="该卖家暂无在售商品"
+        :title="
+          seller.sellerApproved ? '这家小店暂无在售商品' : '该用户暂无在售商品'
+        "
       />
       <template v-else>
         <ul class="mm-seller-page__grid">
@@ -126,6 +135,11 @@ watch(
 </script>
 
 <style scoped>
+.mm-seller-page__identity {
+  color: var(--mm-primary);
+  font-size: 13px;
+  margin: 8px 0;
+}
 .mm-seller-page {
   max-width: 1440px;
   margin: 0 auto;

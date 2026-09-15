@@ -14,7 +14,7 @@ public interface SellerApplicationRepository extends JpaRepository<SellerApplica
     @org.springframework.data.jpa.repository.Query("select a from SellerApplication a where a.id=:id")
     Optional<SellerApplication> lockById(@org.springframework.data.repository.query.Param("id") Long id);
 
-    Optional<SellerApplication> findTopByUserIdOrderByCreatedAtDesc(Long userId);
+    Optional<SellerApplication> findTopByUserIdOrderByCreatedAtDescIdDesc(Long userId);
 
     Page<SellerApplication> findByStatus(Status status, Pageable pageable);
 }

@@ -88,7 +88,12 @@ public class MeService {
 
     /** 提交卖家申请：已有待审核申请时拒绝重复提交。 */
     public SellerApplicationView applySeller(Long userId, SellerApplicationRequest request) {
-        sellerApplicationRepository.findTopByUserIdOrderByCreatedAtDesc(userId)
+        sellerApplicationRepository.findTopByUserIdOrderByCreatedAtDescIdDesc(userId)
+                .filter(latest -> latest.getStatus() == Status.APPROVED)
+                .ifPresent(latest -> {
+                    throw BizException.conflict("SELLER_ALREADY_APPROVED", "你已通过卖家审核，无需重复申请，可直接进入卖家工作台");
+                });
+        sellerApplicationRepository.findTopByUserIdOrderByCreatedAtDescIdDesc(userId)
                 .filter(latest -> latest.getStatus() == Status.PENDING)
                 .ifPresent(latest -> {
                     throw BizException.conflict("APPLICATION_PENDING", "已有待审核的卖家申请，请耐心等待审核");
@@ -107,7 +112,7 @@ public class MeService {
     /** 最新一条卖家申请；从未申请时返回 NONE 占位视图。 */
     @Transactional(readOnly = true)
     public SellerApplicationView latestApplication(Long userId) {
-        return sellerApplicationRepository.findTopByUserIdOrderByCreatedAtDesc(userId)
+        return sellerApplicationRepository.findTopByUserIdOrderByCreatedAtDescIdDesc(userId)
                 .map(MeService::toView)
                 .orElse(new SellerApplicationView(null, "NONE", null, null, null, null));
     }

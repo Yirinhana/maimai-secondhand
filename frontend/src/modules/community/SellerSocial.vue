@@ -8,7 +8,7 @@ import type { CommunityPage, Rating } from './types';
 import MmButton from '../../shared/components/MmButton.vue';
 import MmPagination from '../../shared/components/MmPagination.vue';
 import ReportButton from './ReportButton.vue';
-const props = defineProps<{ sellerId: number }>(),
+const props = defineProps<{ sellerId: number; canFollow: boolean }>(),
   auth = useAuthStore(),
   ratings = ref<Rating[]>([]),
   page = ref(0),
@@ -42,7 +42,10 @@ onMounted(load);
 </script>
 <template>
   <section class="mm-panel seller-reviews">
-    <MmButton v-if="sellerId !== auth.me?.id" :disabled="busy" @click="follow"
+    <MmButton
+      v-if="canFollow && sellerId !== auth.me?.id"
+      :disabled="busy"
+      @click="follow"
       >关注卖家</MmButton
     >
     <p v-if="feedback" class="mm-muted" role="status">{{ feedback }}</p>

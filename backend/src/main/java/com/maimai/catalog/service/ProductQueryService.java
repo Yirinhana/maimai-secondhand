@@ -136,7 +136,8 @@ public class ProductQueryService {
                 cb.equal(root.get("sellerId"), sellerId),
                 cb.equal(root.get("status"), Product.Status.ON_SALE));
         long onSaleCount = productRepository.count(onSale);
-        return new SellerProfile(seller.getId(), seller.getNickname(), seller.getCreatedAt(), onSaleCount, avatar(sellerId));
+        boolean approved=seller.getStatus()==User.Status.ACTIVE && jdbc.query("SELECT status='APPROVED' FROM seller_applications WHERE user_id=? ORDER BY created_at DESC,id DESC LIMIT 1",(rs,n)->rs.getBoolean(1),sellerId).stream().findFirst().orElse(false);
+        return new SellerProfile(seller.getId(), seller.getNickname(), seller.getCreatedAt(), onSaleCount, avatar(sellerId),approved);
     }
 
     private String avatar(long userId) {

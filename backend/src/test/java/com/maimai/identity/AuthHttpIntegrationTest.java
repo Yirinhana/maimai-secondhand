@@ -221,6 +221,58 @@ class AuthHttpIntegrationTest {
         }
     }
 
+    @Test void registeredUserCanApplyBecomeSellerAndBeFollowedWithoutPaymentQualification() throws Exception {
+        var json=new tools.jackson.databind.json.JsonMapper();
+        String sellerEmail="seller-flow-"+UUID.randomUUID()+"@example.invalid";
+        long sellerId=0;
+        db.update("INSERT INTO user_roles(user_id,role) VALUES(?,'SUPER_ADMIN')",userId);
+        Browser admin=new Browser(),seller=new Browser();admin.login("TestAuth#123");
+        seller.call("GET","/auth/csrf",null,null);
+        db.update("INSERT INTO email_verifications(email,purpose,code_hash,expires_at,last_sent_at) VALUES(?,'REGISTER',?,DATE_ADD(NOW(),INTERVAL 10 MINUTE),NOW())",sellerEmail,EmailCodeVerifier.hash("123456"));
+        try {
+            String registration=json.writeValueAsString(Map.of("email",sellerEmail,"password","Natural#1234","nickname","正常入驻测试卖家","code","123456","acceptedTerms",true,"policyVersion",com.maimai.identity.service.PolicyConsentService.CURRENT_VERSION));
+            var created=seller.call("POST","/auth/register",registration,seller.csrf());
+            assertThat(created.statusCode()).withFailMessage(created.body()).isEqualTo(200);
+            sellerId=json.readTree(created.body()).path("id").asLong();
+            assertThat(sellerId).isPositive();
+            assertThat(json.readTree(admin.call("GET","/sellers/"+sellerId,null,null).body()).path("sellerApproved").asBoolean()).isFalse();
+            var applied=seller.call("POST","/me/seller-application","{\"intro\":\"数码与家居闲置，支持快递与面交\"}",seller.csrf());
+            assertThat(applied.statusCode()).withFailMessage(applied.body()).isEqualTo(200);
+            long applicationId=json.readTree(applied.body()).path("id").asLong();
+            assertThat(admin.call("POST","/community/follows/"+sellerId,"{}",admin.csrf()).statusCode()).isEqualTo(403);
+            var reviewed=admin.call("POST","/admin/seller-applications/"+applicationId+"/review","{\"action\":\"APPROVE\",\"reason\":\"平台卖家资料审核通过，收款渠道另行核实\",\"channelQualified\":false}",admin.csrf());
+            assertThat(reviewed.statusCode()).withFailMessage(reviewed.body()).isEqualTo(200);
+            assertThat(json.readTree(reviewed.body()).path("channelStatus").asString()).isEqualTo("PENDING");
+            var me=json.readTree(seller.call("GET","/auth/me",null,null).body());
+            assertThat(me.path("sellerStatus").asString()).isEqualTo("APPROVED");
+            assertThat(me.path("roles").toString()).contains("SELLER");
+            assertThat(json.readTree(admin.call("GET","/sellers/"+sellerId,null,null).body()).path("sellerApproved").asBoolean()).isTrue();
+            assertThat(admin.call("POST","/community/follows/"+sellerId,"{}",admin.csrf()).statusCode()).isEqualTo(201);
+            assertThat(seller.call("GET","/seller/products",null,null).statusCode()).isEqualTo(200);
+            var repeated=seller.call("POST","/me/seller-application","{\"intro\":\"重复申请\"}",seller.csrf());
+            assertThat(repeated.statusCode()).isEqualTo(409);
+            assertThat(repeated.body()).contains("SELLER_ALREADY_APPROVED");
+            assertThat(db.queryForObject("SELECT COUNT(*) FROM seller_applications WHERE user_id=?",Long.class,sellerId)).isEqualTo(1);
+            db.update("INSERT INTO seller_applications(user_id,status,channel_status,created_at) SELECT user_id,'SUSPENDED','PENDING',created_at FROM seller_applications WHERE id=?",applicationId);
+            assertThat(json.readTree(seller.call("GET","/auth/me",null,null).body()).path("sellerStatus").asString()).isEqualTo("SUSPENDED");
+            assertThat(json.readTree(admin.call("GET","/sellers/"+sellerId,null,null).body()).path("sellerApproved").asBoolean()).isFalse();
+            // Suspended sellers retain read access to their own inventory and historical orders.
+            assertThat(seller.call("GET","/seller/products",null,null).statusCode()).isEqualTo(200);
+            assertThat(admin.call("POST","/community/follows/"+sellerId,"{}",admin.csrf()).statusCode()).isEqualTo(403);
+        } finally {
+            db.update("DELETE FROM SPRING_SESSION WHERE PRINCIPAL_NAME=?",sellerEmail);
+            db.update("DELETE FROM email_verifications WHERE email=?",sellerEmail);
+            if(sellerId>0) {
+                db.update("DELETE FROM community_seller_follows WHERE seller_id=?",sellerId);
+                db.update("DELETE FROM notifications WHERE user_id=?",sellerId);
+                db.update("DELETE FROM seller_applications WHERE user_id=?",sellerId);
+                db.update("DELETE FROM user_policy_acceptances WHERE user_id=?",sellerId);
+                db.update("DELETE FROM user_roles WHERE user_id=?",sellerId);
+                db.update("DELETE FROM users WHERE id=?",sellerId);
+            }
+        }
+    }
+
     void insertCode(String code) {
         db.update("INSERT INTO email_verifications(email,purpose,code_hash,expires_at,last_sent_at) VALUES(?,'RESET',?,DATE_ADD(NOW(), INTERVAL 10 MINUTE),NOW())", email, EmailCodeVerifier.hash(code));
     }

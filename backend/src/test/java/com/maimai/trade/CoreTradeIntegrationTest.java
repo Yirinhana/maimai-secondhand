@@ -35,6 +35,7 @@ class CoreTradeIntegrationTest {
     @Autowired com.maimai.payment.service.ExperiencePaymentService experiencePayments;
     @Autowired RefundService refunds;
     @Autowired DeliveryCodeService delivery;
+    @Autowired FulfillmentService fulfillment;
     @Autowired TradeOrderOps orders;
     @Autowired OrderRepository orderRepository;
     @Autowired OrderMaintenanceService maintenance;
@@ -91,6 +92,19 @@ class CoreTradeIntegrationTest {
             db.update("DELETE FROM notifications WHERE user_id=?",id);
             db.update("DELETE FROM users WHERE id=?",id);
         }
+    }
+
+    @Test void historicalExperienceShipmentReturnsStoredVirtualTraceWithoutProviderLookup() {
+        var order=create("EXPRESS");
+        db.update("UPDATE orders SET experience_source='maimai-experience-045',fulfillment_status='COMPLETED',pay_status='PAID' WHERE id=?",order.id());
+        db.update("INSERT INTO shipments(order_id,carrier,tracking_no,status,traces,last_trace_at) VALUES(?,'shunfeng','MXEXP04700001','DELIVERED','服务站已收寄\n收件人已确认签收',NOW())",order.id());
+        var shipment=as(buyer,()->fulfillment.shipment(buyer,order.orderNo()));
+        assertThat(shipment.status()).isEqualTo("DELIVERED");
+        assertThat(shipment.queryErrorCode()).isEqualTo("EXPERIENCE_NO_TRACKING");
+        assertThat(shipment.lastQueryAttemptAt()).isNull();
+        assertThat(shipment.traces()).contains("服务站已收寄","收件人已确认签收");
+        assertThat(shipment.lastTraceAt()).isNotNull();
+        assertThatThrownBy(()->as(otherBuyer,()->fulfillment.shipment(otherBuyer,order.orderNo()))).isInstanceOf(BizException.class);
     }
 
     @Test void sameCheckoutKeyNeverReturnsEmptyBatchAndFailedCheckoutRollsBackBatch() throws Exception {

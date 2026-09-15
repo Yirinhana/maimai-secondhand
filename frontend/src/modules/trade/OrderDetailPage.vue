@@ -383,6 +383,13 @@
               <h2>交付信息</h2>
               <span>{{ DELIVERY_METHOD_TEXT[order.deliveryMethod] }}</span>
             </div>
+            <p
+              v-if="order.experienceSource === 'maimai-experience-045'"
+              class="mm-order-detail__virtual-note"
+            >
+              体验交付资料 ·
+              收件信息、交接地点与物流记录为虚拟资料，请勿实际寄送或拨打。
+            </p>
             <template v-if="order.deliveryMethod === 'EXPRESS'"
               ><p class="mm-order-detail__receiver">
                 <strong>{{ order.receiver }}</strong
@@ -731,6 +738,19 @@ async function load() {
     if (sequence !== loadSequence || String(route.params.orderNo) !== orderNo)
       return;
     order.value = result;
+    if (
+      result.experienceSource === 'maimai-experience-045' &&
+      result.deliveryMethod === 'EXPRESS'
+    ) {
+      try {
+        const stored = await get<Shipment>(endpoint() + '/shipment');
+        if (sequence === loadSequence) shipment.value = stored;
+      } catch {
+        /* A missing historical record remains visible as an empty delivery section. */
+      }
+    }
+    if (sequence !== loadSequence || String(route.params.orderNo) !== orderNo)
+      return;
     if (!showAftersale.value) {
       aftersale.value.goods = (result.goodsAmountCents / 100).toFixed(2);
       aftersale.value.freight = '0';
@@ -947,6 +967,16 @@ watch(
 </script>
 
 <style scoped>
+.mm-order-detail__virtual-note {
+  background: var(--mm-canvas);
+  border-left: 3px solid var(--mm-primary);
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin-bottom: 18px;
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--mm-muted);
+}
 .mm-order-detail {
   max-width: 1160px;
   padding: 32px 24px 56px;

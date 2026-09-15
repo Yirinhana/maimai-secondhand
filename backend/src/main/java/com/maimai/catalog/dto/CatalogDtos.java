@@ -65,7 +65,7 @@ public final class CatalogDtos {
                                 String experienceSource, String supplyNote) {
     }
 
-    public record SellerProfile(long id, String nickname, Instant joinedAt, long onSaleCount, String avatarUrl) {
+    public record SellerProfile(long id, String nickname, Instant joinedAt, long onSaleCount, String avatarUrl, boolean sellerApproved) {
     }
 
     public record SellerProductDetail(long id, long categoryId, String title, String description,

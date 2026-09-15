@@ -181,6 +181,7 @@ export interface SellerProfile {
   nickname: string
   joinedAt: string
   onSaleCount: number
+  sellerApproved: boolean
 }
 
 /** GET /seller/products 列表项：含全部状态与审核原因 */

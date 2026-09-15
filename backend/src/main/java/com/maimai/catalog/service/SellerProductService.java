@@ -293,7 +293,7 @@ public class SellerProductService {
     /** 卖家准入：最新申请须 APPROVED。 */
     private SellerApplication requireApprovedSeller(Long userId) {
         SellerApplication application = sellerApplicationRepository
-                .findTopByUserIdOrderByCreatedAtDesc(userId)
+                .findTopByUserIdOrderByCreatedAtDescIdDesc(userId)
                 .orElseThrow(() -> BizException.forbidden("需先完成卖家准入审核"));
         if (application.getStatus() != SellerApplication.Status.APPROVED) {
             throw BizException.forbidden("需先完成卖家准入审核");

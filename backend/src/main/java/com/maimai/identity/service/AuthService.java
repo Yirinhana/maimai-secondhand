@@ -212,7 +212,7 @@ public class AuthService {
     }
 
     private String sellerStatusOf(Long userId) {
-        return sellerApplicationRepository.findTopByUserIdOrderByCreatedAtDesc(userId)
+        return sellerApplicationRepository.findTopByUserIdOrderByCreatedAtDescIdDesc(userId)
                 .map(application -> application.getStatus().name())
                 .orElse("NONE");
     }

@@ -54,9 +54,9 @@ public class CollectionService {
         if (repo.count("SELECT COUNT(*) FROM users WHERE id = ? AND status = 'ACTIVE'", seller) == 0) throw BizException.notFound("目标用户不存在");
         // Match SellerApplication enums and only the latest application; a former approval cannot bypass suspension.
         Boolean qualified = repo.queryOne("""
-                SELECT status = 'APPROVED' AND channel_status = 'QUALIFIED'
-                FROM seller_applications WHERE user_id = ? ORDER BY id DESC LIMIT 1""", (rs, n) -> rs.getBoolean(1), seller);
-        if (!Boolean.TRUE.equals(qualified)) throw BizException.forbidden("目标用户最新卖家资格尚未通过");
+                SELECT status = 'APPROVED'
+                FROM seller_applications WHERE user_id = ? ORDER BY created_at DESC,id DESC LIMIT 1""", (rs, n) -> rs.getBoolean(1), seller);
+        if (!Boolean.TRUE.equals(qualified)) throw BizException.forbidden("该用户尚未通过卖家审核或卖家权限已暂停，暂不能关注为卖家");
         repo.update("INSERT INTO community_seller_follows(follower_id, seller_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE follower_id = VALUES(follower_id)", user, seller);
     }
 
