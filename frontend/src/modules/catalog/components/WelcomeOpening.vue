@@ -94,7 +94,7 @@ defineEmits<{ enter: [event: MouseEvent, skip?: boolean] }>();
   font-size: 12px;
   letter-spacing: 0.35em;
   margin-bottom: 27px;
-  animation: welcome-detail 2.4s ease 1.4s both;
+  animation: welcome-detail 1.2s ease 0.7s both;
 }
 .welcome-opening h1 {
   position: relative;
@@ -107,7 +107,7 @@ defineEmits<{ enter: [event: MouseEvent, skip?: boolean] }>();
   white-space: nowrap;
   margin: 0;
   transform-origin: 50% 54%;
-  animation: welcome-arrival 5.2s cubic-bezier(0.16, 0.55, 0.2, 1) 0.2s both;
+  animation: welcome-arrival 2.6s cubic-bezier(0.16, 0.55, 0.2, 1) 0.1s both;
 }
 .welcome-opening h1 > span {
   position: absolute;
@@ -115,14 +115,14 @@ defineEmits<{ enter: [event: MouseEvent, skip?: boolean] }>();
   bottom: 0.02em;
   font-size: 0.36em;
   color: #b94e18;
-  animation: welcome-detail 2s ease 3s both;
+  animation: welcome-detail 1s ease 1.5s both;
 }
 .welcome-opening__line {
   font-size: clamp(18px, 2.6vw, 34px);
   letter-spacing: 0.12em;
   line-height: 1.8;
   margin: 32px 20px 0;
-  animation: welcome-detail 2.4s ease 2.7s both;
+  animation: welcome-detail 1.2s ease 1.35s both;
 }
 .welcome-opening__line span {
   color: #9a451d;
