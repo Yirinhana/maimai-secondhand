@@ -1,5 +1,7 @@
 # 腾讯云体验版部署
 
+2026-09-16 已按用户本轮授权发布 v0.13.0：四幕品牌欢迎页、2.7秒渐变、可拖动贴边的麦仔客服及新网站人设。发布前225项后端测试通过；线上119项静态资源与候选包哈希一致，并完成一次正常账号真实AI问答。备份和具体验证边界见 [v0.13.0发布记录](../docs/testing/maizai-edge-release-v0130.md)。
+
 网站缇娜与邮件接入的候选变更见 [039验证记录](../docs/testing/tina-support.md) 和 [人设/接口设计](../docs/design/tina-support.md)。QQ/Foxmail采用 `smtp.qq.com:465`、隐式TLS；发件地址和用户名使用专用邮箱，密码填SMTP授权码。只把已授权的邮件字段合并入 `/etc/maimai/maimai.env` 并保持0600，先备份原配置，保留数据库、地图及其他既有字段；不整份覆盖成示例，不把授权码放进命令行或Git。本地仍默认捕获邮件，避免开发测试触发外发。
 
 目标环境为 Ubuntu 24.04、Nginx、Java 21 和独立 MySQL 8。域名为 `https://market.example.com`；根域重定向到 www。部署需要用户授权，执行前核对目标主机指纹、现有服务与端口；本轮授权和实际结果见 `docs/tasks/038-tencent-preview-deploy.md` 及 `docs/testing/tencent-preview.md`。

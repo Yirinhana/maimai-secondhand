@@ -34,7 +34,8 @@
   white-space: nowrap;
   margin: 0;
   transform-origin: 50% 54%;
-  animation: welcome-arrival 2.6s cubic-bezier(0.16, 0.55, 0.2, 1) 0.1s both;
+  animation: welcome-arrival calc(var(--welcome-scene-duration, 2700ms) - 100ms)
+    cubic-bezier(0.16, 0.55, 0.2, 1) 100ms both;
 }
 .welcome-opening h1 > span {
   position: absolute;

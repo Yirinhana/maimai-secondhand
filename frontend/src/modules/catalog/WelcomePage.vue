@@ -10,6 +10,7 @@ import type { Page, ProductSummary } from '../../shared/types';
 import { rememberWelcome } from './welcomeSession';
 import { useMascotMotion } from '../../shared/useMascotMotion';
 import { useWelcomeGestures } from './useWelcomeGestures';
+import { WELCOME_SCENE_MS } from './welcomeTiming';
 
 const router = useRouter();
 const root = ref<HTMLElement | null>(null);
@@ -72,7 +73,10 @@ async function go(index: number) {
   sceneRoot.value?.scrollTo({ top: 0 });
   // Also unlock when motion is disabled mid-transition or the tab becomes hidden.
   if (transitioning.value)
-    transitionTimer = setTimeout(sceneEntered, animated.value ? 1500 : 0);
+    transitionTimer = setTimeout(
+      sceneEntered,
+      animated.value ? WELCOME_SCENE_MS + 100 : 0,
+    );
 }
 function sceneEntered() {
   if (transitionTimer) clearTimeout(transitionTimer);
@@ -128,6 +132,7 @@ onUnmounted(() => {
     id="main-content"
     ref="root"
     class="welcome-page"
+    :style="{ '--welcome-scene-duration': WELCOME_SCENE_MS + 'ms' }"
     :class="{ 'is-leaving': leaving, 'is-still': !animated }"
     @pointermove="point"
     @pointerdown="point"
@@ -467,16 +472,19 @@ onUnmounted(() => {
 }
 .scene-dissolve-enter-active {
   transition:
-    opacity 1100ms 220ms ease,
-    transform 1400ms cubic-bezier(0.16, 0.65, 0.2, 1),
-    filter 1100ms 180ms ease;
+    opacity calc(var(--welcome-scene-duration) * 0.82)
+      calc(var(--welcome-scene-duration) * 0.12) ease,
+    transform var(--welcome-scene-duration) cubic-bezier(0.16, 0.65, 0.2, 1),
+    filter calc(var(--welcome-scene-duration) * 0.82)
+      calc(var(--welcome-scene-duration) * 0.12) ease;
 }
 .scene-dissolve-leave-active {
   pointer-events: none;
   transition:
-    opacity 1000ms ease,
-    transform 1250ms cubic-bezier(0.3, 0, 0.2, 1),
-    filter 1000ms ease;
+    opacity calc(var(--welcome-scene-duration) * 0.72) ease,
+    transform calc(var(--welcome-scene-duration) * 0.9)
+      cubic-bezier(0.3, 0, 0.2, 1),
+    filter calc(var(--welcome-scene-duration) * 0.72) ease;
 }
 .scene-dissolve-enter-from {
   opacity: 0;

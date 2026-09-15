@@ -6,6 +6,7 @@ import { useTinaChat } from './useTinaChat';
 import { plainReply } from './plainText';
 import MaizaiMascot from '../../shared/components/MaizaiMascot.vue';
 import { useMascotMotion } from '../../shared/useMascotMotion';
+import { useEdgeDock } from './useEdgeDock';
 const route = useRoute();
 const {
   auth,
@@ -33,6 +34,14 @@ const { animated, greeting, point, reset, greet } = useMascotMotion(
   launcher,
   launcher,
 );
+const dock = useEdgeDock(launcher);
+function moveLauncher(event: PointerEvent) {
+  dock.move(event);
+  if (!dock.dragging.value) point(event);
+}
+function openLauncher(event: MouseEvent) {
+  if (dock.click(event)) void open();
+}
 let previousFocus: HTMLElement | null = null;
 async function open() {
   previousFocus = document.activeElement as HTMLElement | null;
@@ -114,12 +123,21 @@ onBeforeUnmount(() => dialog.value?.close());
     ref="launcher"
     type="button"
     class="tina-launcher"
+    :class="{ 'is-dragging': dock.dragging.value }"
+    :style="dock.style.value"
     aria-label="打开麦仔客服"
+    aria-describedby="maizai-position-help"
+    title="拖动麦仔，调整位置"
     aria-haspopup="dialog"
     :aria-expanded="opened"
     aria-controls="tina-dialog"
-    @click="open"
-    @pointermove="point"
+    @click="openLauncher"
+    @pointerdown="dock.down"
+    @pointermove="moveLauncher"
+    @pointerup="dock.up"
+    @pointercancel="dock.cancel"
+    @lostpointercapture="dock.cancel"
+    @keydown="dock.keyboard"
     @pointerenter="greet"
     @pointerleave="reset"
     @focus="greet"
@@ -132,10 +150,14 @@ onBeforeUnmount(() => dialog.value?.close());
     <span class="tina-launcher__label">麦仔客服</span
     ><span v-if="unread" class="tina-unread" aria-label="有新回复"></span>
   </button>
+  <span id="maizai-position-help" class="mm-visually-hidden"
+    >拖动可沿屏幕左右边缘移动。键盘方向键调整位置，Home恢复右下角，回车打开客服。</span
+  >
   <dialog
     id="tina-dialog"
     ref="dialog"
     class="tina-dialog"
+    :class="{ 'tina-dialog--left': dock.position.value.edge === 'left' }"
     aria-labelledby="tina-heading"
     @cancel.prevent="close"
     @click="$event.target === dialog && close()"
@@ -336,6 +358,10 @@ onBeforeUnmount(() => dialog.value?.close());
 
 <style scoped>
 .tina-launcher {
+  --dock-safe-top: env(safe-area-inset-top, 0px);
+  --dock-safe-right: env(safe-area-inset-right, 0px);
+  --dock-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --dock-safe-left: env(safe-area-inset-left, 0px);
   position: fixed;
   right: max(18px, calc((100vw - 1380px) / 2));
   bottom: max(18px, env(safe-area-inset-bottom));
@@ -349,11 +375,17 @@ onBeforeUnmount(() => dialog.value?.close());
   border-radius: 20px;
   background: transparent;
   color: #393c32;
-  cursor: pointer;
-  transition: transform 250ms ease;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
-.tina-launcher:hover {
-  transform: translateY(-2px);
+.tina-launcher.is-dragging {
+  cursor: grabbing;
+}
+.tina-launcher.is-dragging :deep(*) {
+  animation: none !important;
+  transition: none !important;
 }
 .tina-launcher .tina-launcher__mascot {
   width: 72px;
@@ -407,6 +439,10 @@ onBeforeUnmount(() => dialog.value?.close());
 }
 .tina-dialog[open] {
   animation: tina-open 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.tina-dialog--left {
+  left: max(18px, env(safe-area-inset-left));
+  right: auto;
 }
 @keyframes tina-open {
   from {
