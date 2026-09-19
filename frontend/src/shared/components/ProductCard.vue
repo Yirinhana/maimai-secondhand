@@ -5,16 +5,15 @@
         v-if="product.coverImage"
         :src="product.coverImage"
         :alt="product.title"
-        loading="lazy"
+        :loading="priority ? 'eager' : 'lazy'"
+        :priority="priority"
       />
       <span v-else class="mm-product-card__no-cover">暂无图片</span>
       <span class="mm-product-card__condition">{{
         CONDITION_TEXT[product.condition]
       }}</span>
       <span
-        v-if="
-          product.stockAvailable <= 0
-        "
+        v-if="product.stockAvailable <= 0"
         class="mm-product-card__soldout"
         >暂时无货</span
       >
@@ -68,10 +67,15 @@ import {
   type ProductSummary,
 } from '../types';
 
-const props = defineProps<{ product: ProductSummary }>();
+const props = defineProps<{
+  product: ProductSummary;
+  priority?: boolean;
+}>();
 
 const deliveryText = computed(() =>
-  props.product.deliveryMethods.map((m) => DELIVERY_METHOD_TEXT[m]).join('/'),
+  props.product.deliveryMethods
+    .map((m) => DELIVERY_METHOD_TEXT[m])
+    .join('/'),
 );
 </script>
 

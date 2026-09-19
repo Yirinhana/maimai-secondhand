@@ -1,5 +1,7 @@
 # 本地网站端到端验收
 
+v0.14.0 使用体验回归：在 `tests/e2e` 运行 `npx playwright test --config=playwright.057.config.cjs`。只连接 `127.0.0.1:5173`，覆盖搜索、列表恢复、请求竞态、私信、图片手势、结算响应丢失、导航错误及三类角色窄屏布局。复用种子账号测试会话以遵守登录限流；不要与大量登录的其他套件同时执行。受控网络响应和真实本地业务分别记录，报告及截图保存在 `.local/screenshots/057/`。
+
 缇娜组件专项：`node tests/e2e/node_modules/@playwright/test/cli.js test --config tests/e2e/playwright.039.config.cjs`（在项目根目录运行）。使用真实本地未接入AI的API检查权限和错误；两项明确标注controlled UI的用例使用浏览器受控回复，验证交互与退出隔离，不请求真实Hermes或发送邮件。
 
 依赖项目独立运行的前端 `127.0.0.1:5173`、后端 `8081` 及专用本地种子账号。必须使用隔离本地环境：付款走 MOCK，邮件走捕获邮箱，物流不调用真实服务。真实高德检索只搜索公开上海地点，不请求设备定位。

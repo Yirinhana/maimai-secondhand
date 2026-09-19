@@ -5,7 +5,9 @@
       type="button"
       aria-label="放大查看商品图片"
       :disabled="!currentImage"
-      @click="viewerOpen = true"
+      @click="openViewer"
+      @touchstart.passive="touchStart"
+      @touchend.passive="touchEnd"
     >
       <ItemImage
         v-if="currentImage"
@@ -13,9 +15,13 @@
         :alt="`${title} 图片 ${currentIndex + 1}`"
         size="detail"
         loading="eager"
+        priority
       />
       <span v-else>暂无图片</span>
-      <span v-if="currentImage" class="product-gallery__zoom" aria-hidden="true"
+      <span
+        v-if="currentImage"
+        class="product-gallery__zoom"
+        aria-hidden="true"
         ><svg
           viewBox="0 0 24 24"
           width="16"
@@ -76,7 +82,11 @@
       @keydown.left.prevent="move(-1)"
       @keydown.right.prevent="move(1)"
     >
-      <div class="product-gallery__viewer">
+      <div
+        class="product-gallery__viewer"
+        @touchstart.passive="touchStart"
+        @touchend.passive="touchEnd"
+      >
         <ItemImage
           v-if="currentImage && viewerOpen"
           :src="currentImage.path"
@@ -95,7 +105,8 @@
           </button>
           <p role="status">
             {{
-              demoImageView(currentImage?.path) || `第 ${currentIndex + 1} 张`
+              demoImageView(currentImage?.path) ||
+              `第 ${currentIndex + 1} 张`
             }}
             · 共 {{ images.length }} 张
           </p>
@@ -109,7 +120,8 @@
           </button>
         </div>
         <p class="product-gallery__tip">
-          {{ images.length > 1 ? '可用左右方向键切换，' : '' }}按 Esc 关闭大图。
+          {{ images.length > 1 ? '左右滑动或使用方向键切换；' : '' }}按 Esc
+          或关闭按钮退出。
         </p>
       </div>
     </CatalogDialog>
@@ -118,14 +130,41 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { isDemoProductImage, demoImageView } from '../../../shared/demoImages';
+import {
+  isDemoProductImage,
+  demoImageView,
+} from '../../../shared/demoImages';
 import ItemImage from '../../../shared/components/ItemImage.vue';
 import type { ProductImage } from '../../../shared/types';
 import CatalogDialog from './CatalogDialog.vue';
 const props = defineProps<{ images: ProductImage[]; title: string }>();
 const currentIndex = ref(0);
 const viewerOpen = ref(false);
-const currentImage = computed(() => props.images[currentIndex.value] ?? null);
+let touchOrigin: { x: number; y: number } | null = null;
+let swipedAt = 0;
+function touchStart(event: TouchEvent) {
+  touchOrigin =
+    event.touches.length === 1
+      ? { x: event.touches[0]!.clientX, y: event.touches[0]!.clientY }
+      : null;
+}
+function touchEnd(event: TouchEvent) {
+  const touch = event.changedTouches[0];
+  if (!touchOrigin || !touch) return;
+  const x = touch.clientX - touchOrigin.x,
+    y = touch.clientY - touchOrigin.y;
+  touchOrigin = null;
+  if (Math.abs(x) > 45 && Math.abs(x) > Math.abs(y) * 1.4) {
+    move(x < 0 ? 1 : -1);
+    swipedAt = Date.now();
+  }
+}
+function openViewer() {
+  if (Date.now() - swipedAt > 450) viewerOpen.value = true;
+}
+const currentImage = computed(
+  () => props.images[currentIndex.value] ?? null,
+);
 function move(direction: number) {
   if (props.images.length)
     currentIndex.value =

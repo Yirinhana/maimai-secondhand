@@ -8,9 +8,25 @@
           逛逛新上架的闲置，找到适合你的下一件好物。
         </p>
       </div>
-      <RouterLink to="/welcome"
-        >重看品牌开场 <MmIcon name="arrow"
-      /></RouterLink>
+      <div class="mm-home__welcome-side">
+        <div
+          v-if="products.length"
+          class="mm-home__peek"
+          aria-hidden="true"
+        >
+          <ItemImage
+            v-for="item in products.slice(0, 3)"
+            :key="item.id"
+            :src="item.coverImage"
+            alt=""
+            size="thumb"
+            loading="eager"
+          />
+        </div>
+        <RouterLink to="/welcome"
+          >认识麦麦与麦仔 <MmIcon name="arrow"
+        /></RouterLink>
+      </div>
     </section>
     <div id="home-market" class="mm-home__market" tabindex="-1">
       <section
@@ -19,7 +35,9 @@
       >
         <div class="mm-home__section-head">
           <h2 id="mm-home-categories">按分类找一找</h2>
-          <RouterLink to="/search">全部分类 <MmIcon name="arrow" /></RouterLink>
+          <RouterLink to="/search"
+            >全部分类 <MmIcon name="arrow"
+          /></RouterLink>
         </div>
         <div v-if="categoryError" class="mm-home__retry" role="alert">
           <span>{{ categoryError }}</span
@@ -39,7 +57,9 @@
         </ul>
         <p v-else class="mm-muted">
           {{
-            categoriesLoading ? '分类加载中…' : '暂无分类，可直接浏览全部闲置'
+            categoriesLoading
+              ? '分类加载中…'
+              : '暂无分类，可直接浏览全部闲置'
           }}
         </p>
       </section>
@@ -50,7 +70,8 @@
             <h2 id="mm-home-latest">最新上架</h2>
           </div>
           <RouterLink to="/search"
-            >查看全部{{ total ? ` ${total} 件` : '' }} <MmIcon name="arrow"
+            >查看全部{{ total ? ` ${total} 件` : '' }}
+            <MmIcon name="arrow"
           /></RouterLink>
         </div>
         <div v-if="productError" class="mm-home__retry" role="alert">
@@ -66,8 +87,8 @@
           description="从发布第一件闲置开始，让好物继续流转"
         />
         <ul v-else class="mm-home__grid">
-          <li v-for="product in products" :key="product.id">
-            <ProductCard :product="product" />
+          <li v-for="(product, index) in products" :key="product.id">
+            <ProductCard :product="product" :priority="index < 4" />
           </li>
         </ul>
       </section>
@@ -79,6 +100,7 @@ import { onMounted, ref } from 'vue';
 import { get, type ApiError } from '../../shared/api';
 import type { Category, Page, ProductSummary } from '../../shared/types';
 import ProductCard from '../../shared/components/ProductCard.vue';
+import ItemImage from '../../shared/components/ItemImage.vue';
 import EmptyState from '../../shared/components/EmptyState.vue';
 import MmIcon from '../../shared/components/MmIcon.vue';
 import MmButton from '../../shared/components/MmButton.vue';
@@ -150,8 +172,12 @@ onMounted(async () => {
   align-items: flex-end;
   justify-content: space-between;
   gap: 24px;
-  padding: 50px 0 34px;
-  border-bottom: 1px solid var(--mm-border);
+  padding: 34px 36px;
+  margin-top: 28px;
+  border: 1px solid #e8dfd1;
+  border-radius: 20px;
+  background: #f0ebe1;
+  align-items: center;
 }
 .mm-home__welcome h1 {
   font-size: clamp(28px, 3.5vw, 42px);
@@ -164,7 +190,7 @@ onMounted(async () => {
   font-size: 14px;
   margin-top: 12px;
 }
-.mm-home__welcome > a {
+.mm-home__welcome-side > a {
   display: inline-flex;
   align-items: center;
   gap: 16px;
@@ -172,6 +198,32 @@ onMounted(async () => {
   color: var(--mm-muted);
   font-size: 12px;
   white-space: nowrap;
+}
+.mm-home__welcome-side {
+  display: grid;
+  justify-items: end;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.mm-home__peek {
+  display: flex;
+  padding: 10px 6px;
+}
+.mm-home__peek img {
+  width: 82px;
+  height: 98px;
+  border: 5px solid white;
+  border-radius: 10px;
+  object-fit: cover;
+  box-shadow: 0 5px 16px #4e3b2320;
+  transform: rotate(-8deg);
+}
+.mm-home__peek img + img {
+  margin-left: -15px;
+  transform: rotate(5deg) translateY(5px);
+}
+.mm-home__peek img:last-child {
+  transform: rotate(13deg);
 }
 .mm-home__welcome .mm-icon {
   width: 17px;
@@ -261,7 +313,7 @@ onMounted(async () => {
 }
 .mm-home__grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 28px 22px;
 }
 .mm-home__grid > li {
@@ -281,10 +333,26 @@ onMounted(async () => {
     padding-top: 0;
   }
   .mm-home__welcome {
-    padding: 26px 0 22px;
+    padding: 24px 20px;
+    margin-top: 18px;
     align-items: flex-start;
     flex-direction: column;
     gap: 10px;
+  }
+  .mm-home__welcome-side {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .mm-home__peek img {
+    width: 43px;
+    height: 52px;
+    border-width: 3px;
+  }
+  .mm-home__welcome h1 {
+    font-size: clamp(24px, 6.3vw, 34px);
   }
   .mm-home__welcome-copy {
     font-size: 12px;

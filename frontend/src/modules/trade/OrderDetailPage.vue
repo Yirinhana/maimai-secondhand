@@ -5,11 +5,11 @@
         <RouterLink
           v-if="detailSection"
           :to="
-            detailSection === 'seller'
+            previousListPath(detailSection === 'seller'
               ? '/seller/orders'
               : detailSection === 'admin'
                 ? '/admin'
-                : '/orders'
+                : '/orders')
           "
           class="mm-order-detail__back"
           >←
@@ -622,6 +622,7 @@ import MmButton from '../../shared/components/MmButton.vue';
 import PriceText from '../../shared/components/PriceText.vue';
 import MmSkeleton from '../../shared/components/MmSkeleton.vue';
 import OrderRating from '../community/OrderRating.vue';
+import { previousListPath } from '../../shared/previousListPath';
 const route = useRoute(),
   router = useRouter(),
   auth = useAuthStore();

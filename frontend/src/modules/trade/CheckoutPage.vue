@@ -5,7 +5,9 @@
         <p class="mm-checkout__eyebrow">最后核对一下，让交付更顺利</p>
         <h1 class="mm-checkout__heading">确认订单</h1>
       </div>
-      <RouterLink to="/cart" class="mm-checkout__back">← 返回购物车</RouterLink>
+      <RouterLink to="/cart" class="mm-checkout__back"
+        >← 返回购物车</RouterLink
+      >
     </header>
     <ol class="mm-checkout__steps" aria-label="购买流程">
       <li>选择商品</li>
@@ -18,7 +20,11 @@
       :count="1"
       label="正在核对结算信息"
     />
-    <div v-else-if="loadError" class="mm-checkout__load-error" role="alert">
+    <div
+      v-else-if="loadError"
+      class="mm-checkout__load-error"
+      role="alert"
+    >
       <h2>结算信息暂未准备好</h2>
       <p>{{ loadError }}</p>
       <div>
@@ -28,6 +34,7 @@
     </div>
     <form
       v-else-if="lines.length"
+      ref="checkoutForm"
       class="mm-checkout__layout"
       @submit.prevent="submit"
     >
@@ -43,7 +50,10 @@
               <p>核对地址，或与卖家约好面交时间。</p>
             </div>
           </header>
-          <fieldset :disabled="submitting" class="mm-checkout__delivery-fields">
+          <fieldset
+            :disabled="submitting"
+            class="mm-checkout__delivery-fields"
+          >
             <legend class="mm-visually-hidden">交付信息</legend>
             <div v-if="needsExpress" class="mm-checkout__delivery-block">
               <div class="mm-checkout__block-heading">
@@ -56,7 +66,11 @@
                   {{ addressLoading ? '刷新中…' : '刷新地址' }}
                 </button>
               </div>
-              <p v-if="addressError" class="mm-checkout__error" role="alert">
+              <p
+                v-if="addressError"
+                class="mm-checkout__error"
+                role="alert"
+              >
                 {{ addressError }}，请刷新重试。
               </p>
               <ul
@@ -83,7 +97,9 @@
                           v-if="addr.isDefault"
                           text="默认"
                           tone="primary" /></span
-                      ><span>{{ addr.region }} {{ addr.detail }}</span></span
+                      ><span
+                        >{{ addr.region }} {{ addr.detail }}</span
+                      ></span
                     >
                   </label>
                 </li>
@@ -104,6 +120,7 @@
               <div class="mm-checkout__meetup">
                 <MmInput
                   v-model="meetupLocation"
+                  id="checkout-meetup-location"
                   label="面交地点"
                   placeholder="例如：地铁站出口旁的公共广场"
                   :maxlength="200"
@@ -111,6 +128,7 @@
                 />
                 <MmInput
                   v-model="meetupTime"
+                  id="checkout-meetup-time"
                   label="面交时间"
                   type="datetime-local"
                   :error="fieldErrors.meetupTime"
@@ -143,7 +161,9 @@
           >
             <header class="mm-checkout__group-heading">
               <div>
-                <small>子订单 {{ String(index + 1).padStart(2, '0') }}</small>
+                <small
+                  >子订单 {{ String(index + 1).padStart(2, '0') }}</small
+                >
                 <h3>卖家：{{ group.sellerNickname }}</h3>
               </div>
               <MmTag
@@ -163,8 +183,12 @@
                   class="mm-checkout__line-cover"
                 />
                 <div class="mm-checkout__line-info">
-                  <span class="mm-checkout__line-title">{{ line.title }}</span
-                  ><span v-if="line.bargainId" class="mm-checkout__line-bargain"
+                  <span class="mm-checkout__line-title">{{
+                    line.title
+                  }}</span
+                  ><span
+                    v-if="line.bargainId"
+                    class="mm-checkout__line-bargain"
                     >议价成交 · 议价单 #{{ line.bargainId }}</span
                   ><span class="mm-checkout__line-price"
                     ><PriceText :cents="line.unitPriceCents" /> ×
@@ -184,7 +208,10 @@
               </div>
               <div>
                 <dt>
-                  {{ group.deliveryMethod === 'EXPRESS' ? '运费' : '面交运费'
+                  {{
+                    group.deliveryMethod === 'EXPRESS'
+                      ? '运费'
+                      : '面交运费'
                   }}<small v-if="group.deliveryMethod === 'EXPRESS'"
                     >同组取最高，多件不叠加</small
                   >
@@ -192,13 +219,17 @@
                 <dd><PriceText :cents="group.freightCents" /></dd>
               </div>
               <div>
-                <dt>卖家承担平台服务费<small>预估，不计入买家应付</small></dt>
+                <dt>
+                  卖家承担平台服务费<small>预估，不计入买家应付</small>
+                </dt>
                 <dd><PriceText :cents="group.feeCents" /></dd>
               </div>
               <div class="mm-checkout__amounts-total">
                 <dt>子订单合计</dt>
                 <dd>
-                  <PriceText :cents="group.goodsCents + group.freightCents" />
+                  <PriceText
+                    :cents="group.goodsCents + group.freightCents"
+                  />
                 </dd>
               </div>
             </dl>
@@ -235,14 +266,32 @@
         </label>
         <p v-if="submissionHint" class="mm-checkout__submission-hint">
           {{ submissionHint }}
+          <button
+            v-if="!mixedExperience && !addressLoading"
+            type="button"
+            class="mm-checkout__complete"
+            @click="focusMissing"
+          >
+            去完善
+          </button>
         </p>
         <div v-if="error" class="mm-checkout__submit-error" role="alert">
-          <strong>订单尚未提交成功</strong>
+          <strong>{{
+            uncertainResult ? '暂未确认订单结果' : '订单尚未提交成功'
+          }}</strong>
           <p>{{ error }}</p>
+          <RouterLink v-if="uncertainResult" to="/orders"
+            >先查看我的订单</RouterLink
+          >
         </div>
-        <MmButton type="submit" :loading="submitting" :disabled="!canSubmit">{{
-          isExperienceCheckout ? '提交体验订单' : '提交订单'
-        }}</MmButton>
+        <MmButton
+          type="submit"
+          :loading="submitting"
+          :disabled="!canSubmit"
+          >{{
+            isExperienceCheckout ? '提交体验订单' : '提交订单'
+          }}</MmButton
+        >
         <p class="mm-checkout__note">
           提交时会再次核对价格和库存。若任一商品库存不足，本次整批订单不会提交，请调整后重试。
         </p>
@@ -269,6 +318,8 @@ import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { get, post, type ApiError } from '../../shared/api';
 import { EXPERIENCE_PRODUCT_SOURCE } from './experiencePayment';
+import { checkoutAttempt } from './checkoutAttempt';
+import { useAuthStore } from '../../shared/stores/auth';
 import {
   DELIVERY_METHOD_TEXT,
   type Address,
@@ -324,6 +375,9 @@ interface DirectItem {
 
 const route = useRoute();
 const router = useRouter();
+const auth = useAuthStore();
+const checkoutForm = ref<HTMLFormElement | null>(null);
+const uncertainResult = ref(false);
 
 const lines = ref<PreviewLine[]>([]);
 const experienceAccepted = ref(false);
@@ -354,7 +408,25 @@ const fieldErrors = reactive({ meetupLocation: '', meetupTime: '' });
 
 const submitting = ref(false);
 /** 幂等键在进入页面时生成一次：网络重试复用同一键，后端幂等返回原批次 */
-const idempotencyKey = crypto.randomUUID();
+const idempotencyKey = checkoutAttempt(
+  auth.me!.id,
+  route.fullPath + JSON.stringify(history.state?.items ?? null),
+);
+function focusMissing() {
+  const selector =
+    isExperienceCheckout.value && !experienceAccepted.value
+      ? '.mm-checkout__experience input'
+      : needsExpress.value && addressError.value
+        ? '.mm-checkout__block-heading button'
+        : needsExpress.value && addressId.value === null
+          ? '.mm-checkout__addresses input, .checkout-address-editor button'
+          : !meetupLocation.value.trim()
+            ? '#checkout-meetup-location'
+            : '#checkout-meetup-time';
+  const element = checkoutForm.value?.querySelector<HTMLElement>(selector);
+  element?.scrollIntoView({ block: 'center', behavior: 'auto' });
+  element?.focus({ preventScroll: true });
+}
 
 const needsExpress = computed(() =>
   lines.value.some((l) => l.deliveryMethod === 'EXPRESS'),
@@ -408,7 +480,10 @@ const submissionHint = computed(() => {
   if (isExperienceCheckout.value && !experienceAccepted.value)
     return '请先确认体验订单说明';
   if (addressLoading.value) return '正在刷新收货地址，请稍候';
-  if (needsExpress.value && (addressId.value === null || addressError.value))
+  if (
+    needsExpress.value &&
+    (addressId.value === null || addressError.value)
+  )
     return '请先选择有效的收货地址';
   if (
     needsMeetup.value &&
@@ -448,13 +523,15 @@ const canSubmit = computed(() => {
 });
 
 function parseDirectItems(): DirectItem[] | null {
-  const stateItems = (history.state as { items?: DirectItem[] } | null)?.items;
+  const stateItems = (history.state as { items?: DirectItem[] } | null)
+    ?.items;
   if (Array.isArray(stateItems) && stateItems.length) return stateItems;
   const raw = route.query.items;
   if (typeof raw === 'string' && raw) {
     try {
       const parsed: unknown = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length) return parsed as DirectItem[];
+      if (Array.isArray(parsed) && parsed.length)
+        return parsed as DirectItem[];
     } catch {
       /* 落到下面的报错 */
     }
@@ -486,7 +563,8 @@ async function loadFromCart(ids: number[]) {
       deliveryMethod: i.deliveryMethod,
       sellerId: i.sellerId ?? p?.seller.id ?? 0,
       sellerNickname: i.sellerNickname ?? p?.seller.nickname ?? '卖家',
-      freightCents: i.deliveryMethod === 'EXPRESS' ? (p?.freightCents ?? 0) : 0,
+      freightCents:
+        i.deliveryMethod === 'EXPRESS' ? (p?.freightCents ?? 0) : 0,
     };
   });
 }
@@ -506,7 +584,9 @@ async function loadDirect(directItems: DirectItem[]) {
   ) {
     throw new Error('购买条目不正确，请从商品详情重新选择');
   }
-  const productMap = await fetchProducts(directItems.map((i) => i.productId));
+  const productMap = await fetchProducts(
+    directItems.map((i) => i.productId),
+  );
   const bargains = directItems.some((i) => i.bargainId)
     ? await get<Bargain[]>('/me/bargains')
     : [];
@@ -577,7 +657,8 @@ async function loadAddresses() {
   addressError.value = '';
   try {
     addresses.value = await get<Address[]>('/me/addresses');
-    const def = addresses.value.find((a) => a.isDefault) ?? addresses.value[0];
+    const def =
+      addresses.value.find((a) => a.isDefault) ?? addresses.value[0];
     if (!addresses.value.some((address) => address.id === addressId.value))
       addressId.value = def ? def.id : null;
   } catch (e) {
@@ -599,6 +680,7 @@ async function submit() {
   }
   submitting.value = true;
   error.value = '';
+  uncertainResult.value = false;
   try {
     const items: CheckoutItem[] = lines.value.map((l) => ({
       productId: l.productId,
@@ -634,6 +716,10 @@ async function submit() {
       router.replace({ name: 'my-orders' });
     }
   } catch (e) {
+    uncertainResult.value =
+      ['OFFLINE', 'TIMEOUT', 'NETWORK_ERROR', 'BAD_RESPONSE'].includes(
+        (e as ApiError).code,
+      ) || ((e as ApiError).httpStatus ?? 0) >= 500;
     error.value = (e as ApiError).message;
   } finally {
     submitting.value = false;
@@ -665,7 +751,8 @@ async function load() {
     }
     await loadAddresses();
   } catch (e) {
-    loadError.value = e instanceof Error ? e.message : (e as ApiError).message;
+    loadError.value =
+      e instanceof Error ? e.message : (e as ApiError).message;
     lines.value = [];
   } finally {
     loading.value = false;
@@ -1058,6 +1145,17 @@ onMounted(load);
   padding: 10px 12px;
   background: var(--mm-accent-soft);
   border-radius: 8px;
+}
+.mm-checkout__complete {
+  display: inline-block;
+  border: 0;
+  padding: 5px 8px;
+  min-height: 36px;
+  margin-left: 4px;
+  background: transparent;
+  text-decoration: underline;
+  color: inherit;
+  font-size: 13px;
 }
 .mm-checkout__error,
 .mm-checkout__submit-error {

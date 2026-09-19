@@ -1,5 +1,5 @@
 <template>
-  <div class="mm-order-list">
+  <div class="mm-order-list" :aria-busy="loading">
     <nav class="mm-order-list__tabs" aria-label="订单状态筛选">
       <button
         v-for="tab in tabs"
@@ -14,8 +14,11 @@
       </button>
     </nav>
 
-    <p v-if="error" class="mm-order-list__error" role="alert">{{ error }}</p>
-    <p v-else-if="loading" class="mm-order-list__hint">加载中…</p>
+    <div v-if="error" class="mm-recovery" role="alert">
+      <p>{{ error }}</p>
+      <MmButton variant="ghost" @click="load">重新加载订单</MmButton>
+    </div>
+    <MmSkeleton v-else-if="loading" :count="3" label="正在读取订单" />
 
     <template v-else-if="orders.length">
       <RouterLink
@@ -39,7 +42,9 @@
           />
         </div>
         <div class="mm-order-list__peer">
-          {{ role === 'buyer' ? `卖家：${order.sellerNickname}` : `买家订单` }}
+          {{
+            role === 'buyer' ? `卖家：${order.sellerNickname}` : `买家订单`
+          }}
           · {{ DELIVERY_METHOD_TEXT[order.deliveryMethod] }} ·
           {{ formatTime(order.createdAt) }}
         </div>
@@ -58,7 +63,9 @@
               <span v-else class="mm-order-list__item-noimg">暂无图</span>
             </span>
             <span class="mm-order-list__item-title">{{ item.title }}</span>
-            <span class="mm-order-list__item-qty">× {{ item.quantity }}</span>
+            <span class="mm-order-list__item-qty"
+              >× {{ item.quantity }}</span
+            >
           </li>
         </ul>
         <dl class="mm-order-list__amounts">
@@ -89,7 +96,11 @@
           >查看订单详情 <span aria-hidden="true">→</span></span
         >
       </RouterLink>
-      <MmPagination :page="page" :total-pages="totalPages" @change="onPage" />
+      <MmPagination
+        :page="page"
+        :total-pages="totalPages"
+        @change="onPage"
+      />
     </template>
 
     <EmptyState
@@ -103,16 +114,22 @@
             : '有买家下单后，订单会出现在这里。'
       "
       :icon="role === 'buyer' ? 'cart' : 'box'"
-      ><RouterLink :to="role === 'buyer' ? '/search' : '/seller/products'">{{
-        role === 'buyer' ? '去逛逛闲置 →' : '查看我的商品 →'
-      }}</RouterLink></EmptyState
+      ><RouterLink
+        :to="role === 'buyer' ? '/search' : '/seller/products'"
+        >{{
+          role === 'buyer' ? '去逛逛闲置 →' : '查看我的商品 →'
+        }}</RouterLink
+      ></EmptyState
     >
   </div>
 </template>
 
 <script setup lang="ts">
 import ItemImage from '../../../shared/components/ItemImage.vue';
-import { onMounted, ref } from 'vue';
+import { onScopeDispose, ref, watch } from 'vue';
+import { useListQuery } from '../../../shared/useListQuery';
+import MmButton from '../../../shared/components/MmButton.vue';
+import MmSkeleton from '../../../shared/components/MmSkeleton.vue';
 import { get, type ApiError } from '../../../shared/api';
 import { formatTime } from '../../../shared/format';
 import {
@@ -139,12 +156,17 @@ const tabs: { label: string; status: FulfillmentStatus | '' }[] = [
   { label: '已关闭', status: 'CLOSED' },
 ];
 
-const activeStatus = ref<FulfillmentStatus | ''>('');
+const {
+  page,
+  status: activeStatus,
+  setPage,
+  setStatus,
+} = useListQuery(tabs.map((tab) => tab.status));
 const orders = ref<OrderDto[]>([]);
-const page = ref(0);
 const totalPages = ref(0);
 const loading = ref(true);
 const error = ref('');
+let sequence = 0;
 
 function statusTone(
   status: FulfillmentStatus,
@@ -166,6 +188,7 @@ function statusTone(
 }
 
 async function load() {
+  const run = ++sequence;
   loading.value = true;
   error.value = '';
   try {
@@ -175,28 +198,31 @@ async function load() {
       page: page.value,
       size: 10,
     });
+    if (run !== sequence) return;
     orders.value = res.content;
     totalPages.value = res.totalPages;
   } catch (e) {
-    error.value = (e as ApiError).message;
+    if (run === sequence) error.value = (e as ApiError).message;
   } finally {
-    loading.value = false;
+    if (run === sequence) loading.value = false;
   }
 }
 
 function switchTab(status: FulfillmentStatus | '') {
   if (status === activeStatus.value) return;
-  activeStatus.value = status;
-  page.value = 0;
-  load();
+  void setStatus(status);
 }
 
 function onPage(p: number) {
-  page.value = p;
-  load();
+  void setPage(p);
 }
 
-onMounted(load);
+watch(() => [props.role, page.value, activeStatus.value], load, {
+  immediate: true,
+});
+onScopeDispose(() => {
+  sequence++;
+});
 </script>
 
 <style scoped>

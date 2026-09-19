@@ -28,7 +28,9 @@
               variant="ghost"
               :disabled="blockBusy || !blockState"
               @click="toggleBlock"
-              >{{ blockState?.blockedByMe ? '取消屏蔽' : '屏蔽对方' }}</MmButton
+              >{{
+                blockState?.blockedByMe ? '取消屏蔽' : '屏蔽对方'
+              }}</MmButton
             ><RouterLink :to="reportLink">举报并联系人工客服</RouterLink
             ><MmButton
               variant="ghost"
@@ -70,7 +72,9 @@
         class="mm-chat__product"
         ><MmIcon name="box" /><span
           ><small>首次咨询的商品</small
-          >{{ otherUser.productTitle || `商品 #${otherUser.productId}` }}</span
+          >{{
+            otherUser.productTitle || `商品 #${otherUser.productId}`
+          }}</span
         ><MmIcon name="arrow"
       /></RouterLink>
       <p v-if="blockState?.blockedEitherDirection" class="mm-notice">
@@ -87,9 +91,21 @@
       >
         {{ status === 'ready' ? '实时消息已连接' : statusText }}
       </p>
-      <p v-if="error" class="mm-chat__error" role="alert">{{ error }}</p>
+      <div v-if="error" class="mm-recovery" role="alert">
+        <p>{{ error }}</p>
+        <MmButton variant="ghost" @click="loadInitial"
+          >重新加载消息</MmButton
+        >
+      </div>
 
-      <div ref="listEl" class="mm-chat__list" @scroll.passive="markRead">
+      <div
+        ref="listEl"
+        class="mm-chat__list"
+        role="region"
+        aria-label="消息记录"
+        tabindex="0"
+        @scroll.passive="onListScroll"
+      >
         <button
           v-if="hasMore"
           type="button"
@@ -102,7 +118,7 @@
 
         <p v-if="loading" class="mm-chat__hint">加载中…</p>
         <EmptyState
-          v-else-if="!messages.length"
+          v-else-if="!messages.length && !error"
           title="还没有消息"
           description="打个招呼吧"
         />
@@ -116,7 +132,9 @@
         >
           <div class="mm-chat__bubble">
             <span class="mm-chat__sender">{{
-              m.senderId === myId ? '我' : otherUser?.otherNickname || '对方'
+              m.senderId === myId
+                ? '我'
+                : otherUser?.otherNickname || '对方'
             }}</span>
             <img
               v-if="m.attachmentUrl"
@@ -131,17 +149,51 @@
               :to="`/products/${m.product.id}`"
               class="mm-chat__product-card"
             >
-              <ItemImage :src="m.product.coverImage" :alt="m.product.title" />
+              <ItemImage
+                :src="m.product.coverImage"
+                :alt="m.product.title"
+              />
               <span
                 ><small>商品详情 · 点击查看</small
                 ><strong>{{ m.product.title }}</strong
                 ><b>{{ formatPrice(m.product.priceCents) }}</b></span
               >
             </RouterLink>
-            <time class="mm-chat__time">{{ formatTime(m.createdAt) }}</time>
+            <time class="mm-chat__time">{{
+              formatTime(m.createdAt)
+            }}</time>
+          </div>
+        </div>
+        <div
+          v-if="pendingText"
+          class="mm-chat__row is-mine is-pending"
+          aria-live="polite"
+        >
+          <div class="mm-chat__bubble">
+            <span class="mm-chat__sender">我</span>
+            <p class="mm-chat__text">{{ pendingText.body }}</p>
+            <span class="mm-chat__time">{{
+              sending ? '正在发送…' : '尚未确认送达'
+            }}</span>
+            <button
+              v-if="!sending"
+              type="button"
+              class="mm-chat__retry"
+              @click="sendText"
+            >
+              重试发送
+            </button>
           </div>
         </div>
       </div>
+      <button
+        v-if="unseenCount"
+        type="button"
+        class="mm-chat__new"
+        @click="scrollToBottom"
+      >
+        {{ unseenCount > 99 ? '99+' : unseenCount }} 条新消息 · 回到最新
+      </button>
 
       <p v-if="sendError" class="mm-chat__error" role="alert">
         {{ sendError }}
@@ -167,12 +219,18 @@
       </p>
 
       <form class="mm-chat__composer" @submit.prevent="sendText">
-        <input
+        <textarea
           v-model="draft"
-          :readonly="pendingText !== null || blockState?.blockedEitherDirection"
+          :readonly="
+            sending ||
+            pendingText !== null ||
+            blockState?.blockedEitherDirection
+          "
           maxlength="2000"
-          placeholder="输入消息（最多 2000 字符）"
+          rows="2"
+          placeholder="聊聊成色、价格或交付方式…"
           aria-label="消息内容"
+          @keydown="composerKeydown"
         />
         <span v-if="draft.length > 1800" class="mm-chat__count"
           >{{ draft.length }}/2000</span
@@ -198,12 +256,15 @@
         <MmButton
           type="submit"
           :loading="sending"
-          :disabled="!draft.trim() || blockState?.blockedEitherDirection"
-          >发送</MmButton
+          :disabled="
+            loading || !draft.trim() || blockState?.blockedEitherDirection
+          "
+          >{{ pendingText && !sending ? '重试发送' : '发送' }}</MmButton
         >
       </form>
       <p class="mm-chat__composer-hint">
-        回车发送 · 图片支持 JPG、PNG，最大 5MB
+        电脑 Enter 发送，Shift + Enter
+        换行；手机点击发送。草稿仅保留在当前标签页。图片最大 5MB。
       </p>
     </MmCard>
   </div>
@@ -239,6 +300,11 @@ import type {
   ProductDetail,
 } from '../../shared/types';
 import { useMessageSocket } from './socket';
+import {
+  readConversationDraft,
+  saveConversationDraft,
+  type PendingText,
+} from './conversationDraft';
 
 const MAX_BODY = 2000;
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -332,6 +398,7 @@ const reportLink = computed(() => ({
   },
 }));
 async function loadBlockState() {
+  const run = epoch;
   const requestedId = conversationId.value;
   blockError.value = '';
   try {
@@ -339,7 +406,7 @@ async function loadBlockState() {
       const summary = await get<ConversationSummary>(
         `/messages/conversations/${requestedId}/summary`,
       );
-      if (requestedId !== conversationId.value) return;
+      if (run !== epoch || requestedId !== conversationId.value) return;
       otherUser.value = summary;
     }
     if (!otherUser.value) return;
@@ -347,13 +414,15 @@ async function loadBlockState() {
       blockedByMe: boolean;
       blockedEitherDirection: boolean;
     }>(`/messages/users/${otherUser.value.otherUserId}/block`);
-    if (requestedId === conversationId.value) blockState.value = result;
+    if (run === epoch && requestedId === conversationId.value)
+      blockState.value = result;
   } catch (e) {
-    if (requestedId === conversationId.value)
+    if (run === epoch && requestedId === conversationId.value)
       blockError.value = (e as ApiError).message || '屏蔽状态读取失败';
   }
 }
 async function toggleBlock() {
+  const run = epoch;
   if (!otherUser.value || !blockState.value || blockBusy.value) return;
   const blocked = !blockState.value.blockedByMe;
   if (
@@ -364,17 +433,19 @@ async function toggleBlock() {
     ))
   )
     return;
+  if (run !== epoch || !otherUser.value) return;
   blockBusy.value = true;
   blockError.value = '';
   try {
-    blockState.value = await put(
+    const result = await put<NonNullable<typeof blockState.value>>(
       `/messages/users/${otherUser.value.otherUserId}/block`,
       { blocked },
     );
+    if (run === epoch) blockState.value = result;
   } catch (e) {
-    blockError.value = (e as ApiError).message;
+    if (run === epoch) blockError.value = (e as ApiError).message;
   } finally {
-    blockBusy.value = false;
+    if (run === epoch) blockBusy.value = false;
   }
 }
 
@@ -390,25 +461,64 @@ const draft = ref('');
 const sending = ref(false);
 const sendError = ref('');
 /** 文字发送失败重试时保留同一 clientId（服务端按 senderId+clientId 幂等去重） */
-const pendingText = ref<{
-  clientId: string;
-  body: string;
-  productId?: number;
-} | null>(null);
+const pendingText = ref<PendingText | null>(null);
+const unseenCount = ref(0);
+let epoch = 0;
+let draftOwner = '';
+let restoringDraft = false;
+function rememberDraft() {
+  if (!restoringDraft)
+    saveConversationDraft(draftOwner, {
+      text: draft.value,
+      pending: pendingText.value,
+    });
+}
+function restoreDraft() {
+  restoringDraft = true;
+  draftOwner =
+    myId.value > 0 && conversationId.value > 0
+      ? `${myId.value}:${conversationId.value}`
+      : '';
+  const saved = readConversationDraft(draftOwner);
+  draft.value = saved.text;
+  pendingText.value = saved.pending;
+  restoringDraft = false;
+}
+watch([draft, pendingText], rememberDraft, { flush: 'sync', deep: true });
+function composerKeydown(event: KeyboardEvent) {
+  if (
+    event.key !== 'Enter' ||
+    event.shiftKey ||
+    event.isComposing ||
+    event.keyCode === 229 ||
+    window.matchMedia('(pointer: coarse)').matches
+  )
+    return;
+  event.preventDefault();
+  void sendText();
+}
+function onListScroll() {
+  const el = listEl.value;
+  if (el && el.scrollHeight - el.scrollTop - el.clientHeight < 60)
+    unseenCount.value = 0;
+  void markRead();
+}
 
 const imageInput = ref<HTMLInputElement | null>(null);
 const uploadingImage = ref(false);
 const imageError = ref('');
 /** 图片已上传但发送失败时保留 attachmentId+clientId，点重试不再重复上传 */
-const pendingImage = ref<{ clientId: string; attachmentId: string } | null>(
-  null,
-);
+const pendingImage = ref<{
+  clientId: string;
+  attachmentId: string;
+} | null>(null);
 
 const listEl = ref<HTMLElement | null>(null);
 /** 已上报的已读位置，已读不倒退 */
 let lastReadThroughId = 0;
 
 function scrollToBottom() {
+  unseenCount.value = 0;
   void nextTick(() => {
     const el = listEl.value;
     if (el) el.scrollTop = el.scrollHeight;
@@ -441,7 +551,10 @@ async function markRead() {
     await post(`/messages/conversations/${conversationId.value}/read`, {
       throughId: maxId,
     });
-    if (requestedId === conversationId.value && requestedUser === myId.value)
+    if (
+      requestedId === conversationId.value &&
+      requestedUser === myId.value
+    )
       lastReadThroughId = Math.max(lastReadThroughId, maxId);
   } catch {
     // 已读上报失败静默，下一轮刷新再试
@@ -449,6 +562,8 @@ async function markRead() {
 }
 
 async function loadInitial() {
+  if (!myId.value || !conversationId.value) return;
+  const run = epoch;
   const requestedId = conversationId.value;
   loading.value = true;
   error.value = '';
@@ -459,17 +574,18 @@ async function loadInitial() {
         size: 30,
       },
     );
-    if (requestedId !== conversationId.value) return;
+    if (run !== epoch || requestedId !== conversationId.value) return;
     messages.value = [...pageData.items].reverse();
+    reconcilePending();
     hasMore.value = pageData.hasMore;
     nextBeforeId.value = pageData.nextBeforeId;
-    await markRead();
     scrollToBottom();
     void loadBlockState();
   } catch (e) {
-    error.value = (e as ApiError).message || '消息加载失败';
+    if (run === epoch)
+      error.value = (e as ApiError).message || '消息加载失败';
   } finally {
-    loading.value = false;
+    if (run === epoch) loading.value = false;
   }
 }
 
@@ -477,6 +593,8 @@ async function loadMore() {
   if (!hasMore.value || nextBeforeId.value === null || loadingMore.value)
     return;
   loadingMore.value = true;
+  error.value = '';
+  const run = epoch;
   const requestedId = conversationId.value;
   try {
     const pageData = await get<MessagePage>(
@@ -486,22 +604,29 @@ async function loadMore() {
         size: 30,
       },
     );
-    if (requestedId !== conversationId.value) return;
+    if (run !== epoch || requestedId !== conversationId.value) return;
+    const previousHeight = listEl.value?.scrollHeight ?? 0;
+    const previousTop = listEl.value?.scrollTop ?? 0;
     messages.value = [...[...pageData.items].reverse(), ...messages.value];
     hasMore.value = pageData.hasMore;
     nextBeforeId.value = pageData.nextBeforeId;
+    await nextTick();
+    if (run === epoch && listEl.value)
+      listEl.value.scrollTop =
+        previousTop + listEl.value.scrollHeight - previousHeight;
   } catch (e) {
-    error.value = (e as ApiError).message || '历史消息加载失败';
+    if (run === epoch)
+      error.value = (e as ApiError).message || '历史消息加载失败';
   } finally {
-    loadingMore.value = false;
+    if (run === epoch) loadingMore.value = false;
   }
 }
 
 /** 重拉最新一页并按 id 合并，保留已加载的更早历史 */
 async function refreshLatest() {
+  if (loading.value || !myId.value || !conversationId.value) return;
+  const run = epoch;
   const requestedId = conversationId.value;
-  const el = listEl.value;
-  const atBottom = !el || el.scrollHeight - el.scrollTop - el.clientHeight < 90;
   try {
     const pageData = await get<MessagePage>(
       `/messages/conversations/${conversationId.value}`,
@@ -509,7 +634,7 @@ async function refreshLatest() {
         size: 30,
       },
     );
-    if (requestedId !== conversationId.value) return;
+    if (run !== epoch || requestedId !== conversationId.value) return;
     // Reconnect may miss more than one page. Fill the gap until the last known message.
     const previousLatest = messages.value.at(-1)?.id;
     let cursor = pageData.nextBeforeId;
@@ -519,7 +644,7 @@ async function refreshLatest() {
         `/messages/conversations/${requestedId}`,
         { size: 30, beforeId: cursor },
       );
-      if (requestedId !== conversationId.value) return;
+      if (run !== epoch || requestedId !== conversationId.value) return;
       pageData.items.push(...gap.items);
       more = gap.hasMore;
       cursor = gap.nextBeforeId;
@@ -527,44 +652,63 @@ async function refreshLatest() {
     const known = new Map<number, MessageItem>(
       messages.value.map((m) => [m.id, m]),
     );
+    const el = listEl.value;
+    const atBottom =
+      !el || el.scrollHeight - el.scrollTop - el.clientHeight < 90;
+    const newlyReceived = pageData.items.filter(
+      (item) => !known.has(item.id) && item.senderId !== myId.value,
+    ).length;
     for (const item of pageData.items) known.set(item.id, item);
     messages.value = [...known.values()].sort((a, b) => a.id - b.id);
-    if (
-      pendingText.value &&
-      messages.value.some(
-        (m) =>
-          m.senderId === myId.value &&
-          m.clientId === pendingText.value?.clientId,
-      )
-    ) {
-      pendingText.value = null;
-      draft.value = '';
-      sendError.value = '';
-    }
-    if (!hasMore.value && pageData.hasMore) {
-      hasMore.value = true;
-      nextBeforeId.value = pageData.nextBeforeId;
-    }
+    reconcilePending();
+    if (!atBottom) unseenCount.value += newlyReceived;
+    // Refresh only fills the recent gap; it must not reopen already exhausted history.
     await markRead();
-    if (atBottom) scrollToBottom();
+    if (run === epoch && atBottom) scrollToBottom();
   } catch {
     // 刷新失败保留现有列表
   }
 }
 
+function reconcilePending() {
+  if (
+    pendingText.value &&
+    messages.value.some(
+      (m) =>
+        m.senderId === myId.value &&
+        m.clientId === pendingText.value?.clientId,
+    )
+  ) {
+    pendingText.value = null;
+    draft.value = '';
+    sendError.value = '';
+  }
+}
+
 function appendMessage(msg: MessageItem) {
   if (
-    messages.value.some((m) => m.id === msg.id || m.clientId === msg.clientId)
+    messages.value.some(
+      (m) =>
+        m.id === msg.id ||
+        (m.senderId === msg.senderId && m.clientId === msg.clientId),
+    )
   )
     return;
-  messages.value = [...messages.value, msg];
+  messages.value = [...messages.value, msg].sort((a, b) => a.id - b.id);
   scrollToBottom();
 }
 
 async function sendText() {
+  const run = epoch;
   const requestedId = conversationId.value;
   const body = pendingText.value?.body ?? draft.value.trim();
-  if (!body || sending.value || blockState.value?.blockedEitherDirection)
+  if (
+    !body ||
+    sending.value ||
+    loading.value ||
+    !myId.value ||
+    blockState.value?.blockedEitherDirection
+  )
     return;
   if (body.length > MAX_BODY) {
     sendError.value = `消息最多 ${MAX_BODY} 字符`;
@@ -578,25 +722,35 @@ async function sendText() {
       body,
       productId: contextProduct.value?.id,
     };
+  scrollToBottom();
+  const pending = pendingText.value;
   try {
     const msg = await post<SendMessageResponse>(
       `/messages/conversations/${conversationId.value}`,
       {
-        clientId: pendingText.value.clientId,
+        clientId: pending.clientId,
         body,
-        productId: pendingText.value.productId,
+        productId: pending.productId,
       },
     );
-    if (requestedId !== conversationId.value) return;
+    if (run !== epoch || requestedId !== conversationId.value) return;
     appendMessage(msg);
     draft.value = '';
     pendingText.value = null;
   } catch (e) {
+    if (run !== epoch) return;
+    if (
+      messages.value.some(
+        (m) =>
+          m.senderId === myId.value && m.clientId === pending.clientId,
+      )
+    )
+      return;
     // 保留草稿与 clientId，再次点击发送即为幂等重试
     sendError.value = ((e as ApiError).message || '发送失败') + '，请重试';
     void loadBlockState();
   } finally {
-    sending.value = false;
+    if (run === epoch) sending.value = false;
   }
 }
 
@@ -606,6 +760,7 @@ function pickImage() {
 }
 
 async function onImagePicked(ev: Event) {
+  const run = epoch;
   const requestedId = conversationId.value;
   const input = ev.target as HTMLInputElement;
   const file = input.files?.[0];
@@ -628,22 +783,24 @@ async function onImagePicked(ev: Event) {
       `/messages/conversations/${conversationId.value}/images`,
       form,
     );
-    if (requestedId !== conversationId.value) return;
+    if (run !== epoch || requestedId !== conversationId.value) return;
     pendingImage.value = {
       clientId: crypto.randomUUID(),
       attachmentId: uploaded.id,
     };
     await sendImageMessage();
   } catch (e) {
+    if (run !== epoch) return;
     imageError.value = (e as ApiError).message || '图片上传失败，请重试';
     pendingImage.value = null;
   } finally {
-    uploadingImage.value = false;
+    if (run === epoch) uploadingImage.value = false;
   }
 }
 
 /** 用 pendingImage 里的 attachmentId 发消息；失败保留 pendingImage 供幂等重试 */
 async function sendImageMessage() {
+  const run = epoch;
   const requestedId = conversationId.value;
   const pending = pendingImage.value;
   if (!pending || blockState.value?.blockedEitherDirection) return;
@@ -655,22 +812,24 @@ async function sendImageMessage() {
         attachmentId: pending.attachmentId,
       },
     );
-    if (requestedId !== conversationId.value) return;
+    if (run !== epoch || requestedId !== conversationId.value) return;
     appendMessage(msg);
     pendingImage.value = null;
     imageError.value = '';
   } catch (e) {
+    if (run !== epoch) return;
     imageError.value = ((e as ApiError).message || '图片发送失败') + '，';
   }
 }
 
 async function retryImageSend() {
+  const run = epoch;
   if (!pendingImage.value || uploadingImage.value) return;
   uploadingImage.value = true;
   try {
     await sendImageMessage();
   } finally {
-    uploadingImage.value = false;
+    if (run === epoch) uploadingImage.value = false;
   }
 }
 
@@ -685,6 +844,9 @@ const { status, statusText } = useMessageSocket({
 });
 
 function resetState() {
+  epoch++;
+  loading.value = true;
+  restoringDraft = true;
   otherUser.value = null;
   blockState.value = null;
   blockError.value = '';
@@ -698,13 +860,22 @@ function resetState() {
   pendingText.value = null;
   pendingImage.value = null;
   lastReadThroughId = 0;
+  unseenCount.value = 0;
+  sending.value = false;
+  uploadingImage.value = false;
+  loadingMore.value = false;
+  blockBusy.value = false;
+  restoreDraft();
 }
 
-watch(conversationId, (id, prev) => {
-  if (!Number.isFinite(id) || id === prev) return;
-  resetState();
-  void loadInitial();
-});
+watch(
+  () => [conversationId.value, myId.value],
+  () => {
+    rememberDraft();
+    resetState();
+    void loadInitial();
+  },
+);
 
 function handleVisibility() {
   if (document.visibilityState === 'visible') {
@@ -713,12 +884,15 @@ function handleVisibility() {
   }
 }
 onMounted(() => {
+  restoreDraft();
   void loadInitial();
   document.addEventListener('visibilitychange', handleVisibility);
   window.addEventListener('scroll', markRead, { passive: true });
   window.addEventListener('resize', markRead);
 });
 onBeforeUnmount(() => {
+  rememberDraft();
+  epoch++;
   contextGeneration++;
   document.removeEventListener('visibilitychange', handleVisibility);
   window.removeEventListener('scroll', markRead);
@@ -919,10 +1093,12 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   gap: var(--mm-space-2);
-  height: clamp(220px, calc(100dvh - 740px), 400px);
+  height: clamp(300px, 48dvh, 560px);
   overflow-y: auto;
   padding: 22px 18px;
-  background: #edf4f2;
+  background: #f6f4ef;
+  overscroll-behavior: contain;
+  overflow-anchor: none;
   border: 1px solid var(--mm-zone-border);
   border-radius: 10px;
 }
@@ -964,22 +1140,22 @@ onBeforeUnmount(() => {
   padding: var(--mm-space-2) var(--mm-space-3);
   border-radius: var(--mm-radius-l);
   background-color: white;
-  border: 1px solid #d9e5e1;
+  border: 1px solid #e4e0d8;
   border-top-left-radius: 3px;
   color: var(--mm-ink);
 }
 
 .mm-chat__row.is-mine .mm-chat__bubble {
-  background-color: #d1e8e2;
-  color: #254f48;
-  border-color: #b4d7cd;
+  background-color: #fae8d8;
+  color: #493527;
+  border-color: #e9ceba;
   border-top-left-radius: var(--mm-radius-l);
   border-top-right-radius: 3px;
 }
 .mm-chat__sender {
   display: block;
   font-size: 10px;
-  color: #557a70;
+  color: #796754;
   margin-bottom: 5px;
 }
 
@@ -1011,18 +1187,21 @@ onBeforeUnmount(() => {
   border-top: 1px solid var(--mm-zone-border);
 }
 
-.mm-chat__composer input[type='text'],
-.mm-chat__composer input:not([type]) {
+.mm-chat__composer textarea {
   flex: 1;
   min-width: 0;
-  min-height: 46px;
-  padding: 0 var(--mm-space-3);
-  border: 1px solid #b7ccc5;
+  min-height: 76px;
+  max-height: 180px;
+  resize: vertical;
+  padding: 12px var(--mm-space-3);
+  border: 1px solid #cfc8bd;
+  background: white;
+  line-height: 1.6;
   border-radius: var(--mm-radius-m);
 }
 .mm-chat__composer-hint {
   margin-top: 9px;
-  font-size: 10px;
+  font-size: 12px;
   color: var(--mm-muted);
 }
 @media (max-width: 600px) {
@@ -1061,7 +1240,7 @@ onBeforeUnmount(() => {
   .mm-chat__composer {
     flex-wrap: wrap;
   }
-  .mm-chat__composer input:not([type]) {
+  .mm-chat__composer textarea {
     flex-basis: 100%;
     font-size: 16px;
   }
@@ -1075,5 +1254,22 @@ onBeforeUnmount(() => {
   font-size: var(--mm-font-s);
   color: var(--mm-muted);
   white-space: nowrap;
+}
+.mm-chat__row.is-pending .mm-chat__bubble {
+  border-style: dashed;
+}
+.mm-chat__new {
+  display: block;
+  margin: 10px auto 0;
+  padding: 10px 18px;
+  min-height: 44px;
+  background: var(--mm-white);
+  border: 1px solid var(--mm-primary);
+  color: var(--mm-primary);
+  border-radius: 22px;
+  box-shadow: var(--mm-shadow);
+}
+.mm-chat__retry {
+  min-height: 36px;
 }
 </style>

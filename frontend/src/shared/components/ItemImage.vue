@@ -7,6 +7,7 @@ const props = withDefaults(
     alt: string;
     loading?: 'lazy' | 'eager';
     size?: ProductImageSize;
+    priority?: boolean;
   }>(),
   { loading: 'lazy', size: 'card' },
 );
@@ -14,7 +15,10 @@ const failed = ref(false),
   originalFallback = ref(false);
 const unavailable = computed(() => !props.src || failed.value);
 const displaySrc = computed(() =>
-  productImageUrl(props.src, originalFallback.value ? 'original' : props.size),
+  productImageUrl(
+    props.src,
+    originalFallback.value ? 'original' : props.size,
+  ),
 );
 function onError() {
   if (!originalFallback.value && displaySrc.value !== props.src)
@@ -34,6 +38,7 @@ watch(
     :src="unavailable ? '/brand/item-placeholder.svg' : displaySrc"
     :alt="unavailable ? `${alt}（图片暂不可用）` : alt"
     :loading="loading"
+    :fetchpriority="priority ? 'high' : 'auto'"
     decoding="async"
     @error="onError"
   />

@@ -449,7 +449,7 @@
               保存并提交审核
             </MmButton>
           </template>
-          <MmButton variant="ghost" @click="router.push('/seller/products')"
+          <MmButton variant="ghost" @click="router.push(previousListPath('/seller/products'))"
             >返回我的商品</MmButton
           >
         </div>
@@ -493,6 +493,7 @@ const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const MAX_IMAGES = 9;
 const IMAGE_TYPES = ['image/jpeg', 'image/png'];
 
+import { previousListPath } from '../../shared/previousListPath';
 const route = useRoute();
 const router = useRouter();
 const auth = useAuthStore();

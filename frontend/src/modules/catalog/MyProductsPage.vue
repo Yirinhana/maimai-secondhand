@@ -33,11 +33,8 @@
     <div class="mm-workspace__toolbar">
       <label
         >商品状态<select
-          v-model="status"
-          @change="
-            page = 0;
-            load();
-          "
+          :value="status"
+          @change="setStatus(($event.target as HTMLSelectElement).value)"
         >
           <option value="">全部状态</option>
           <option
@@ -51,8 +48,14 @@
       >
       <p class="mm-muted">关键内容修改后需重新审核</p>
     </div>
-    <p v-if="error" class="mm-error" role="alert">{{ error }}</p>
-    <p v-if="loading" class="mm-muted">正在读取商品…</p>
+    <div v-if="error" class="mm-recovery" role="alert">
+      <p>{{ error }}</p>
+      <MmButton variant="ghost" @click="load">重新加载商品</MmButton>
+    </div>
+    <p v-if="feedback" class="mm-success-feedback" role="status">
+      {{ feedback }}
+    </p>
+    <MmSkeleton v-if="loading" :count="3" label="正在读取商品" />
     <div v-else-if="items.length" class="mm-inventory">
       <div class="mm-inventory__heading" aria-hidden="true">
         <span>商品</span><span>库存 / 销量</span><span>上架状态</span
@@ -90,7 +93,9 @@
         <div class="mm-inventory__actions">
           <RouterLink :to="`/publish/${p.id}`" class="mm-inventory__edit"
             >编辑商品</RouterLink
-          ><RouterLink v-if="p.status === 'ON_SALE'" :to="`/products/${p.id}`"
+          ><RouterLink
+            v-if="p.status === 'ON_SALE'"
+            :to="`/products/${p.id}`"
             >查看商品</RouterLink
           ><MmButton
             v-if="['DRAFT', 'REJECTED', 'OFF_SHELF'].includes(p.status)"
@@ -109,7 +114,7 @@
       </article>
     </div>
     <EmptyState
-      v-else
+      v-else-if="!error"
       :title="status ? '当前状态下暂无商品' : '还没有发布商品'"
       :description="
         status
@@ -119,16 +124,15 @@
     /><MmPagination
       :page="page"
       :total-pages="totalPages"
-      @change="
-        page = $event;
-        load();
-      "
+      @change="setPage"
     />
   </section>
 </template>
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { onScopeDispose, ref, watch } from 'vue';
+import { useListQuery } from '../../shared/useListQuery';
+import { askConfirmation } from '../../shared/confirm';
+import MmSkeleton from '../../shared/components/MmSkeleton.vue';
 import { get, post, type ApiError } from '../../shared/api';
 import {
   PRODUCT_STATUS_TEXT,
@@ -142,19 +146,19 @@ import EmptyState from '../../shared/components/EmptyState.vue';
 import PriceText from '../../shared/components/PriceText.vue';
 import MmTag from '../../shared/components/MmTag.vue';
 import MmIcon from '../../shared/components/MmIcon.vue';
+const { page, status, setPage, setStatus } = useListQuery(
+  Object.keys(PRODUCT_STATUS_TEXT),
+);
+const feedback = ref('');
+let sequence = 0;
 const items = ref<SellerProductItem[]>([]),
-  page = ref(0),
   totalPages = ref(0),
   total = ref(0),
-  status = ref(
-    typeof useRoute().query.status === 'string'
-      ? String(useRoute().query.status)
-      : '',
-  ),
   error = ref(''),
   loading = ref(true),
   busy = ref(false);
 async function load() {
+  const run = ++sequence;
   loading.value = true;
   error.value = '';
   try {
@@ -163,19 +167,33 @@ async function load() {
       page: page.value,
       size: 12,
     });
+    if (run !== sequence) return;
     items.value = r.content;
     totalPages.value = r.totalPages;
     total.value = r.totalElements;
   } catch (e) {
-    error.value = (e as ApiError).message;
+    if (run === sequence) error.value = (e as ApiError).message;
   } finally {
-    loading.value = false;
+    if (run === sequence) loading.value = false;
   }
 }
 async function act(id: number, action: string) {
+  if (busy.value) return;
+  if (
+    action === 'off-shelf' &&
+    !(await askConfirmation(
+      '下架后，买家将不能购买这件商品。已有订单继续履约，之后可重新提交上架审核。确认下架？',
+    ))
+  )
+    return;
   busy.value = true;
+  feedback.value = '';
   try {
     await post(`/seller/products/${id}/${action}`);
+    feedback.value =
+      action === 'off-shelf'
+        ? '商品已下架，已有订单不受影响。'
+        : '已提交审核，可在待审核分类中跟进进度。';
     await load();
   } catch (e) {
     error.value = (e as ApiError).message;
@@ -183,7 +201,10 @@ async function act(id: number, action: string) {
     busy.value = false;
   }
 }
-onMounted(load);
+watch(() => [page.value, status.value], load, { immediate: true });
+onScopeDispose(() => {
+  sequence++;
+});
 </script>
 <style scoped>
 .mm-inventory__publish {

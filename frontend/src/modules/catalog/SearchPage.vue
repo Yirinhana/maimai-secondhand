@@ -8,8 +8,15 @@
       </div>
     </header>
 
-    <CategoryBrowser :categories="categoryTree" :selected="applied.categoryId" @select="navigate({ ...applied, categoryId: $event })" />
-    <p v-if="categoryError" role="status" class="mm-muted">{{ categoryError }} <button type="button" @click="loadCategories">重新加载分类</button></p>
+    <CategoryBrowser
+      :categories="categoryTree"
+      :selected="applied.categoryId"
+      @select="navigate({ ...applied, categoryId: $event })"
+    />
+    <p v-if="categoryError" role="status" class="mm-muted">
+      {{ categoryError }}
+      <button type="button" @click="loadCategories">重新加载分类</button>
+    </p>
     <form
       class="mm-search__filters"
       aria-label="筛选条件"
@@ -37,7 +44,8 @@
           aria-controls="catalog-advanced"
           @click="advancedOpen = !advancedOpen"
         >
-          高级筛选 <span aria-hidden="true">{{ advancedOpen ? '−' : '+' }}</span
+          高级筛选
+          <span aria-hidden="true">{{ advancedOpen ? '−' : '+' }}</span
           ><span v-if="advancedCount" class="mm-search__filter-count">{{
             advancedCount
           }}</span>
@@ -99,6 +107,7 @@
           <label class="mm-search__field"
             ><span>最低价（元）</span
             ><input
+              ref="minPriceInput"
               v-model="form.minPrice"
               type="text"
               min="0"
@@ -125,14 +134,12 @@
               "
           /></label>
         </div>
-        <p v-if="categoryError" class="mm-search__category-error">
-          {{ categoryError }}
-          <button type="button" @click="loadCategories">重新加载分类</button>
-        </p>
         <details class="mm-search__nearby">
           <summary>查找附近闲置</summary>
           <p class="mm-muted">
-            主动选择搜索中心后，按商品公开交接区域的近似距离排序。距离不代表实际路线或运费；不会自动申请定位权限。
+            主动选择搜索中心后，按商品公开交接区域的近似距离排序。位置仅在当前标签页保留
+            30
+            分钟，可随时清除。距离不代表实际路线或运费；不会自动申请定位权限。
           </p>
           <MapPicker v-if="auth.me" @select="selectNearby" /><RouterLink
             v-else
@@ -145,7 +152,11 @@
           </p>
         </details>
         <div class="mm-search__advanced-actions">
-          <span>调整完成后点击筛选，应用新条件。</span
+          <span>{{
+            dirtyFilters
+              ? '有尚未应用的条件，点击筛选更新结果。'
+              : '当前条件已应用，可继续调整。'
+          }}</span
           ><MmButton type="submit">应用筛选</MmButton
           ><MmButton variant="ghost" @click="resetFilters">重置</MmButton>
         </div>
@@ -160,10 +171,17 @@
       </p>
     </form>
 
-    <section class="mm-search__results" aria-labelledby="catalog-results-title">
+    <section
+      class="mm-search__results"
+      aria-labelledby="catalog-results-title"
+    >
       <div class="mm-search__toolbar">
         <div>
-          <h2 id="catalog-results-title" ref="resultsHeading" tabindex="-1">
+          <h2
+            id="catalog-results-title"
+            ref="resultsHeading"
+            tabindex="-1"
+          >
             {{ applied.keyword ? '搜索结果' : '在售好物' }}
           </h2>
           <p aria-live="polite">
@@ -178,7 +196,11 @@
         </div>
         <label class="mm-search__sort"
           ><span>排序</span
-          ><select aria-label="排序" :value="applied.sort" @change="changeSort">
+          ><select
+            aria-label="排序"
+            :value="applied.sort"
+            @change="changeSort"
+          >
             <option value="time_desc">最新发布</option>
             <option value="price_asc">价格从低到高</option>
             <option value="price_desc">价格从高到低</option>
@@ -203,7 +225,11 @@
           @click="removeFilter(chip.key)"
         >
           {{ chip.label }} <span aria-hidden="true">×</span></button
-        ><button class="mm-search__clear" type="button" @click="resetFilters">
+        ><button
+          class="mm-search__clear"
+          type="button"
+          @click="resetFilters"
+        >
           清除全部
         </button>
       </div>
@@ -219,7 +245,9 @@
         :description="error"
         ><div class="mm-search__recovery">
           <MmButton @click="load">重试</MmButton
-          ><MmButton variant="ghost" @click="resetFilters">重置筛选</MmButton>
+          ><MmButton variant="ghost" @click="resetFilters"
+            >重置筛选</MmButton
+          >
         </div></EmptyState
       >
       <EmptyState
@@ -236,7 +264,10 @@
             <ProductCard :product="product" />
           </li>
         </ul>
-        <MmPagination :page="page" :total-pages="totalPages" @change="goPage"
+        <MmPagination
+          :page="page"
+          :total-pages="totalPages"
+          @change="goPage"
       /></template>
     </section>
   </div>
@@ -254,6 +285,11 @@ import {
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import CategoryBrowser from './components/CategoryBrowser.vue';
+import {
+  readNearbyOrigin,
+  saveNearbyOrigin,
+  type NearbyOrigin,
+} from './nearbySearch';
 import { get, type ApiError } from '../../shared/api';
 import EmptyState from '../../shared/components/EmptyState.vue';
 import MmButton from '../../shared/components/MmButton.vue';
@@ -303,11 +339,22 @@ const auth = useAuthStore();
 const form = reactive(blankFilters());
 const applied = ref(blankFilters());
 const advancedOpen = ref(false);
-const nearbyOrigin = ref<{
-  latitude: number;
-  longitude: number;
-  label: string;
-} | null>(null);
+const minPriceInput = ref<HTMLInputElement | null>(null);
+const dirtyFilters = computed(() =>
+  Object.keys(form).some(
+    (key) => form[key as FilterKey] !== applied.value[key as FilterKey],
+  ),
+);
+const nearbyOrigin = ref<NearbyOrigin | null>(
+  readNearbyOrigin(auth.me?.id ?? 0),
+);
+watch(
+  () => auth.me?.id,
+  (id) => {
+    nearbyOrigin.value = readNearbyOrigin(id ?? 0);
+    void load();
+  },
+);
 const categoryOptions = ref<{ id: number; name: string }[]>([]);
 const categoryTree = ref<Category[]>([]);
 const categoryError = ref('');
@@ -336,7 +383,8 @@ const advancedCount = computed(
 const chips = computed(() => {
   const f = applied.value;
   const result: { key: FilterKey; label: string }[] = [];
-  if (f.keyword) result.push({ key: 'keyword', label: `关键词：${f.keyword}` });
+  if (f.keyword)
+    result.push({ key: 'keyword', label: `关键词：${f.keyword}` });
   if (f.categoryId)
     result.push({
       key: 'categoryId',
@@ -413,7 +461,7 @@ async function load() {
   if (invalid || (filters.sort === 'distance_asc' && !origin)) {
     error.value =
       invalid ||
-      '附近搜索的地点只保留在本次页面中，请展开高级筛选重新选点，或移除附近条件。';
+      '搜索中心尚未选择或已过期，请展开高级筛选重新选点，或移除附近条件。';
     products.value = [];
     totalElements.value = 0;
     totalPages.value = 0;
@@ -423,7 +471,9 @@ async function load() {
   try {
     const data = await get<Page<ProductSummary>>('/products', {
       keyword: filters.keyword || undefined,
-      categoryId: filters.categoryId ? Number(filters.categoryId) : undefined,
+      categoryId: filters.categoryId
+        ? Number(filters.categoryId)
+        : undefined,
       condition: (filters.condition || undefined) as Condition | undefined,
       deliveryMethod: (filters.deliveryMethod || undefined) as
         DeliveryMethod | undefined,
@@ -465,24 +515,33 @@ function navigate(filters: Filters, pageNo = 0) {
     void load();
   } else void router.push(target);
 }
-function applyFilters() {
+async function applyFilters() {
   const filters = Object.fromEntries(
-    Object.entries(form).map(([key, value]) => [key, String(value).trim()]),
+    Object.entries(form).map(([key, value]) => [
+      key,
+      String(value).trim(),
+    ]),
   ) as unknown as Filters;
   validationError.value = validate(filters);
   if (validationError.value) {
     advancedOpen.value = true;
+    await nextTick();
+    minPriceInput.value?.focus();
     return;
   }
   navigate(filters);
 }
 function resetFilters() {
   nearbyOrigin.value = null;
+  saveNearbyOrigin(auth.me?.id ?? 0, null);
   validationError.value = '';
   navigate(blankFilters());
 }
 function removeFilter(key: FilterKey) {
-  if (key === 'sort') nearbyOrigin.value = null;
+  if (key === 'sort') {
+    nearbyOrigin.value = null;
+    saveNearbyOrigin(auth.me?.id ?? 0, null);
+  }
   navigate({ ...applied.value, [key]: key === 'sort' ? 'time_desc' : '' });
 }
 function changeSort(event: Event) {
@@ -501,7 +560,10 @@ async function goPage(next: number) {
   if (failure) return;
   await nextTick();
   if (route.fullPath !== expectedPath) return;
-  resultsHeading.value?.scrollIntoView({ block: 'start', behavior: 'auto' });
+  resultsHeading.value?.scrollIntoView({
+    block: 'start',
+    behavior: 'auto',
+  });
   resultsHeading.value?.focus({ preventScroll: true });
 }
 function selectNearby(address: SelectedAddress) {
@@ -511,10 +573,12 @@ function selectNearby(address: SelectedAddress) {
     label: address.fullAddress,
   };
   form.sort = 'distance_asc';
+  saveNearbyOrigin(auth.me?.id ?? 0, nearbyOrigin.value);
   applyFilters();
 }
 function clearNearby() {
   nearbyOrigin.value = null;
+  saveNearbyOrigin(auth.me?.id ?? 0, null);
   navigate({ ...applied.value, sort: 'time_desc' });
 }
 async function loadCategories() {
@@ -534,7 +598,8 @@ async function loadCategories() {
     flatten(tree);
     categoryOptions.value = options;
   } catch {
-    if (!disposed) categoryError.value = '分类暂时未加载，仍可按其他条件搜索。';
+    if (!disposed)
+      categoryError.value = '分类暂时未加载，仍可按其他条件搜索。';
   }
 }
 onMounted(loadCategories);
@@ -837,7 +902,11 @@ onScopeDispose(() => {
   .mm-search__sort select {
     width: 158px;
     padding-left: 8px;
-    font-size: 13px;
+    font-size: 16px;
+  }
+  .mm-search__field input,
+  .mm-search__field select {
+    font-size: 16px;
   }
   .mm-search__grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));

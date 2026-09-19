@@ -117,6 +117,9 @@ jobs:
       - name: Install the locked frontend dependencies
         working-directory: frontend
         run: npm ci --no-audit --no-fund
+      - name: Verify frontend interaction state tests
+        working-directory: frontend
+        run: npm test
       - name: Type-check and build the frontend
         working-directory: frontend
         run: npm run build

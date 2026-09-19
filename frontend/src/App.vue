@@ -1,4 +1,5 @@
 <template>
+  <AppFeedback />
   <router-view v-if="route.meta.standalone" />
   <div v-else class="mm-app" :class="`mm-app--${section}`">
     <ConfirmationDialog />
@@ -95,7 +96,10 @@
               >
               <RouterLink role="menuitem" to="/me"
                 ><MmIcon name="user" />个人中心</RouterLink
-              ><RouterLink v-if="!adminWorkspace" role="menuitem" to="/orders"
+              ><RouterLink
+                v-if="!adminWorkspace"
+                role="menuitem"
+                to="/orders"
                 ><MmIcon name="bag" />我买到的</RouterLink
               ><RouterLink
                 v-if="auth.isSeller && !adminWorkspace"
@@ -177,7 +181,9 @@
       </div>
     </header>
     <SectionNavigation
-      v-if="['buyer', 'seller', 'account', 'transaction'].includes(section)"
+      v-if="
+        ['buyer', 'seller', 'account', 'transaction'].includes(section)
+      "
       :section="section"
       :title="title"
     />
@@ -218,10 +224,18 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import {
+  computed,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  ref,
+  watch,
+} from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from './shared/stores/auth';
 import ConfirmationDialog from './shared/components/ConfirmationDialog.vue';
+import AppFeedback from './shared/components/AppFeedback.vue';
 import TinaSupportDock from './modules/support/TinaSupportDock.vue';
 import UserAvatar from './shared/components/UserAvatar.vue';
 import MmIcon from './shared/components/MmIcon.vue';
@@ -304,7 +318,12 @@ const primaryNav = computed(() =>
       section: 'seller',
       icon: 'box',
     },
-    { to: '/messages', label: '消息', section: 'messages', icon: 'message' },
+    {
+      to: '/messages',
+      label: '消息',
+      section: 'messages',
+      icon: 'message',
+    },
   ].filter((item) => item.section !== 'seller' || auth.isSeller),
 );
 async function openUser() {
@@ -365,7 +384,8 @@ function escape(event: KeyboardEvent) {
 }
 function menuKeydown(event: KeyboardEvent) {
   const items = Array.from(
-    userRoot.value?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [],
+    userRoot.value?.querySelectorAll<HTMLElement>('[role="menuitem"]') ??
+      [],
   );
   const index = items.indexOf(document.activeElement as HTMLElement);
   let next = index;
@@ -380,7 +400,10 @@ function menuKeydown(event: KeyboardEvent) {
 }
 function onSearch() {
   const kw = keyword.value.trim();
-  void router.push({ path: '/search', query: { keyword: kw || undefined } });
+  void router.push({
+    path: '/search',
+    query: { keyword: kw || undefined },
+  });
 }
 async function onLogout() {
   loggingOut.value = true;
@@ -823,6 +846,24 @@ watch(
   }
 }
 @media (max-width: 760px) {
+  .mm-app--admin .mm-header__workspace {
+    order: 3;
+    flex: 1 1 100%;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 12px;
+    border-left: 0;
+    border-top: 1px solid var(--mm-border);
+    padding: 10px 0 0;
+  }
+  .mm-app--admin .mm-header__workspace strong {
+    font-size: 15px;
+  }
+  .mm-app--admin .mm-header__cart {
+    white-space: nowrap;
+    font-size: 13px;
+    min-height: 44px;
+  }
   .mm-header__inner {
     padding: 11px 16px;
     min-height: 0;

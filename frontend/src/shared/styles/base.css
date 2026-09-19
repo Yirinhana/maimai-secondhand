@@ -146,6 +146,31 @@ select {
   color: var(--mm-danger);
   overflow-wrap: anywhere;
 }
+.mm-recovery {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 18px 20px;
+  border: 1px solid #ead2c4;
+  border-radius: 12px;
+  background: #fffaf6;
+  color: #77422b;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.mm-recovery > p {
+  flex: 1 1 220px;
+}
+.mm-success-feedback {
+  padding: 12px 16px;
+  border: 1px solid #c9dfce;
+  border-radius: 10px;
+  background: #f3f8f2;
+  color: #276039;
+  font-size: 14px;
+}
 .mm-notice {
   background: var(--mm-accent-soft);
   border-left: 4px solid var(--mm-primary);
@@ -229,6 +254,11 @@ select {
   outline-offset: 3px;
 }
 @media (max-width: 640px) {
+  input:not([type='checkbox']):not([type='radio']),
+  textarea,
+  select {
+    font-size: 16px;
+  }
   .mm-grid {
     grid-template-columns: 1fr;
   }
@@ -237,6 +267,28 @@ select {
   }
   .mm-page h1 {
     font-size: 24px;
+  }
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+button,
+a {
+  touch-action: manipulation;
+}
+button:disabled {
+  cursor: not-allowed;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
   }
 }
 
@@ -368,6 +420,19 @@ select {
   gap: 14px;
 }
 @media (max-width: 760px) {
+  /* Keep the saved mascot position, but never cover an active mobile editor. */
+  body:has(
+      input:not([type='checkbox']):not([type='radio']):focus,
+      textarea:focus,
+      [contenteditable='true']:focus
+    )
+    .tina-launcher {
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .mm-main--admin .mm-button {
+    min-height: 44px;
+  }
   .mm-workspace {
     padding: 24px 18px 38px;
     gap: 20px;

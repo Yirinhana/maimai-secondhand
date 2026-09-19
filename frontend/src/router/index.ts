@@ -1,8 +1,17 @@
-import { createRouter, createWebHistory, START_LOCATION } from 'vue-router';
+import {
+  createRouter,
+  createWebHistory,
+  START_LOCATION,
+} from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
 import { useAuthStore } from '../shared/stores/auth';
 import { waitForAnchor } from '../shared/anchorScroll';
 import { hasSeenWelcome } from '../modules/catalog/welcomeSession';
+import {
+  startNavigation,
+  finishNavigation,
+  failNavigation,
+} from '../shared/navigationFeedback';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -174,13 +183,15 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/aftersales/:id',
     name: 'aftersale-detail',
-    component: () => import('../modules/aftersales/AftersaleDetailPage.vue'),
+    component: () =>
+      import('../modules/aftersales/AftersaleDetailPage.vue'),
     meta: { requiresAuth: true },
   },
   {
     path: '/seller/aftersales',
     name: 'seller-aftersales',
-    component: () => import('../modules/aftersales/SellerAftersalesPage.vue'),
+    component: () =>
+      import('../modules/aftersales/SellerAftersalesPage.vue'),
     meta: { requiresAuth: true },
   },
   // 账号（account）
@@ -194,7 +205,8 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/messages',
     name: 'messages',
-    component: () => import('../modules/messaging/ConversationListPage.vue'),
+    component: () =>
+      import('../modules/messaging/ConversationListPage.vue'),
     meta: { requiresAuth: true },
   },
   {
@@ -212,7 +224,8 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'official',
         name: 'admin-official',
-        component: () => import('../modules/official/AdminOfficialPage.vue'),
+        component: () =>
+          import('../modules/official/AdminOfficialPage.vue'),
         meta: { title: '官方内容管理' },
       },
       {
@@ -238,7 +251,8 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'community',
         name: 'admin-community',
-        component: () => import('../modules/admin/CommunityModerationPage.vue'),
+        component: () =>
+          import('../modules/admin/CommunityModerationPage.vue'),
       },
       {
         path: '',
@@ -258,7 +272,8 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'aftersales',
         name: 'admin-aftersales',
-        component: () => import('../modules/admin/AdminAftersalesPage.vue'),
+        component: () =>
+          import('../modules/admin/AdminAftersalesPage.vue'),
       },
       {
         path: 'users',
@@ -295,6 +310,7 @@ export const router = createRouter({
 });
 
 router.beforeEach(async (to, from) => {
+  startNavigation();
   // Only greet a fresh visit to the root. Shared links keep their destination.
   if (
     to.name === 'home' &&
@@ -319,3 +335,6 @@ router.beforeEach(async (to, from) => {
   }
   return true;
 });
+
+router.afterEach(() => finishNavigation());
+router.onError((_error, to) => failNavigation(to.fullPath));
