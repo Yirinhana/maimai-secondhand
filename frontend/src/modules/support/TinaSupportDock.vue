@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, ref, watch } from 'vue';
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { askConfirmation } from '../../shared/confirm';
 import { useTinaChat } from './useTinaChat';
@@ -35,6 +35,47 @@ const { animated, greeting, point, reset, greet } = useMascotMotion(
   launcher,
 );
 const dock = useEdgeDock(launcher);
+const keyboardViewport = ref<{
+  top: string;
+  bottom: string;
+  height: string;
+}>();
+const compactKeyboard = ref(false);
+function fitKeyboardViewport() {
+  const viewport = window.visualViewport;
+  // The keyboard can shrink only the visual viewport on mobile Safari. Do not
+  // reposition the dialog while the user is deliberately pinch-zooming.
+  if (
+    !opened.value ||
+    !viewport ||
+    viewport.scale > 1.01 ||
+    window.innerHeight - viewport.height < 80
+  ) {
+    keyboardViewport.value = undefined;
+    compactKeyboard.value = false;
+    return;
+  }
+  keyboardViewport.value = {
+    top: `${viewport.offsetTop + 12}px`,
+    bottom: 'auto',
+    height: `${Math.max(0, viewport.height - 24)}px`,
+  };
+  compactKeyboard.value = viewport.height < 480;
+}
+onMounted(() => {
+  window.visualViewport?.addEventListener('resize', fitKeyboardViewport);
+  window.visualViewport?.addEventListener('scroll', fitKeyboardViewport);
+});
+onBeforeUnmount(() => {
+  window.visualViewport?.removeEventListener(
+    'resize',
+    fitKeyboardViewport,
+  );
+  window.visualViewport?.removeEventListener(
+    'scroll',
+    fitKeyboardViewport,
+  );
+});
 function moveLauncher(event: PointerEvent) {
   dock.move(event);
   if (!dock.dragging.value) point(event);
@@ -49,12 +90,14 @@ async function open() {
   unread.value = false;
   await nextTick();
   dialog.value?.showModal();
+  fitKeyboardViewport();
   void load();
 }
 function close() {
   if (!opened.value) return;
   dialog.value?.close();
   opened.value = false;
+  fitKeyboardViewport();
   if (previousFocus?.isConnected) previousFocus.focus();
   else launcher.value?.focus();
 }
@@ -64,7 +107,8 @@ async function submit() {
   if (opened.value) input.value?.focus();
 }
 function navigateTab(event: KeyboardEvent) {
-  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key))
+    return;
   event.preventDefault();
   tab.value =
     event.key === 'Home'
@@ -81,7 +125,9 @@ function navigateTab(event: KeyboardEvent) {
 async function clearHistory() {
   if (sending.value || !turns.value.length) return;
   const owner = auth.me?.id;
-  if (await askConfirmation('清空你与麦仔的全部对话记录？人工工单不受影响。')) {
+  if (
+    await askConfirmation('清空你与麦仔的全部对话记录？人工工单不受影响。')
+  ) {
     if (owner && owner === auth.me?.id) await clear();
   }
 }
@@ -162,7 +208,11 @@ onBeforeUnmount(() => dialog.value?.close());
     id="tina-dialog"
     ref="dialog"
     class="tina-dialog"
-    :class="{ 'tina-dialog--left': dock.position.value.edge === 'left' }"
+    :class="{
+      'tina-dialog--left': dock.position.value.edge === 'left',
+      'tina-dialog--compact': compactKeyboard,
+    }"
+    :style="keyboardViewport"
     aria-labelledby="tina-heading"
     @cancel.prevent="close"
     @click="$event.target === dialog && close()"
@@ -226,7 +276,9 @@ onBeforeUnmount(() => dialog.value?.close());
         aria-labelledby="tina-faq-tab"
       >
         <p class="tina-caption">以下为平台规则说明，可直接查看。</p>
-        <p v-if="loading && !faqs.length" role="status">正在读取常见问题…</p>
+        <p v-if="loading && !faqs.length" role="status">
+          正在读取常见问题…
+        </p>
         <details v-for="faq in faqs" :key="faq.topic" class="tina-faq">
           <summary>{{ faq.title }}</summary>
           <p>{{ faq.answer }}</p>
@@ -259,12 +311,21 @@ onBeforeUnmount(() => dialog.value?.close());
             >去登录 →</RouterLink
           >
         </div>
-        <div v-else-if="assistant && !assistant.enabled" class="tina-state">
+        <div
+          v-else-if="assistant && !assistant.enabled"
+          class="tina-state"
+        >
           <strong>麦仔暂未接通</strong>
-          <p>你可以先查看常见问题，或提交人工工单。接通后即可在这里交流。</p>
-          <button type="button" @click="tab = 'faq'">查看常见问题 →</button>
+          <p>
+            你可以先查看常见问题，或提交人工工单。接通后即可在这里交流。
+          </p>
+          <button type="button" @click="tab = 'faq'">
+            查看常见问题 →
+          </button>
         </div>
-        <p v-if="loading" class="tina-caption" role="status">正在读取对话…</p>
+        <p v-if="loading" class="tina-caption" role="status">
+          正在读取对话…
+        </p>
         <p v-if="turns.length" class="tina-history-note">
           最近 {{ turns.length }} 条提问 · 当前账号的私密对话
         </p>
@@ -320,7 +381,9 @@ onBeforeUnmount(() => dialog.value?.close());
           rows="2"
           maxlength="1000"
           :disabled="!enabled"
-          :placeholder="enabled ? '说说你遇到的问题…' : 'AI 接通后即可提问'"
+          :placeholder="
+            enabled ? '说说你遇到的问题…' : 'AI 接通后即可提问'
+          "
           @keydown.enter.exact="
             if (!$event.isComposing) {
               $event.preventDefault();
@@ -341,7 +404,8 @@ onBeforeUnmount(() => dialog.value?.close());
         </div>
       </form>
       <footer class="tina-footer">
-        <RouterLink to="/support" @click="handoff">帮助与人工工单 ↗</RouterLink
+        <RouterLink to="/support" @click="handoff"
+          >帮助与人工工单 ↗</RouterLink
         ><button
           v-if="auth.me && turns.length"
           type="button"
@@ -766,6 +830,8 @@ onBeforeUnmount(() => dialog.value?.close());
   color: var(--mm-muted);
 }
 .tina-compose button {
+  min-height: 44px;
+  min-width: 64px;
   padding: 7px 17px;
   background: var(--mm-primary);
   color: white;
@@ -853,6 +919,34 @@ onBeforeUnmount(() => dialog.value?.close());
   }
   .tina-launcher:hover {
     transform: none;
+  }
+}
+.tina-dialog--compact .tina-header {
+  padding: 8px 14px;
+}
+.tina-dialog--compact .tina-header p,
+.tina-dialog--compact .tina-footer p {
+  display: none;
+}
+.tina-dialog--compact .tina-compose textarea {
+  min-height: 44px;
+}
+.tina-dialog--compact .tina-footer {
+  padding: 4px 14px;
+}
+@media (max-height: 480px) {
+  .tina-header {
+    padding: 8px 14px;
+  }
+  .tina-header p,
+  .tina-footer p {
+    display: none;
+  }
+  .tina-compose textarea {
+    min-height: 44px;
+  }
+  .tina-footer {
+    padding: 4px 14px;
   }
 }
 </style>

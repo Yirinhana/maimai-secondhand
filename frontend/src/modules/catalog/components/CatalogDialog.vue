@@ -109,6 +109,7 @@ onBeforeUnmount(close);
   color: var(--mm-ink);
   box-shadow: 0 24px 100px #201b1933;
   overflow: auto;
+  overscroll-behavior: contain;
 }
 .catalog-dialog--wide {
   width: min(1080px, calc(100% - 32px));
@@ -136,8 +137,8 @@ onBeforeUnmount(close);
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border: 1px solid var(--mm-border);
   border-radius: 50%;
   background: var(--mm-white);

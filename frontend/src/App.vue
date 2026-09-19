@@ -678,6 +678,9 @@ watch(
   top: calc(100% + 15px);
   width: 250px;
   max-width: calc(100vw - 32px);
+  max-height: calc(100dvh - 100px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 10px;
   background: #fff;
   border: 1px solid var(--mm-border);
@@ -863,6 +866,8 @@ watch(
     white-space: nowrap;
     font-size: 13px;
     min-height: 44px;
+    width: auto;
+    padding: 0 8px;
   }
   .mm-header__inner {
     padding: 11px 16px;

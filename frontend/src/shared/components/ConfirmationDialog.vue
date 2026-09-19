@@ -35,6 +35,9 @@ onBeforeUnmount(() => answerConfirmation(false));
 <style scoped>
 .mm-confirm-dialog {
   width: min(440px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 24px;
   border: 1px solid var(--mm-border);
   border-radius: 16px;
@@ -47,6 +50,7 @@ onBeforeUnmount(() => answerConfirmation(false));
 .mm-confirm-dialog p {
   margin: 16px 0;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 .mm-confirm-dialog .mm-actions {
   justify-content: flex-end;
