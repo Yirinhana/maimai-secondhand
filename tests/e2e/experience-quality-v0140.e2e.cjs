@@ -349,6 +349,8 @@ test('chat history prepending preserves the reading anchor and does not duplicat
     },
   );
   await ready(page, `/messages/${chat.id}`);
+  // The page heading appears before the asynchronous initial history and bottom scroll.
+  await expect(page.locator('[data-message-id]')).toHaveCount(30);
   await page.locator('.mm-chat__list').evaluate((el) => {
     el.scrollTop = 0;
   });
