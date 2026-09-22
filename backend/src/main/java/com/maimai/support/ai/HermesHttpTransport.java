@@ -30,7 +30,7 @@ public class HermesHttpTransport implements HermesTransport {
             result.whenComplete((value,error)->{if(result.isCancelled()) wire.cancel(true);});
             return result;
         };
-        this.timeout=Duration.ofSeconds(40);
+        this.timeout=Duration.ofSeconds(60);
     }
     HermesHttpTransport(Sender sender,Duration timeout) { this.sender=sender; this.timeout=timeout; }
     @Override

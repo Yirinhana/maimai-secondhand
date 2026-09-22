@@ -23,7 +23,7 @@ def agent_factory():
     from run_agent import AIAgent
     agent = AIAgent(
         base_url=os.environ["MAIMAI_SITE_PROVIDER_URL"], api_key=os.environ["MAIMAI_SITE_PROVIDER_KEY"],
-        provider="custom", api_mode="chat_completions", model=MODEL, max_iterations=1, max_tokens=900,
+        provider="custom", api_mode="chat_completions", model=MODEL, max_iterations=1, max_tokens=600,
         enabled_toolsets=[], save_trajectories=False, quiet_mode=True, verbose_logging=False,
         skip_context_files=True, load_soul_identity=False, skip_memory=True, skip_background_review=True,
         session_db=None, checkpoints_enabled=False, platform="maimai_site", session_id=str(uuid.uuid4()),

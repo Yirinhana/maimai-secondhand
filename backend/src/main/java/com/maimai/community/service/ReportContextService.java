@@ -49,7 +49,7 @@ public class ReportContextService {
         String status=repo.queryOne("SELECT status FROM community_reports WHERE id=?",(rs,n)->rs.getString(1),id);
         if(!"PENDING".equals(status))throw BizException.conflict("REPORT_PROCESSED","举报已处理，无需重新分析");
         limiter.require("report-ai:"+SecurityUtils.currentUserId(),12,300,"审核辅助请求较多，请稍后重试");
-        if(repo.count("SELECT COUNT(*) FROM report_ai_assessments WHERE report_id=? AND status='RUNNING' AND created_at>DATE_SUB(UTC_TIMESTAMP(6),INTERVAL 1 MINUTE)",id)>0)throw BizException.conflict("AI_RUNNING","本条举报正在分析，请稍后刷新");
+        if(repo.count("SELECT COUNT(*) FROM report_ai_assessments WHERE report_id=? AND status='RUNNING' AND created_at>DATE_SUB(UTC_TIMESTAMP(6),INTERVAL 2 MINUTE)",id)>0)throw BizException.conflict("AI_RUNNING","本条举报正在分析，请稍后刷新");
         long attempt=repo.insertReturningId("INSERT INTO report_ai_assessments(report_id,requested_by,status,model) VALUES(?,?,'RUNNING',?)",id,SecurityUtils.currentUserId(),ai.modelName());
         String reason=repo.queryOne("SELECT reason FROM community_reports WHERE id=?",(rs,n)->rs.getString(1),id);
         try{
