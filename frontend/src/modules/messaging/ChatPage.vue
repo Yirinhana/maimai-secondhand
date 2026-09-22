@@ -653,6 +653,7 @@ async function refreshLatest() {
       messages.value.map((m) => [m.id, m]),
     );
     const el = listEl.value;
+    const previousScrollTop = el?.scrollTop ?? 0;
     const atBottom =
       !el || el.scrollHeight - el.scrollTop - el.clientHeight < 90;
     const newlyReceived = pageData.items.filter(
@@ -664,7 +665,10 @@ async function refreshLatest() {
     if (!atBottom) unseenCount.value += newlyReceived;
     // Refresh only fills the recent gap; it must not reopen already exhausted history.
     await markRead();
-    if (run === epoch && atBottom) scrollToBottom();
+    // A delayed read acknowledgement must not pull the reader back down after they scroll up.
+    if (run === epoch && atBottom && listEl.value
+      && Math.abs(listEl.value.scrollTop - previousScrollTop) < 1)
+      scrollToBottom();
   } catch {
     // 刷新失败保留现有列表
   }
