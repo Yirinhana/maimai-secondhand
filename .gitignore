@@ -13,5 +13,8 @@ playwright-report/
 *.log
 *.pid
 .idea/
-.vscode/
+.workbuddy/
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
 ~$*.docx

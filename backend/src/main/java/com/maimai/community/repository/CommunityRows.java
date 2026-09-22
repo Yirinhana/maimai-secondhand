@@ -33,5 +33,5 @@ public final class CommunityRows {
             rs.getString("process_action"), rs.getString("process_note"), instant(rs, "created_at"), instant(rs, "resolved_at"));
     public static final RowMapper<RatingItem> RATING = (rs, n) -> new RatingItem(
             rs.getLong("id"), rs.getLong("order_id"), rs.getLong("rater_id"), rs.getLong("ratee_id"), rs.getString("nickname"),
-            rs.getInt("rating"), rs.getString("comment"), rs.getString("refund_status"), instant(rs, "created_at"), rs.getBoolean("simulated"), rs.getString("reviewer_avatar_url"));
+            rs.getInt("rating"), rs.getString("comment"), rs.getString("refund_status"), instant(rs, "created_at"), rs.getBoolean("simulated"), rs.getString("reviewer_avatar_url"), rs.getString("payment_source"));
 }

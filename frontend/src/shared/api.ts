@@ -88,7 +88,11 @@ async function request<T>(
     res = await fetch(buildUrl(path, options?.query), {
       method,
       credentials: 'same-origin',
-      signal: AbortSignal.timeout(15000),
+      signal: AbortSignal.timeout(
+        path.startsWith('/ai/workflows') || /\/(ai-assessment|ai-help)$/.test(path)
+          ? 45000
+          : 15000,
+      ),
       headers,
       body: body === undefined ? undefined : JSON.stringify(body),
     });

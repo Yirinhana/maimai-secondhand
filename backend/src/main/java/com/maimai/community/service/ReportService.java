@@ -17,13 +17,15 @@ public class ReportService {
     private final CommunityRepository repo;
     private final CommunitySupport support;
     private final DemandService demands;
-    public ReportService(CommunityRepository repo, CommunitySupport support, DemandService demands) {
-        this.repo = repo; this.support = support; this.demands = demands;
+    private final ReportContextService contexts;
+    private final com.maimai.notification.NotificationService notifications;
+    public ReportService(CommunityRepository repo, CommunitySupport support, DemandService demands,ReportContextService contexts,com.maimai.notification.NotificationService notifications) {
+        this.repo = repo; this.support = support; this.demands = demands;this.contexts=contexts;this.notifications=notifications;
     }
 
     @Transactional
     public ReportItem create(Long actor, ReportCreateRequest request) {
-        support.self(actor);
+        support.lockUser(actor);
         ResourceType type;
         try { type = ResourceType.valueOf(request.resourceType().strip().toUpperCase(Locale.ROOT)); }
         catch (IllegalArgumentException | NullPointerException ex) { throw BizException.badRequest("RESOURCE_TYPE_INVALID", "举报类型不支持"); }
@@ -46,8 +48,11 @@ public class ReportService {
                 if (repo.count("SELECT COUNT(*) FROM community_order_ratings WHERE id = ? AND is_hidden = 0", target) == 0) throw BizException.notFound("评价不存在或暂不可见");
             }
         }
-        long id = repo.insertReturningId("INSERT INTO community_reports(reporter_id, resource_type, resource_id, reason) VALUES (?, ?, ?, ?)",
-                actor, type.name(), target, text(request.reason(), "举报原因", 6, 500));
+        if(repo.count("SELECT COUNT(*) FROM community_reports WHERE reporter_id=? AND resource_type=? AND resource_id=? AND status='PENDING'",actor,type.name(),target)>0)throw BizException.conflict("REPORT_DUPLICATE","你已举报这条内容，正在等待审核，请勿重复提交");
+        var source=contexts.source(type.name(),target);
+        long id = repo.insertReturningId("INSERT INTO community_reports(reporter_id, resource_type, resource_id, reason,target_owner_id,content_snapshot,target_url) VALUES (?, ?, ?, ?,?,?,?)",
+                actor, type.name(), target, text(request.reason(), "举报原因", 6, 500),source==null?null:source.ownerId(),source==null?null:source.text(),source==null?null:source.url());
+        notifications.notify(actor,"REPORT_RECEIVED","举报已进入审核队列","举报编号 "+id+" 已关联原文和对象，由管理员核查；你可以在我的社区查看处理结果。");
         return report(id, false);
     }
 
@@ -80,6 +85,15 @@ public class ReportService {
                 WHERE id = ? AND status = 'PENDING'""", status, actor, action.name(), reason, id);
         // Report ID makes concurrent processing and each moderation decision separately traceable.
         support.audit(actor, "REPORT_PROCESS", "REPORT", id, report.status(), status, reason);
+        notifications.notify(report.reporterId(),"REPORT_PROCESSED","举报已有处理结果","举报编号 "+id+"："+reason+"。对结果有异议可提交客服工单。");
+        if(action==ReportAction.HIDE){
+            var source=contexts.source(report.resourceType(),report.resourceId());
+            if(source!=null&&source.ownerId()!=null)notifications.notify(source.ownerId(),"CONTENT_MODERATED","内容审核及信誉提醒","你的内容已由管理员核查后隐藏。原因："+reason+"。仅人工确认的记录参与站内信誉提示，可通过客服工单申诉。");
+            if("ORDER_REVIEW".equals(report.resourceType())){
+                Long ratee=repo.queryOne("SELECT ratee_id FROM community_order_ratings WHERE id=?",(rs,n)->rs.getLong(1),report.resourceId());
+                if(ratee!=null)notifications.notify(ratee,"REPUTATION_UPDATED","评价展示及信誉已更新","一条涉及你的评价已被管理员隐藏，该评价不再计入公开信誉统计。");
+            }
+        }
     }
 
     private void hide(Long actor, ReportItem report, String reason) {

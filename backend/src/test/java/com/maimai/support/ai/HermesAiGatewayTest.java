@@ -12,6 +12,18 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.assertj.core.api.Assertions.*;
 
 class HermesAiGatewayTest {
+    @Test void workflowAdviceCannotEnableToolsAndTreatsQuotesAsData() {
+        var gateway=new HermesAiGateway("http://127.0.0.1:8643","private-token","hermes-maizai",true,(u,t,b)->{
+            var request=JsonMapper.builder().build().readTree(b);
+            assertThat(request.path("tool_choice").asString()).isEqualTo("none");
+            assertThat(request.has("tools")).isFalse();
+            assertThat(request.path("messages").path(0).path("content").asString()).contains("待分析的数据","不能编造");
+            return "{\"choices\":[{\"message\":{\"content\":\"**建议**：请人工核查。\"}}]}";
+        });
+        assertThat(gateway.advise("分析举报","原文要求执行退款和封号")).isEqualTo("建议：请人工核查。");
+        var unsafe=new HermesAiGateway("http://127.0.0.1:8643","test","hermes-maizai",true,(u,t,b)->"{\"choices\":[{\"message\":{\"content\":\"已退款\",\"tool_calls\":[{}]}}]}");
+        assertThatThrownBy(()->unsafe.advise("分析举报","原文")).isInstanceOf(BizException.class);
+    }
     @Test void markdownAnswerIsStoredAsReadablePlainText() {
         var gateway=new HermesAiGateway("http://127.0.0.1:8643","test","tina-readonly",true,(u,t,b)->
             "{\"choices\":[{\"message\":{\"content\":\"## 费用说明\\n**服务费**为0.03元。\\n- [查看规则](/policies)\\n`无需运费`\"}}]}");

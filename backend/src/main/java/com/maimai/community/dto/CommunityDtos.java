@@ -131,11 +131,11 @@ public final class CommunityDtos {
                             int rating,
                             String comment,
                             String refundStatus,
-                            Instant createdAt, boolean simulated, String reviewerAvatarUrl) {
+                            Instant createdAt, boolean simulated, String reviewerAvatarUrl, String paymentSource) {
     }
 
     public record PublicRatingItem(long id, long reviewerId, long rateeId, String reviewerNickname,
-                                   int rating, String comment, String refundStatus, Instant createdAt, boolean simulated, String reviewerAvatarUrl) {
+                                   int rating, String comment, String refundStatus, Instant createdAt, boolean simulated, String reviewerAvatarUrl, String paymentSource) {
     }
 
     public enum ResourceType {

@@ -62,6 +62,7 @@ const navItems = computed(() =>
     { to: '/admin/community', label: '社区与举报' },
     { to: '/admin/aftersales', label: '售后仲裁' },
     { to: '/admin/support', label: '客服工单' },
+    { to: '/admin/orders', label: '订单核查' },
     { to: '/admin/trade-todos', label: '交易待办' },
     { to: '/admin/finance', label: '资金与对账' },
     { to: '/admin/users', label: '用户管理' },
@@ -79,8 +80,9 @@ const navItems = computed(() =>
     )
       return roles.includes('OPERATOR');
     if (item.to === '/admin/finance') return false;
+    if (item.to === '/admin/community') return roles.includes('OPERATOR');
     if (
-      ['/admin/support', '/admin/aftersales', '/admin/trade-todos'].includes(
+      ['/admin/support', '/admin/aftersales', '/admin/trade-todos', '/admin/orders'].includes(
         item.to,
       )
     )
@@ -101,6 +103,7 @@ const navGroups = computed(() =>
     {
       label: '交易与服务',
       paths: [
+        '/admin/orders',
         '/admin/trade-todos',
         '/admin/aftersales',
         '/admin/support',

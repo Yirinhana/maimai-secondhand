@@ -33,6 +33,12 @@ public class ProductDiscussionService {
         return p.result(repo.query(SELECT+" WHERE c.product_id=? AND "+VISIBLE+" ORDER BY c.created_at DESC,c.id DESC LIMIT ? OFFSET ?",MAPPER,product,p.size(),p.offset()),
             repo.count("SELECT COUNT(*) FROM product_comments c JOIN users u ON u.id=c.author_id WHERE c.product_id=? AND "+VISIBLE,product));
     }
+    public Comment detail(long product,long id){
+        support.publicProduct(product);
+        var result=repo.queryOne(SELECT+" WHERE c.product_id=? AND c.id=? AND "+VISIBLE,MAPPER,product,id);
+        if(result==null)throw com.maimai.common.BizException.notFound("留言已隐藏、删除或不属于这件商品");
+        return result;
+    }
     @Transactional
     public Comment create(long actor,long product,CreateComment request){
         support.lockUser(actor);support.publicProduct(product);

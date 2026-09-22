@@ -1,5 +1,7 @@
 # 麦麦二手
 
+本轮 AI 流程辅助、双向评价信誉、举报证据和管理数据关联的说明见 [v0.15.0 验证记录](docs/testing/linked-governance-v0150.md)。新版完整需求分析与 ER 图保存在 [第四组需求分析与ER图](docs/course/第四组需求分析与ER图-v0.15.0-20260922/)，原课程模板和旧报告保留。
+
 面向通用二手实物交易的课程项目，采用 Vue 3、TypeScript、Spring Boot、Java 21 和 MySQL。用户端与管理后台在同一个响应式网站中，商品、订单、社区、私信和客服按业务模块组织。
 
 当前已部署为腾讯云 **HTTPS 课程体验版**：[麦麦二手](https://market.example.com/)。示范商品仅供浏览，不接受真实下单。微信付款、退款和分账尚未开通，物流、SMTP 邮件及专用 Hermes 客服仍需各自配置后验收；公网不开启本地模拟支付或开发邮件入口。
@@ -33,6 +35,10 @@ GitHub 私有仓库 [Yirinhana/maimai-secondhand](https://github.com/Yirinhana/m
 根目录四份课程 DOCX 是原始提交模板，保持原样。需求和条款 DOCX 保存在 `docs/requirements/`、`docs/policies/`；本轮实施与验收以 `docs/testing/tencent-preview.md` 为入口。
 
 ## 本机启动
+
+Windows / VS Code 可直接运行 `backend/src/main/java/com/maimai/MaimaiLocalApplication.java`，或在“运行和调试”中选择“麦麦全站（数据库＋后端＋前端）”。它读取现有本地配置，依次启动项目 MySQL、Spring Boot 和 Vite，完成后访问 `http://127.0.0.1:5173/`。在启动器终端按回车会停止本次启动的服务；原本已运行并被复用的服务不受影响。`MaimaiApplication.java` 仍是仅启动后端的入口。
+
+该入口要求 Java 21、Maven、Node.js、已安装的前端依赖和已配置的本地数据库；不会安装软件、初始化或重置数据库。自动启动 MySQL 仅使用 `.local/mysql-data`，并需要已有 `.local/private/mysql-root.ini` 进行正常关闭；没有此开发配置的组员应先启动自己的项目数据库，按 [开发说明](docs/development.md) 配置参数。
 
 本工作区已配置独立 MySQL 开发实例 `127.0.0.1:3307`，与现有 MySQL80 服务分开；需要该实例运行。`.local/environment.json` 保存便携 Java/Maven 路径和本地数据库参数，脚本只设置当前进程环境。
 

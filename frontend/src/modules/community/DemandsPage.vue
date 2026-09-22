@@ -53,6 +53,11 @@ async function load() {
       });
       return;
     }
+    if (route.query.demandId && !mine.value) {
+      const demand = await get<Demand>(`/community/demands/${encodeURIComponent(String(route.query.demandId))}`);
+      items.value = [demand]; pages.value = 1; expanded.value = demand.id;
+      return;
+    }
     const r = await get<CommunityPage<Demand>>(
       `/community/demands${mine.value ? '/me' : ''}`,
       { page: page.value, size: 12 },
@@ -168,6 +173,7 @@ async function contact(id: number) {
     busy.value = false;
   }
 }
+watch(() => route.query.demandId, () => { page.value = 0; void load(); });
 watch(mine, () => {
   page.value = 0;
   void load();

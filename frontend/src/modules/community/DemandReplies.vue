@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import UserAvatar from '../../shared/components/UserAvatar.vue';
 import { askConfirmation } from '../../shared/confirm';
-import { onMounted, ref } from 'vue';
+import { onMounted, nextTick, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import { get, post, put, del, type ApiError } from '../../shared/api';
 import { useAuthStore } from '../../shared/stores/auth';
 import { formatTime } from '../../shared/format';
@@ -9,6 +10,7 @@ import { moderationText, type CommunityPage, type DemandReply } from './types';
 import MmButton from '../../shared/components/MmButton.vue';
 import MmPagination from '../../shared/components/MmPagination.vue';
 import ReportButton from './ReportButton.vue';
+const route = useRoute();
 const props = defineProps<{ demandId: number; closed: boolean }>(),
   auth = useAuthStore(),
   items = ref<DemandReply[]>([]),
@@ -27,6 +29,11 @@ async function load() {
       { page: page.value, size: 15 },
     );
     items.value = r.items;
+    const target=String(route.query.replyId ?? '');
+    if (/^\d+$/.test(target) && !r.items.some(item=>item.id===Number(target))) {
+      const linked=await get<DemandReply>(`/community/demands/${props.demandId}/replies/${target}`);
+      items.value=[linked,...r.items];
+    }
     pages.value = r.totalPages;
     if (auth.me) {
       const own = await get<CommunityPage<DemandReply>>(
@@ -39,6 +46,7 @@ async function load() {
           !items.value.some((p) => p.id === i.id),
       );
     }
+    if (target) { await nextTick(); document.getElementById(`demand-reply-${target}`)?.scrollIntoView({block:'center'}); }
   } catch (e) {
     error.value = (e as ApiError).message;
   }
@@ -87,7 +95,7 @@ onMounted(load);
   <section class="mm-stack">
     <h3>回复</h3>
     <p v-if="error" class="mm-error" role="alert">{{ error }}</p>
-    <article v-for="r in [...items, ...mine]" :key="r.id" class="mm-panel">
+    <article v-for="r in [...items, ...mine]" :key="r.id" :id="`demand-reply-${r.id}`" class="mm-panel">
       <div class="demand-reply-author">
         <UserAvatar
           :src="r.authorAvatarUrl"

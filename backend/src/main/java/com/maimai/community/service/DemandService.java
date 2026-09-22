@@ -124,6 +124,12 @@ public class DemandService {
         // Parent visibility remains in the SQL predicate, not just an earlier authorization check.
         return replyList("r.demand_id = ? AND r.status = 'PUBLISHED' AND r.is_deleted = 0 AND EXISTS (SELECT 1 FROM community_demand_posts d WHERE d.id = r.demand_id AND " + PUBLIC + ")", page, size, id);
     }
+    public DemandReplyItem publicReply(Long demandId,Long id){
+        visible(demand(demandId,false));
+        var result=replyList("r.id=? AND r.demand_id=? AND r.status='PUBLISHED' AND r.is_deleted=0",0,1,id,demandId);
+        if(result.items().isEmpty())throw BizException.notFound("回复已隐藏、删除或不属于这条求购");
+        return result.items().getFirst();
+    }
 
     public PageResult<DemandReplyItem> myReplies(Long actor, Integer page, Integer size) {
         support.self(actor);

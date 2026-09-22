@@ -28,6 +28,7 @@
         >刷新状态</MmButton
       >
     </header>
+    <WorkflowAssistant v-if="order" stage="ORDER" :resource-id="order.id" title="麦仔交易指引" />
     <div
       v-if="error"
       ref="errorNotice"
@@ -514,7 +515,8 @@
             v-if="
               order.fulfillmentStatus === 'COMPLETED' && (isBuyer || isSeller)
             "
-            :order-id="order.id"
+              :order-id="order.id"
+              :read-only="order.refundStatus === 'FULL' || (!!order.experienceSource && order.experienceSource !== 'maimai-experience-checkout-v1')"
           />
         </div>
 
@@ -597,6 +599,7 @@
 </template>
 
 <script setup lang="ts">
+import WorkflowAssistant from "../support/WorkflowAssistant.vue";
 import ItemImage from '../../shared/components/ItemImage.vue';
 import ExperiencePaymentPanel from './components/ExperiencePaymentPanel.vue';
 import { EXPERIENCE_ORDER_SOURCE } from './experiencePayment';

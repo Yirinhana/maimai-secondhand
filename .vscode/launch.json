@@ -1,0 +1,31 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "麦麦全站（数据库＋后端＋前端）",
+      "request": "launch",
+      "mainClass": "com.maimai.MaimaiLocalApplication",
+      "projectName": "maimai-backend",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "vmArgs": "-Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8"
+    },
+    {
+      "type": "java",
+      "name": "麦麦后端（本地 8081）",
+      "request": "launch",
+      "mainClass": "com.maimai.MaimaiApplication",
+      "projectName": "maimai-backend",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "vmArgs": "-Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8",
+      "args": [
+        "--spring.profiles.active=local",
+        "--server.port=8081",
+        "--spring.config.additional-location=file:${workspaceFolder}/.local/private/vscode-backend.properties"
+      ],
+      "preLaunchTask": "麦麦：准备后端本地配置"
+    }
+  ]
+}

@@ -8,6 +8,7 @@
     </div>
 
     <template v-else>
+      <WorkflowAssistant stage="LISTING" :resource-id="productId ?? undefined" :draft="[form.title, form.description].filter(Boolean).join('；')" title="发布前，让麦仔检查描述" />
       <p
         v-if="
           isEdit &&
@@ -464,6 +465,7 @@
 </template>
 
 <script setup lang="ts">
+import WorkflowAssistant from "../support/WorkflowAssistant.vue";
 import ItemImage from '../../shared/components/ItemImage.vue';
 import MapPicker, {
   type SelectedAddress,

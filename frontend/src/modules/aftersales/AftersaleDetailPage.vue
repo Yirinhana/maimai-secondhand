@@ -5,6 +5,7 @@
     </p>
     <p v-else-if="!detail" class="mm-aftersale-detail__hint">加载中…</p>
     <template v-else>
+      <WorkflowAssistant v-if="isBuyer || isSeller" stage="AFTERSALE" :resource-id="detail.id" title="麦仔售后指引" />
       <p v-if="detail.experience" class="mm-aftersale-detail__notice">
         体验售后：退款只更新体验记录，不发生实际资金退回；退货步骤也不需要寄送真实物品。
       </p>
@@ -18,7 +19,7 @@
               {{ AFTERSALE_TYPE_TEXT[detail.type] }} · 关联订单
               <RouterLink
                 v-if="isBuyer || isSeller || auth.isAdmin"
-                :to="`/orders/${detail.orderNo}`"
+                :to="`${auth.isAdmin && !isBuyer && !isSeller ? '/admin/orders' : '/orders'}/${detail.orderNo}`"
                 >{{ detail.orderNo }}</RouterLink
               ><span v-else>{{ detail.orderNo }}</span>
             </p>
@@ -363,6 +364,7 @@
 </template>
 
 <script setup lang="ts">
+import WorkflowAssistant from "../support/WorkflowAssistant.vue";
 import { computed, reactive, ref, watch } from 'vue';
 import { askConfirmation } from '../../shared/confirm';
 import { useRoute } from 'vue-router';

@@ -88,6 +88,10 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+        <configuration>
+          <!-- The second main class is a local process launcher, never a server entry. -->
+          <mainClass>com.maimai.MaimaiApplication</mainClass>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

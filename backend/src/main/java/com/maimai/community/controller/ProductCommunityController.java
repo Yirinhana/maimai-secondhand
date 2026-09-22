@@ -14,6 +14,7 @@ public class ProductCommunityController {
     private final ProductDiscussionService comments;private final RatingService ratings;
     public ProductCommunityController(ProductDiscussionService comments,RatingService ratings){this.comments=comments;this.ratings=ratings;}
     @GetMapping("/comments") public PageResult<ProductDiscussionService.Comment> list(@PathVariable long productId,@RequestParam(required=false) Integer page,@RequestParam(required=false) Integer size){return comments.list(productId,page,size);}
+    @GetMapping("/comments/{id}") public ProductDiscussionService.Comment detail(@PathVariable long productId,@PathVariable long id){return comments.detail(productId,id);}
     @PostMapping("/comments") public ProductDiscussionService.Comment create(@PathVariable long productId,@RequestBody @Valid ProductDiscussionService.CreateComment body){return comments.create(SecurityUtils.currentUserId(),productId,body);}
     @DeleteMapping("/comments/{id}") public ResponseEntity<Void> delete(@PathVariable long productId,@PathVariable long id){comments.delete(SecurityUtils.currentUserId(),productId,id);return ResponseEntity.noContent().build();}
     @GetMapping("/ratings") public PageResult<PublicRatingItem> ratings(@PathVariable long productId,@RequestParam(required=false) Integer page,@RequestParam(required=false) Integer size){return ratings.product(productId,page,size);}

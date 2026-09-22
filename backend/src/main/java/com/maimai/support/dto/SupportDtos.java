@@ -15,6 +15,6 @@ public final class SupportDtos {
     public record AiHelp(@NotNull SupportFaq.Topic topic) { }
     public record Ticket(long id, long ownerId, String ownerNickname, String title, String orderNo, String status,
                          Long assignedTo, Instant createdAt, Instant updatedAt) { }
-    public record Message(long id, long ticketId, Long authorId, String authorKind, String body, Instant createdAt) { }
+    public record Message(long id, long ticketId, Long authorId, String authorKind, String authorNickname, String body, Instant createdAt) { }
     public record Page<T>(List<T> items, long total, int page, int size, int totalPages) { }
 }

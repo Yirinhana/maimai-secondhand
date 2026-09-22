@@ -6,7 +6,8 @@ if ($ProductVersion -notmatch '^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$') { throw 'VE
 $script:MavenCommand = 'mvn'
 $localConfigPath = Join-Path $ProjectRoot '.local/environment.json'
 if (Test-Path -LiteralPath $localConfigPath) {
-    $localConfig = Get-Content -LiteralPath $localConfigPath -Raw | ConvertFrom-Json
+    # PowerShell 5.1 reads files without a BOM as ANSI, which corrupts Chinese tool paths.
+    $localConfig = Get-Content -LiteralPath $localConfigPath -Raw -Encoding UTF8 | ConvertFrom-Json
     $env:JAVA_HOME = $localConfig.javaHome
     $script:MavenCommand = Join-Path $localConfig.mavenHome 'bin/mvn.cmd'
     $env:MAIMAI_DB_HOST = $localConfig.database.host
@@ -16,7 +17,7 @@ if (Test-Path -LiteralPath $localConfigPath) {
 }
 $amapConfigPath = Join-Path $ProjectRoot '.local/private/amap.json'
 if (Test-Path -LiteralPath $amapConfigPath) {
-    $amapConfig = Get-Content -LiteralPath $amapConfigPath -Raw | ConvertFrom-Json
+    $amapConfig = Get-Content -LiteralPath $amapConfigPath -Raw -Encoding UTF8 | ConvertFrom-Json
     if ($amapConfig.platform -eq 'web-jsapi') {
         $env:MAIMAI_AMAP_JS_KEY = $amapConfig.key
         $env:MAIMAI_AMAP_SECURITY_CODE = $amapConfig.securityJsCode

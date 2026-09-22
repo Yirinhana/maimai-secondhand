@@ -52,6 +52,7 @@ class CommunityServiceIT {
                 fulfillment_status, pay_status, refund_status, expires_at, completed_at)
                 VALUES (?, 1, ?, ?, 'MEET', 1999, 0, 1999, 'COMPLETED', 'PAID', 'NONE', DATE_ADD(NOW(6), INTERVAL 1 DAY), NOW(6))""",
                 "CT" + UUID.randomUUID().toString().replace("-", "").substring(0, 28), buyer, seller);
+        jdbc.update("INSERT INTO payment_requests(pay_no,order_id,amount_cents,channel,status,simulated) VALUES(?,?,1999,'MOCK','PAID',1)","CP"+UUID.randomUUID().toString().replace("-", "").substring(0,26),order);
         login(buyer, "USER");
     }
 
@@ -73,6 +74,8 @@ class CommunityServiceIT {
         jdbc.update("DELETE FROM community_footprint_preferences WHERE user_id IN (" + placeholders + ")", args);
         jdbc.update("DELETE FROM community_seller_follows WHERE follower_id IN (" + placeholders + ")", args);
         jdbc.update("DELETE FROM community_favorites WHERE user_id IN (" + placeholders + ")", args);
+        jdbc.update("DELETE FROM notifications WHERE user_id IN (" + placeholders + ")", args);
+        jdbc.update("DELETE FROM payment_requests WHERE order_id=?",order);
         jdbc.update("DELETE FROM orders WHERE id = ?", order);
         jdbc.update("DELETE FROM products WHERE id = ?", product);
         jdbc.update("DELETE FROM categories WHERE id = ?", category);
@@ -282,7 +285,8 @@ class CommunityServiceIT {
         SecurityContextHolder.clearContext();
         var publicReview = service.listReceivedRatings(seller, 0, 20).items().getFirst();
         assertThat(publicReview.refundStatus()).isEqualTo("PARTIAL");
-        assertThat(publicReview.simulated()).isFalse();
+        assertThat(publicReview.simulated()).isTrue();
+        assertThat(publicReview.paymentSource()).isEqualTo("SIMULATED");
         jdbc.update("UPDATE orders SET experience_source='experience-test' WHERE id=?",order);
         assertThat(service.listReceivedRatings(seller,0,20).items().getFirst().simulated()).isTrue();
         assertThat(java.util.Arrays.stream(PublicRatingItem.class.getRecordComponents()).map(java.lang.reflect.RecordComponent::getName)).doesNotContain("orderId", "phone", "address");

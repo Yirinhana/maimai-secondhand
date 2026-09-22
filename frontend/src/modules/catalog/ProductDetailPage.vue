@@ -259,6 +259,7 @@
           </div>
         </aside>
       </div>
+      <WorkflowAssistant stage="PRODUCT" :resource-id="product.id" title="购买前，让麦仔帮你核对" />
       <ProductConversation :key="product.id" :product-id="product.id" />
     </template>
 
@@ -316,6 +317,7 @@
 </template>
 
 <script setup lang="ts">
+import WorkflowAssistant from "../support/WorkflowAssistant.vue";
 import { computed, onScopeDispose, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import ProductSocialActions from '../community/ProductSocialActions.vue';

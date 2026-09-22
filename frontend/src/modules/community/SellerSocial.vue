@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { ratingSourceText, ratingRefundText } from "./types";
 import UserAvatar from '../../shared/components/UserAvatar.vue';
-import { onMounted, ref } from 'vue';
+import { onMounted, nextTick, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { get, post, type ApiError } from '../../shared/api';
 import { useAuthStore } from '../../shared/stores/auth';
 import { formatTime } from '../../shared/format';
@@ -8,6 +10,7 @@ import type { CommunityPage, Rating } from './types';
 import MmButton from '../../shared/components/MmButton.vue';
 import MmPagination from '../../shared/components/MmPagination.vue';
 import ReportButton from './ReportButton.vue';
+const route = useRoute();
 const props = defineProps<{ sellerId: number; canFollow: boolean }>(),
   auth = useAuthStore(),
   ratings = ref<Rating[]>([]),
@@ -22,7 +25,13 @@ async function load() {
       { page: page.value, size: 10 },
     );
     ratings.value = r.items;
+    const target=/^#rating-(\d+)$/.exec(route.hash)?.[1];
+    if(target && !r.items.some(item=>item.id===Number(target))) {
+      const linked=await get<Rating>(`/community/users/${props.sellerId}/ratings/${target}`);
+      ratings.value=[linked,...r.items];
+    }
     pages.value = r.totalPages;
+    if(target){await nextTick();document.getElementById(`rating-${target}`)?.scrollIntoView({block:'center'});}
   } catch (e) {
     feedback.value = (e as ApiError).message;
   }
@@ -39,6 +48,7 @@ async function follow() {
   }
 }
 onMounted(load);
+watch(()=>route.hash,hash=>{if(hash.startsWith('#rating-'))void load();});
 </script>
 <template>
   <section class="mm-panel seller-reviews">
@@ -51,7 +61,7 @@ onMounted(load);
     <p v-if="feedback" class="mm-muted" role="status">{{ feedback }}</p>
     <h2>收到的交易评价</h2>
     <p v-if="!ratings.length" class="mm-muted">暂无公开评价</p>
-    <article v-for="r in ratings" :key="r.id">
+    <article v-for="r in ratings" :key="r.id" :id="`rating-${r.id}`">
       <div class="seller-reviews__author">
         <UserAvatar
           :src="r.reviewerAvatarUrl"
@@ -62,12 +72,12 @@ onMounted(load);
         }}</RouterLink
         ><span>{{ r.rating }} / 5 分</span>
       </div>
-      <small v-if="r.simulated" class="seller-reviews__source"
-        >体验成交评价 · 未发生真实交易</small
+      <small v-if="r.paymentSource!=='LIVE'" class="seller-reviews__source"
+        >{{ ratingSourceText[r.paymentSource || 'UNVERIFIED'] }}</small
       >
       <p>{{ r.comment || '未填写文字评价' }}</p>
       <p class="mm-muted">
-        {{ formatTime(r.createdAt) }} · 退款状态 {{ r.refundStatus }}
+        {{ formatTime(r.createdAt) }} · {{ ratingRefundText[r.refundStatus] || '退款状态待核查' }}
       </p>
       <ReportButton resource-type="ORDER_REVIEW" :resource-id="r.id" />
     </article>

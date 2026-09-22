@@ -221,6 +221,8 @@ const routes: RouteRecordRaw[] = [
     component: () => import('../modules/admin/AdminLayout.vue'),
     meta: { requiresAuth: true, admin: true },
     children: [
+      { path: 'orders', name: 'admin-orders', component: () => import('../modules/admin/OrdersPage.vue') },
+      { path: 'orders/:orderNo', name: 'admin-order-detail', component: () => import('../modules/admin/OrdersPage.vue') },
       {
         path: 'official',
         name: 'admin-official',

@@ -16,10 +16,12 @@ import static com.maimai.community.service.CommunitySupport.*;
 @Transactional(readOnly = true)
 public class RatingService {
     private static final String JOIN = " FROM community_order_ratings r JOIN users u ON u.id = r.rater_id JOIN orders o ON o.id = r.order_id LEFT JOIN user_avatars av ON av.user_id=u.id ";
-    private static final String SELECT = "SELECT r.*, u.nickname, CONCAT('/api/v1/avatars/',av.filename) reviewer_avatar_url, o.refund_status, (o.experience_source IS NOT NULL OR EXISTS (SELECT 1 FROM payment_requests pr WHERE pr.order_id=o.id AND pr.simulated=1)) simulated" + JOIN;
+    private static final String SELECT = "SELECT r.*, u.nickname, CONCAT('/api/v1/avatars/',av.filename) reviewer_avatar_url, o.refund_status, (o.experience_source IS NOT NULL OR EXISTS (SELECT 1 FROM payment_requests pr WHERE pr.order_id=o.id AND pr.simulated=1)) simulated, " + com.maimai.trade.service.TransactionProvenance.sql("o") + " payment_source" + JOIN;
+    private static final String VALID_PARTIES = "r.rater_id<>r.ratee_id AND ((r.rater_id=o.buyer_id AND r.ratee_id=o.seller_id) OR (r.rater_id=o.seller_id AND r.ratee_id=o.buyer_id))";
     private final CommunityRepository repo;
     private final CommunitySupport support;
-    public RatingService(CommunityRepository repo, CommunitySupport support) { this.repo = repo; this.support = support; }
+    private final com.maimai.notification.NotificationService notifications;
+    public RatingService(CommunityRepository repo, CommunitySupport support,com.maimai.notification.NotificationService notifications) { this.repo = repo; this.support = support;this.notifications=notifications; }
 
     @Transactional
     public RatingItem create(Long actor, Long orderId, RatingRequest request) {
@@ -28,11 +30,16 @@ public class RatingService {
         var comment = text(request.comment(), "评价", 0, 500);
         Order order = order(orderId, true);
         order.participant(actor);
+        if(order.buyer()==order.seller())throw BizException.conflict("RATING_ORDER_INVALID","订单买卖双方信息异常，请联系客服核查");
         if (!"COMPLETED".equals(order.status()) || order.completed() == null) throw BizException.conflict("ORDER_NOT_COMPLETED", "订单完成后才可评价");
+        if(repo.count("SELECT COUNT(*) FROM orders WHERE id=? AND pay_status='PAID' AND refund_status<>'FULL' AND (experience_source IS NULL OR experience_source=?) AND EXISTS(SELECT 1 FROM payment_requests pr WHERE pr.order_id=orders.id AND pr.status='PAID')",orderId,com.maimai.trade.domain.Order.INTERACTIVE_EXPERIENCE)!=1)throw BizException.conflict("RATING_ORDER_INVALID","仅已付款并完成交付的订单可以新增评价，全额退款和历史导入记录不参与新增评价");
         long ratee = actor == order.buyer() ? order.seller() : order.buyer();
         try {
             long id = repo.insertReturningId("INSERT INTO community_order_ratings(order_id, rater_id, ratee_id, rating, comment) VALUES (?, ?, ?, ?, ?)",
                     orderId, actor, ratee, request.rating(), comment);
+            String orderNo=repo.queryOne("SELECT order_no FROM orders WHERE id=?",(rs,n)->rs.getString(1),orderId);
+            notifications.notify(actor,"RATING_SUBMITTED","评价已提交","订单 "+orderNo+" 的评价已保存。有效评价将按付款来源分别计入站内信誉，模拟付款不代表真实资金交易。");
+            notifications.notify(ratee,"REPUTATION_UPDATED","收到交易评价","订单 "+orderNo+" 收到对方的评价，个人主页信誉已按有效记录更新。如评价失实，可在评价处举报并提供依据。");
             return repo.queryOne(SELECT + " WHERE r.id = ?", CommunityRows.RATING, id);
         } catch (DuplicateKeyException ex) {
             throw BizException.conflict("RATING_DUPLICATE", "该订单已评价，每方只能评价一次");
@@ -52,9 +59,9 @@ public class RatingService {
     /** Public user profiles expose reviews without private order identifiers. */
     public PageResult<PublicRatingItem> received(Long userId, Integer page, Integer size) {
         if (repo.count("SELECT COUNT(*) FROM users WHERE id = ? AND status = 'ACTIVE'", userId) == 0) throw BizException.notFound("用户不存在");
-        var result = list("r.ratee_id = ? AND r.is_hidden = 0", userId, page, size);
+        var result = list("r.ratee_id = ? AND r.is_hidden = 0 AND u.status='ACTIVE' AND "+VALID_PARTIES, userId, page, size);
         var rows = result.items().stream().map(r -> new PublicRatingItem(r.id(), r.reviewerId(), r.rateeId(),
-                r.reviewerNickname(), r.rating(), r.comment(), r.refundStatus(), r.createdAt(), r.simulated(), r.reviewerAvatarUrl())).toList();
+                r.reviewerNickname(), r.rating(), r.comment(), r.refundStatus(), r.createdAt(), r.simulated(), r.reviewerAvatarUrl(),r.paymentSource())).toList();
         return new PageResult<>(rows, result.total(), result.page(), result.size(), result.totalPages());
     }
 
@@ -63,10 +70,16 @@ public class RatingService {
         var rows = repo.query(SELECT + "WHERE " + filter + " ORDER BY r.created_at DESC, r.id DESC LIMIT ? OFFSET ?", CommunityRows.RATING, id, p.size(), p.offset());
         return p.result(rows, repo.count("SELECT COUNT(*)" + JOIN + "WHERE " + filter, id));
     }
+    public PublicRatingItem publicDetail(long userId,long id){
+        if(repo.count("SELECT COUNT(*) FROM users WHERE id=? AND status='ACTIVE'",userId)!=1)throw BizException.notFound("用户不存在");
+        var r=repo.queryOne(SELECT+" WHERE r.id=? AND r.ratee_id=? AND r.is_hidden=0 AND u.status='ACTIVE' AND "+VALID_PARTIES,CommunityRows.RATING,id,userId);
+        if(r==null)throw BizException.notFound("评价已不可见或不属于该账号");
+        return new PublicRatingItem(r.id(),r.reviewerId(),r.rateeId(),r.reviewerNickname(),r.rating(),r.comment(),r.refundStatus(),r.createdAt(),r.simulated(),r.reviewerAvatarUrl(),r.paymentSource());
+    }
     public PageResult<PublicRatingItem> product(Long productId,Integer page,Integer size) {
         support.publicProduct(productId);
         var result=list("r.is_hidden=0 AND r.rater_id=o.buyer_id AND r.ratee_id=o.seller_id AND o.fulfillment_status='COMPLETED' AND u.status='ACTIVE' AND EXISTS (SELECT 1 FROM order_items oi WHERE oi.order_id=o.id AND oi.product_id=?)",productId,page,size);
-        return new PageResult<>(result.items().stream().map(r->new PublicRatingItem(r.id(),r.reviewerId(),r.rateeId(),r.reviewerNickname(),r.rating(),r.comment(),r.refundStatus(),r.createdAt(),r.simulated(),r.reviewerAvatarUrl())).toList(),result.total(),result.page(),result.size(),result.totalPages());
+        return new PageResult<>(result.items().stream().map(r->new PublicRatingItem(r.id(),r.reviewerId(),r.rateeId(),r.reviewerNickname(),r.rating(),r.comment(),r.refundStatus(),r.createdAt(),r.simulated(),r.reviewerAvatarUrl(),r.paymentSource())).toList(),result.total(),result.page(),result.size(),result.totalPages());
     }
     private Order order(Long id, boolean lock) {
         var result = repo.queryOne("SELECT buyer_id, seller_id, fulfillment_status, completed_at FROM orders WHERE id = ?" + (lock ? " FOR UPDATE" : ""),

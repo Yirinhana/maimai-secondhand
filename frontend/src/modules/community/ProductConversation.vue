@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ratingSourceText } from "./types";
 import { ref, watch, onBeforeUnmount, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import { get, post, del, type ApiError } from '../../shared/api';
@@ -51,8 +52,15 @@ async function loadComments() {
     );
     if (run !== generation) return;
     comments.value = r.items;
+    const target = /^#discussion-(\d+)$/.exec(route.hash)?.[1];
+    if (target && !r.items.some(item => item.id === Number(target))) {
+      const linked = await get<Comment>(`/products/${props.productId}/comments/${target}`);
+      if (run !== generation) return;
+      comments.value = [linked, ...r.items];
+    }
     total.value = r.total;
     pages.value = r.totalPages;
+    if (target) { await nextTick(); document.getElementById(`discussion-${target}`)?.scrollIntoView({ block: 'center' }); }
   } catch (e) {
     if (run === generation) error.value = (e as ApiError).message;
   } finally {
@@ -145,6 +153,7 @@ onBeforeUnmount(() => {
   generation++;
   ratingGeneration++;
 });
+watch(() => route.hash, hash => { if (hash.startsWith('#discussion-')) void loadComments(); });
 </script>
 <template>
   <section
@@ -188,8 +197,8 @@ onBeforeUnmount(() => {
           >{{ '★'.repeat(rating.rating)
           }}{{ '☆'.repeat(5 - rating.rating) }}</span
         >
-        <small v-if="rating.simulated" class="product-talk__source"
-          >体验成交评价 · 未发生真实交易</small
+        <small v-if="rating.paymentSource!=='LIVE'" class="product-talk__source"
+          >{{ ratingSourceText[rating.paymentSource || 'UNVERIFIED'] }}</small
         >
         <p>{{ rating.comment || '买家没有填写文字评价' }}</p>
         <time>{{ formatTime(rating.createdAt) }}</time
@@ -262,6 +271,7 @@ onBeforeUnmount(() => {
     <article
       v-for="comment in comments"
       :key="comment.id"
+      :id="`discussion-${comment.id}`"
       class="product-talk__entry"
     >
       <UserAvatar

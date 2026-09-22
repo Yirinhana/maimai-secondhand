@@ -9,6 +9,7 @@
         >← 返回购物车</RouterLink
       >
     </header>
+    <WorkflowAssistant stage="GUIDE" title="下单前，了解费用与交付规则" />
     <ol class="mm-checkout__steps" aria-label="购买流程">
       <li>选择商品</li>
       <li aria-current="step">确认订单</li>
@@ -312,6 +313,7 @@
 </template>
 
 <script setup lang="ts">
+import WorkflowAssistant from "../support/WorkflowAssistant.vue";
 import CheckoutAddressEditor from './components/CheckoutAddressEditor.vue';
 import ItemImage from '../../shared/components/ItemImage.vue';
 import { computed, onMounted, reactive, ref } from 'vue';

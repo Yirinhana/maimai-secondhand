@@ -26,12 +26,8 @@
         </div>
       </MmCard>
 
-      <SellerSocial
-        :key="seller.id"
-        :seller-id="seller.id"
-        :can-follow="seller.sellerApproved"
-      />
-      <h2 class="mm-seller-page__heading">在售商品</h2>
+      <nav class="mm-actions" aria-label="店铺内容"><a href="#seller-products">先逛商品</a><a href="#seller-reputation">交易信誉与评价</a></nav>
+      <h2 id="seller-products" class="mm-seller-page__heading">在售商品</h2>
       <p v-if="productError" class="mm-seller-page__error" role="alert">
         {{ productError }}
         <MmButton variant="ghost" @click="loadProducts">重试</MmButton>
@@ -53,6 +49,8 @@
         </ul>
         <MmPagination :page="page" :total-pages="totalPages" @change="goPage" />
       </template>
+      <div id="seller-reputation"><ReputationCard :user-id="seller.id" /></div>
+      <SellerSocial :key="seller.id" :seller-id="seller.id" :can-follow="seller.sellerApproved" />
     </template>
   </div>
 </template>
@@ -61,6 +59,7 @@
 import { ref, watch } from 'vue';
 import UserAvatar from '../../shared/components/UserAvatar.vue';
 import SellerSocial from '../community/SellerSocial.vue';
+import ReputationCard from '../community/ReputationCard.vue';
 import { useRoute } from 'vue-router';
 import { get, type ApiError } from '../../shared/api';
 import EmptyState from '../../shared/components/EmptyState.vue';
@@ -156,8 +155,10 @@ watch(
   justify-content: space-between;
   gap: var(--mm-space-4);
 }
+.mm-seller-page__profile-inner > div:not(.mm-avatar) { min-width: 0; flex: 1; }
 
 .mm-seller-page__name {
+  overflow-wrap: anywhere;
   font-size: var(--mm-font-xl);
 }
 
@@ -167,6 +168,7 @@ watch(
 }
 
 .mm-seller-page__count {
+  flex-shrink: 0;
   font-weight: 700;
   color: var(--mm-primary);
   white-space: nowrap;
@@ -204,6 +206,8 @@ watch(
 }
 
 @media (max-width: 768px) {
+  .mm-seller-page__profile-inner { flex-wrap: wrap; gap: 12px; }
+  .mm-seller-page__count { flex-basis: 100%; margin: 0; padding-top: 8px; border-top: 1px solid var(--mm-border); }
   .mm-seller-page__grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--mm-space-3);

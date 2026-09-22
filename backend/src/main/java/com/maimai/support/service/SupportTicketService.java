@@ -25,7 +25,7 @@ public class SupportTicketService {
     private static final RowMapper<Ticket> TICKET = (r,n) -> new Ticket(r.getLong("id"), r.getLong("owner_id"), r.getString("nickname"),
             r.getString("title"), r.getString("order_no"), r.getString("status"), nullable(r,"assigned_to"), instant(r,"created_at"), instant(r,"updated_at"));
     private static final RowMapper<Message> MESSAGE = (r,n) -> new Message(r.getLong("id"), r.getLong("ticket_id"), nullable(r,"author_id"),
-            r.getString("author_kind"), r.getString("body"), instant(r,"created_at"));
+            r.getString("author_kind"), r.getString("author_name"), r.getString("body"), instant(r,"created_at"));
     private final JdbcTemplate jdbc;
     private final SimpleRateLimiter limiter;
     public SupportTicketService(JdbcTemplate jdbc, SimpleRateLimiter limiter) { this.jdbc=jdbc; this.limiter=limiter; }
@@ -59,7 +59,7 @@ public class SupportTicketService {
     public Page<Message> messages(long id,Integer page,Integer size) {
         access(ticket(id,false));
         var p=paging(page,size);
-        var rows=jdbc.query("SELECT * FROM support_messages WHERE ticket_id=? ORDER BY id DESC LIMIT ? OFFSET ?",MESSAGE,id,p[1],(long)p[0]*p[1]);
+        var rows=jdbc.query("SELECT m.*,u.nickname author_name FROM support_messages m LEFT JOIN users u ON u.id=m.author_id WHERE m.ticket_id=? ORDER BY m.id DESC LIMIT ? OFFSET ?",MESSAGE,id,p[1],(long)p[0]*p[1]);
         return page(rows,jdbc.queryForObject("SELECT COUNT(*) FROM support_messages WHERE ticket_id=?",Long.class,id),p);
     }
 
@@ -125,7 +125,7 @@ public class SupportTicketService {
     private Message addMessage(long id,Long author,String kind,String body) {
         long message=insert("INSERT INTO support_messages(ticket_id,author_id,author_kind,body) VALUES (?,?,?,?)",id,author,kind,body);
         jdbc.update("UPDATE support_tickets SET updated_at=NOW(6) WHERE id=?",id);
-        return jdbc.queryForObject("SELECT * FROM support_messages WHERE id=?",MESSAGE,message);
+        return jdbc.queryForObject("SELECT m.*,u.nickname author_name FROM support_messages m LEFT JOIN users u ON u.id=m.author_id WHERE m.id=?",MESSAGE,message);
     }
     private void audit(long ticket,long actor,String action,String before,String after) {
         jdbc.update("INSERT INTO support_action_logs(ticket_id,actor_id,action,before_state,after_state) VALUES (?,?,?,?,?)",ticket,actor,action,before,after);

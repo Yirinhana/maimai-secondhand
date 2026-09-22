@@ -87,6 +87,8 @@ export const pageInfo: Record<string, { title: string; section: string }> = {
   policies: { title: '用户协议与交易规则', section: 'help' },
   official: { title: '麦麦官方', section: 'official' },
   'official-article': { title: '官方内容', section: 'official' },
+  'admin-orders': { title: '订单核查', section: 'admin' },
+  'admin-order-detail': { title: '订单关联记录', section: 'admin' },
   'admin-dashboard': { title: '平台总览', section: 'admin' },
   'admin-categories': { title: '分类维护', section: 'admin' },
   'admin-finance': { title: '资金与对账', section: 'admin' },

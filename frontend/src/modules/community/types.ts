@@ -4,6 +4,10 @@ export interface Follow {id:number;sellerId:number;sellerNickname:string;followe
 export interface Footprint {id:number;productId:number;productTitle:string;productPriceCents:number;productStatus:string;viewedAt:string}
 export interface Demand {authorAvatarUrl?:string|null;id:number;authorId:number;authorNickname:string;title:string;description:string;budgetMinCents:number;budgetMaxCents:number;categoryId:number|null;region:string;status:string;isClosed:boolean;createdAt:string;updatedAt:string;reviewReason:string|null}
 export interface DemandReply {authorAvatarUrl?:string|null;id:number;demandId:number;authorId:number;authorNickname:string;content:string;status:string;createdAt:string;reviewReason:string|null}
-export interface Rating {simulated?:boolean;reviewerAvatarUrl?:string|null;id:number;orderId:number;reviewerId:number;rateeId:number;reviewerNickname:string;rating:number;comment:string|null;refundStatus:string;createdAt:string}
+export interface Rating {paymentSource?:string;simulated?:boolean;reviewerAvatarUrl?:string|null;id:number;orderId:number;reviewerId:number;rateeId:number;reviewerNickname:string;rating:number;comment:string|null;refundStatus:string;createdAt:string}
 export interface Report {id:number;reporterId:number;resourceType:string;resourceId:number;reason:string;status:string;processAction:string|null;processNote:string|null;createdAt:string}
 export const moderationText:Record<string,string>={PENDING:'等待审核',PUBLISHED:'已发布',APPROVED:'已通过',REJECTED:'未通过',HIDDEN:'已隐藏',CLOSED:'已关闭',PENDING_REVIEW:'等待审核',RESOLVED:'已处理',OPEN:'待处理'}
+
+export const ratingSourceText:Record<string,string>={HISTORICAL:'历史体验评价 · 不计入信誉等级',SIMULATED:'模拟付款评价 · 未发生真实资金收付',LIVE:'正式渠道交易评价',UNVERIFIED:'付款来源待核查 · 不计入信誉等级',UNPAID:'付款尚未完成 · 不计入信誉等级'};
+export const ratingRefundText:Record<string,string>={NONE:'无退款',PROCESSING:'退款处理中',PARTIAL:'已部分退款',FULL:'已全额退款'};
+export const reportStatusText:Record<string,string>={PENDING:'等待核查',RESOLVED:'已处理',DISMISSED:'未予支持',FORWARDED:'已转交处理'};
