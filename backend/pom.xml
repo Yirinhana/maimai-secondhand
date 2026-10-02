@@ -19,6 +19,10 @@
 
   <properties>
     <java.version>21</java.version>
+    <!-- Security patch overrides; revisit when the Spring Boot BOM includes these fixes. -->
+    <jackson-bom.version>3.1.7</jackson-bom.version>
+    <jackson-2-bom.version>2.21.7</jackson-2-bom.version>
+    <tomcat.version>11.0.25</tomcat.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
