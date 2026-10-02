@@ -98,9 +98,10 @@ public class HermesAiGateway implements SupportAiGateway {
         if(Set.of("api.minimaxi.com","api.minimax.io").contains(endpoint.getHost())) payload.put("reasoning_split",true);
         return json.writeValueAsString(payload);
     }
-    private static boolean safeAnswer(String content) {
+    private boolean safeAnswer(String content) {
         String lower=content.toLowerCase(java.util.Locale.ROOT);
-        return !content.isBlank()&&content.length()<=1800&&!lower.contains("<think")&&!lower.contains("</think>");
+        return !content.isBlank()&&content.length()<=1800&&!lower.contains("<think")&&!lower.contains("</think>")
+                && !(token.length() >= 8 && content.contains(token));
     }
     private static String cleanedAnswer(String content) {
         String answer=PlainReply.clean(content);

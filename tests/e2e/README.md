@@ -1,5 +1,7 @@
 # 本地网站端到端验收
 
+公开仓库不保存维护者的线上地址。历史远程验收脚本需要部署者显式配置 `MAIMAI_E2E_ALLOWED_ORIGIN`，并将对应套件的 BASE 变量设为同一个获准测试的地址；两个远程专用套件直接读取该变量。它不是生产安全保证：先检查套件是否会写数据、调用模型或发送消息，仅对自己的隔离测试站点使用，账号清单自行放在忽略的私密目录。
+
 v0.14.0 使用体验回归：在 `tests/e2e` 运行 `npx playwright test --config=playwright.057.config.cjs`。只连接 `127.0.0.1:5173`，覆盖搜索、列表恢复、请求竞态、私信、图片手势、结算响应丢失、导航错误及三类角色窄屏布局。复用种子账号测试会话以遵守登录限流；不要与大量登录的其他套件同时执行。受控网络响应和真实本地业务分别记录，报告及截图保存在 `.local/screenshots/057/`。
 
 缇娜组件专项：`node tests/e2e/node_modules/@playwright/test/cli.js test --config tests/e2e/playwright.039.config.cjs`（在项目根目录运行）。使用真实本地未接入AI的API检查权限和错误；两项明确标注controlled UI的用例使用浏览器受控回复，验证交互与退出隔离，不请求真实Hermes或发送邮件。

@@ -1,7 +1,7 @@
 const { chromium, expect } = require('@playwright/test');
 const fs = require('node:fs'), path = require('node:path');
 const ROOT=path.resolve(__dirname,'../..'), BASE=process.env.MAIMAI_045_BASE || 'http://127.0.0.1:5173';
-if(!['http://127.0.0.1:5173','https://market.example.com'].includes(BASE)) throw Error('Unapproved host');
+if(!['http://127.0.0.1:5173',process.env.MAIMAI_E2E_ALLOWED_ORIGIN].includes(BASE)) throw Error('Unapproved host');
 const users=JSON.parse(fs.readFileSync(path.join(ROOT,'.local/private/demo-accounts-040.json'),'utf8').replace(/^\uFEFF/,''));
 const catalog=JSON.parse(fs.readFileSync(path.join(ROOT,'deploy/catalog-experience-v070.json'),'utf8'));
 const report={base:BASE,checks:[],images:{},screenshots:[],errors:[]}, run=Date.now();

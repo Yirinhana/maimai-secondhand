@@ -1,91 +1,157 @@
-# 麦麦二手
+# 麦麦二手 · Maimai
 
-本轮 AI 流程辅助、双向评价信誉、举报证据和管理数据关联的说明见 [v0.15.0 验证记录](docs/testing/linked-governance-v0150.md)。新版完整需求分析与 ER 图保存在 [第四组需求分析与ER图](docs/course/第四组需求分析与ER图-v0.15.0-20260922/)，原课程模板和旧报告保留。
+[![CI](https://github.com/Yirinhana/maimai-secondhand/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Yirinhana/maimai-secondhand/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-面向通用二手实物交易的课程项目，采用 Vue 3、TypeScript、Spring Boot、Java 21 和 MySQL。用户端与管理后台在同一个响应式网站中，商品、订单、社区、私信和客服按业务模块组织。
+一个基于 Vue 3 与 Spring Boot 的开源二手交易平台，包含商品发布、购物交易、社区交流、售后评价和管理后台。项目从课程实践发展而来，适合学习完整 Web 业务的组织方式，也欢迎在此基础上继续开发。
 
-当前已部署为腾讯云 **HTTPS 课程体验版**：[麦麦二手](https://market.example.com/)。示范商品仅供浏览，不接受真实下单。微信付款、退款和分账尚未开通，物流、SMTP 邮件及专用 Hermes 客服仍需各自配置后验收；公网不开启本地模拟支付或开发邮件入口。
+麦麦把商品、买卖双方、订单、交付、售后和信誉连接在同一条业务流程中；AI 客服「麦仔」提供解释与建议，业务操作仍由用户确认、后端校验。
 
-v0.2.0 本地验证已完成：后端 **191/191**，新版界面专项 **5/5**，原交易流程 **9/9** 全部通过，包含高德真实地点检索。网站改为暖白/炭黑/橙色，分区布局、顶部导航、头像上传与菜单、官方文章管理均可实际使用。证据、交付包和剩余条件见 [v0.2.0验收记录](docs/testing/interface-renewal.md)；[v0.1.0记录](docs/testing/local-validation.md)保留用于追溯。
+## 可以做什么
 
-v0.2.1 继续打磨首页、发现、商品详情、账户和交易页面：手机高级筛选折叠、大图与键盘操作、密码显隐、失败重试、购物车与结算分区、浏览位置恢复。TypeScript/Vite 构建、4/4 独立账号交互用例及 21 个页面视口组合通过。支付方案保持原样。本轮范围与证据见 [v0.2.1验收记录](docs/testing/visual-ux-polish.md)；后端测试数量沿用上一版本记录，不计为本轮重新执行。
-
-v0.2.2 为五件示范商品配置图片，注册页加入独立生活场景配图，并明确标注商品图片为演示示意。后端 **193/193**、前端构建、12 个页面视口组合和候选包校验通过。本地五张示范图已备份后更新，其他上传图保持；当时的记录见 [v0.2.2 验收](docs/testing/demo-imagery.md)。
-
-v0.2.3 已完成腾讯云部署：独立 MySQL、Java 和受限运行用户，保留原 Hermes 与 MariaDB 客户端；随机密码管理员及零库存展示商品与本地开发数据分开。后端 **193/193**、前端构建、公网 **15 个页面视口组合**、真实高德搜索与逆地理编码、登录退出、开发接口隔离和备份恢复通过。每日本机备份已启用，另保存一份本机私密副本；注册邮件仍待配置。详见 [部署验收记录](docs/testing/tencent-preview.md)。本次版本仅本地提交和标签，未推送远程。
-
-GitHub 私有仓库 [Yirinhana/maimai-secondhand](https://github.com/Yirinhana/maimai-secondhand) 已建立，本地 origin 已确认直连正式 GitHub。CI 与 PR 模板已准备并通过本地 actionlint 静态检查，平台实际运行状态以 [GitHub Actions](https://github.com/Yirinhana/maimai-secondhand/actions) 为准；静态校验不能替代平台运行通过。远程推送遵循用户确认，流程见 [GitHub 协作说明](docs/development/github-workflow.md)。
-
-## 目录
-
-| 路径 | 用途 |
+| 模块 | 功能 |
 | --- | --- |
-| `frontend/src/` | 页面、公共组件、路由、状态及 API 客户端 |
-| `backend/src/main/java/com/maimai/` | 按业务划分的后端模块 |
-| `backend/src/main/resources/db/migration/` | Flyway 增量数据库迁移，已应用文件不得修改 |
-| `backend/src/test/` | 金额、权限、并发、HTTP 及真实 MySQL 测试 |
-| `tests/e2e/` | 独立 headless Chrome 浏览器验收 |
-| `.github/` | 真实 MySQL 后端测试、前端构建工作流及 PR 模板 |
-| `scripts/` | 启动、验证及候选包构建 |
-| `deploy/` | Ubuntu、Nginx、systemd 配置样例及部署说明 |
-| `docs/` | 已确认需求、条款、设计、课程模板映射及验证记录 |
-| `VERSION` | 产品版本唯一来源，Maven 构建时由脚本传入 |
-| `.local/` | 忽略的本地凭据、数据库、工具、日志、截图及构建包 |
+| 账号与身份 | 邮箱注册与找回密码、头像、地址、设备账号切换、卖家认证、角色权限 |
+| 商品与发现 | 多级分类、搜索筛选、图片、库存、收藏、讨论、发布草稿、审核和修改记录 |
+| 交易与交付 | 议价、购物车、按卖家拆单、快递与面交、一次性交付码、订单跟踪 |
+| 售后与信誉 | 仅退款、退货退款、部分退款、双向评价、信誉提醒、争议处理 |
+| 社区与沟通 | 求购与回复、关联商品的私信、未读提示、站内通知、人工客服工单 |
+| 管理后台 | 用户与商品审核、举报证据、订单售后、统计图表、数据来源区分、操作日志 |
+| AI 辅助 | 客服问答、发布建议、商品与订单解释、售后和评价建议、举报辅助分析 |
+| 交互 | 响应式页面、品牌欢迎页、可拖动贴边的麦仔客服入口 |
 
-根目录四份课程 DOCX 是原始提交模板，保持原样。需求和条款 DOCX 保存在 `docs/requirements/`、`docs/policies/`；本轮实施与验收以 `docs/testing/tencent-preview.md` 为入口。
+支付体验通过站内记录完成，不发生真实微信扣款、退款、到账或分账。体验收银页的二维码指向订单页面，不是个人微信收款码。真实支付渠道尚需另外实现和验收，详见 [支付设计](docs/design/experience-payments.md)。种子商品和生成图片是开发素材，不代表真实供货或成交。
 
-## 本机启动
+## 技术与结构
 
-Windows / VS Code 可直接运行 `backend/src/main/java/com/maimai/MaimaiLocalApplication.java`，或在“运行和调试”中选择“麦麦全站（数据库＋后端＋前端）”。它读取现有本地配置，依次启动项目 MySQL、Spring Boot 和 Vite，完成后访问 `http://127.0.0.1:5173/`。在启动器终端按回车会停止本次启动的服务；原本已运行并被复用的服务不受影响。`MaimaiApplication.java` 仍是仅启动后端的入口。
+前端使用 Vue 3、TypeScript、Vite、Pinia、Vue Router 和 Element Plus；后端使用 Java 21、Spring Boot、Spring Security、Spring Session JDBC 和 MySQL，数据库变更由 Flyway 管理。私信使用 WebSocket，部署样例采用 Nginx 与 systemd。
 
-该入口要求 Java 21、Maven、Node.js、已安装的前端依赖和已配置的本地数据库；不会安装软件、初始化或重置数据库。自动启动 MySQL 仅使用 `.local/mysql-data`，并需要已有 `.local/private/mysql-root.ini` 进行正常关闭；没有此开发配置的组员应先启动自己的项目数据库，按 [开发说明](docs/development.md) 配置参数。
+```text
+浏览器 / Vue
+    │ 同源 API、WebSocket
+    ▼
+Nginx（开发时由 Vite 代理）
+    ▼
+Spring Boot ─── MySQL / 受控图片存储
+    │
+    ├── 邮件、地图、物流适配器
+    └── 独立 Hermes 网关 ─── LLM 服务
+```
 
-本工作区已配置独立 MySQL 开发实例 `127.0.0.1:3307`，与现有 MySQL80 服务分开；需要该实例运行。`.local/environment.json` 保存便携 Java/Maven 路径和本地数据库参数，脚本只设置当前进程环境。
+| 目录 | 阅读入口 |
+| --- | --- |
+| `frontend/src/` | 页面、路由、状态与公共组件，业务页面位于 `modules/` |
+| `backend/src/main/java/com/maimai/` | 按业务模块组织的服务端代码；`MaimaiApplication` 是后端入口 |
+| `backend/src/main/resources/db/migration/` | 数据表与增量迁移 |
+| `backend/src/test/` | 权限、金额、库存、接口与 MySQL 集成测试 |
+| `tests/e2e/` | 浏览器场景测试，部分历史套件需要自行准备体验账号 |
+| `scripts/` | 本地启动、构建、测试与公开仓库检查 |
+| `deploy/` | 环境变量、Nginx、systemd、备份和 AI 网关样例 |
+| `docs/design/` | 架构、接口、数据字典与业务设计 |
+| `docs/testing/` | 各版本验证范围与结果，历史记录不代表当前部署状态 |
+| `VERSION` | 产品版本的唯一来源 |
 
-在两个 PowerShell 终端中分别运行：
+## 本地运行
+
+验证环境为 Java 21、Maven 3.9、Node.js 24 / npm 11、MySQL 8.4。MySQL 客户端软件不能代替数据库服务；请先启动自己的独立开发数据库。
+
+### 1. 获取源码与依赖
+
+```sh
+git clone https://github.com/Yirinhana/maimai-secondhand.git
+cd maimai-secondhand
+npm ci --prefix frontend
+```
+
+### 2. 准备数据库
+
+在本地 MySQL 中创建 `maimai` 和 `maimai_test`，字符集使用 `utf8mb4`；为项目创建独立账号，只授予这两个数据库的权限。Flyway 会在启动时创建和升级表，无需手动导入 SQL。测试库会写入测试数据，不能使用正式数据库。
+
+在启动后端的终端中配置：
+
+| 变量 | 含义 |
+| --- | --- |
+| `MAIMAI_DB_HOST` | 数据库地址，默认 `127.0.0.1` |
+| `MAIMAI_DB_PORT` | 默认 `3307`；自己的 MySQL 若使用 `3306`，请显式修改 |
+| `MAIMAI_DB_USER` | 独立项目账号，默认 `maimai` |
+| `MAIMAI_DB_PASSWORD` | 该账号的密码，无默认值 |
+
+不要将密码写入源码或提交到 Git。Windows 可使用以下方式输入密码，避免将密码字面量写入终端命令历史：
 
 ```powershell
+$env:MAIMAI_DB_HOST = '127.0.0.1'
+$env:MAIMAI_DB_PORT = '3306' # 改为自己的数据库端口
+$env:MAIMAI_DB_USER = 'maimai'
+$env:MAIMAI_DB_PASSWORD = [System.Net.NetworkCredential]::new('', (Read-Host '数据库密码' -AsSecureString)).Password
 ./scripts/dev-backend.ps1
-./scripts/dev-frontend.ps1
 ```
 
-浏览器打开 `http://127.0.0.1:5173`，后端监听 `127.0.0.1:8081`。不要同时启动两份后端。跨机器初始化和环境变量见 [开发说明](docs/development.md)。
+### 3. 启动前端
 
-仅 `local` 模式会初始化演示账号：`buyer@maimai.local`、`seller@maimai.local`、`seller2@maimai.local`、`admin@maimai.local`、`operator@maimai.local`、`support@maimai.local`，密码均为 `Maimai#2026`。这些是公开的本地测试数据，不能用于生产。
+在第二个终端运行：
 
-## 构建与验证
+```sh
+npm run dev --prefix frontend
+```
+
+打开 `http://127.0.0.1:5173/`。后端在 `127.0.0.1:8081`；Vite 代理 API 与 WebSocket。请统一使用 `127.0.0.1`，避免与 `localhost` 混用导致 Cookie 不一致。
+
+Linux / macOS 在设置上述环境变量后，可用以下命令启动后端：
+
+```sh
+mvn -f backend/pom.xml "-Drevision=$(tr -d '\r\n' < VERSION)" spring-boot:run \
+  -Dspring-boot.run.profiles=local -Dspring-boot.run.arguments=--server.port=8081
+```
+
+Windows / VS Code 还提供 `MaimaiLocalApplication.java` 全站启动器。它要求依赖和数据库已准备好，不负责安装软件、初始化数据库或重置密码，具体见 [开发说明](docs/development.md)。
+
+`local` 环境会创建以下公开测试账号，密码均为 `Maimai#2026`：
+
+| 身份 | 邮箱 |
+| --- | --- |
+| 买家 | `buyer@maimai.local` |
+| 卖家 | `seller@maimai.local`、`seller2@maimai.local` |
+| 超级管理员 | `admin@maimai.local` |
+| 运营 / 客服 | `operator@maimai.local`、`support@maimai.local` |
+
+这些账号只用于隔离的本地开发。生产不能开启 `local` / `test`，也不能导入开发用户表。
+
+## 外部服务与 AI
+
+基础业务可以在本地数据库上运行。邮件、地图、物流与模型服务需要部署者提供自己的配置，公开仓库不包含任何可用密钥。
+
+| 服务 | 本地行为 / 接入条件 |
+| --- | --- |
+| 邮件 | `local` 下将验证码写入忽略的捕获目录，不发送真实邮件；实际发信需 SMTP 配置 |
+| 高德地图 | 需要 JS API Key 与安全码；浏览器公开 Key，安全码由后端代理追加 |
+| 物流 | 实际轨迹需要物流服务配置与有效单号，模拟轨迹不能用作签收证明 |
+| AI | 未配置时拒绝模型调用，可使用帮助内容与人工工单；需独立只读 Hermes 网关或经核验的兼容端点 |
+
+麦仔使用 LLM，不是 JEPA 或独立执行交易的决策引擎。后端按用户权限组装业务上下文并对部分个人字段脱敏；客服自由文本会发送到所配置的模型服务，因此请勿在对话中填写密钥或其他敏感资料。发布、付款、退款、封号和举报裁决均不由模型自动执行。
+
+模型密钥仅在服务端保存，不能使用 `VITE_*` 变量注入浏览器。网站网关令牌与模型供应商 API Key 应分开配置。详细边界见 [安全说明](SECURITY.md) 和 [AI 密钥配置](docs/development/ai-secrets.md)。
+
+## 测试与构建
 
 ```powershell
-./scripts/test.ps1   # Maven verify、前端类型检查和构建
-./scripts/build.ps1  # 同样验证后生成带时间戳的 .local/releases/ 候选目录
+python -m unittest discover -s scripts/tests -v
+python scripts/check-public-repository.py
+python -m unittest discover -s deploy/tests -v
+npm test --prefix frontend
+./scripts/test.ps1
+./scripts/build.ps1
 ```
 
-后端测试连接独立的 `maimai_test` 数据库，不使用内存数据库。不要把测试配置指向正式数据。需安装 Java 21、Maven、Node 24/npm 11；前后端依赖分别由 Maven 和 npm 锁定/解析。Linux/macOS 可用 `scripts/build-all.sh` 验证，环境变量需事先设置。
+`test.ps1` 执行 Maven 验证与前端构建；后端集成测试需要独立 MySQL 测试库。`build.ps1` 在验证后生成 `.local/releases/` 候选包，包含 JAR、前端静态文件和部署样例，不包含凭据、数据库或用户上传文件。Linux / macOS 可参考 `scripts/build-all.sh`。
 
-首次运行 `test.ps1` 前先执行 `npm ci --prefix frontend` 安装锁定依赖；`build.ps1` 自带这一步。Windows 下执行 `npm ci` 或 `build.ps1` 前先在本项目 Vite 终端按 Ctrl+C，避免其占用 `esbuild.exe`，安装完成后再启动前端。
+浏览器测试从 `tests/e2e/` 运行，需要本地服务、Chrome 和各套件的数据条件，说明见 [浏览器测试](tests/e2e/README.md)。它们可能创建测试订单或消息，禁止把默认开发测试指向正式站点。
 
-浏览器测试在两个本地服务启动后执行：
+[GitHub Actions](https://github.com/Yirinhana/maimai-secondhand/actions) 在独立 MySQL 容器中验证后端，并执行前端构建和安全边界检查。请以对应提交的结果为准，不将历史测试数量当作当前承诺。
 
-```powershell
-cd tests/e2e
-npm ci
-npm test
-npm run test:interface
-npm run test:ux
-```
+## 部署与参与
 
-测试使用系统 Chrome 的独立 headless 实例，会在本地演示库创建测试订单、消息及售后材料；不操作用户已有浏览器，不发送外部邮件，也不进行真实扣款。
+生产部署需构建前端与 JAR、准备独立数据库、配置域名与 HTTPS，再通过 Nginx 将静态页面和后端接口接到同一域名。仅运行 Java 和前端开发服务器并不会自动完成这些步骤。参见 [部署指南](deploy/README.md)。所有示例地址均为占位地址，仓库不提供维护者的服务器入口。
 
-`npm test` 执行九项交易回归，含需要有效配置的真实高德地点搜索。`npm run test:interface` 执行新版分区、菜单、头像、官方内容权限及 360px 布局验收；只依赖本地演示账号和服务，会独立创建自己的资料、商品、模拟订单与售后，不读取历史截图作为输入。两套测试串行执行；界面套件结束后下架本次自己的测试商品，保留交易记录，官方测试文章通过页面撤回。结果与截图写入忽略的 `.local/screenshots/`。
+欢迎通过 Issue 反馈问题或提交 PR。开始前请阅读 [贡献指南](CONTRIBUTING.md)；安全问题请使用 [私密漏洞报告](https://github.com/Yirinhana/maimai-secondhand/security/advisories/new)，不要公开密钥、个人资料或攻击细节。
 
-`npm run test:ux` 执行 036 外观交互回归，注册独立的本地账号并保存该账号的头像、昵称、地址及购物车，读取现有商品。结算提交被测试浏览器拦截为 503，用于验证错误恢复与重试幂等，不创建订单、修改公共商品或进行支付。它与其他套件同样串行执行，详情见对应验收记录。
-
-## 核心约定
-
-- 商品实际成交金额按整数分计算，平台费为 `3/10000`，四舍五入到分，不含运费；部分退款按剩余商品金额重算。
-- 购物车按卖家与交付信息拆单，分别付款；同子订单运费取最高项，面交运费为零。
-- 会话与权限由后端校验。商品上传、私信图片和售后证据分别处理；私有图片必须通过授权端点读取。
-- 高德 JavaScript API 的公开 Key 供浏览器加载 SDK，安全码仅由后端代理追加。它与后端 Web 服务 Key 是不同配置。
-- `local` 仅监听回环地址；生产不能启用 `local/test`。所有凭据通过环境变量或忽略的本地文件提供。
-
-部署步骤、资源初值和外部条件见 [部署说明](deploy/README.md)。SSH、服务、域名、TLS 与资源的独立检查结果见 [服务器实测记录](docs/development/server-readiness.md)；备案资料仍未作为本轮独立验证结论。
+项目原创代码采用 [MIT License](LICENSE)。第三方依赖与课程模板保留各自许可，生成素材的用途和限制见 [素材说明](ASSETS.md)。开源代码不包含真实账号、课程个人报告、服务器凭据或线上业务数据，也不承诺开箱即用的商业支付服务。

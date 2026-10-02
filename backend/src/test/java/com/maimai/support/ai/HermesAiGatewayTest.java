@@ -12,6 +12,20 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.assertj.core.api.Assertions.*;
 
 class HermesAiGatewayTest {
+    @Test void credentialEchoIsRejectedInEveryAnswerRoute() {
+        String token="runtime-only-test-credential";
+        var gateway=new HermesAiGateway("http://127.0.0.1:8643",token,"readonly",true,(u,t,b)->
+                "{\"choices\":[{\"message\":{\"content\":\"Provider debug: "+token+"\"}}]}");
+        for(Runnable call:java.util.List.<Runnable>of(
+                ()->gateway.chat(java.util.List.of(new SupportAiGateway.ChatMessage("user","问题"))),
+                ()->gateway.advise("建议","描述"),
+                ()->gateway.explain(SupportFaq.Topic.FEES))) {
+            assertThatThrownBy(call::run).isInstanceOfSatisfying(BizException.class,error->{
+                assertThat(error.getCode()).isEqualTo("AI_RESPONSE_INVALID");
+                assertThat(error.getMessage()).doesNotContain(token);
+            });
+        }
+    }
     @Test void workflowAdviceCannotEnableToolsAndTreatsQuotesAsData() {
         var gateway=new HermesAiGateway("http://127.0.0.1:8643","private-token","hermes-maizai",true,(u,t,b)->{
             var request=JsonMapper.builder().build().readTree(b);

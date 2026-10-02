@@ -4,7 +4,8 @@ const fs = require('node:fs'),
   path = require('node:path'),
   crypto = require('node:crypto');
 const ROOT = path.resolve(__dirname, '../..');
-const BASE = 'https://market.example.com';
+const BASE = process.env.MAIMAI_E2E_ALLOWED_ORIGIN;
+if (!BASE || !BASE.startsWith('https://')) throw Error('Set MAIMAI_E2E_ALLOWED_ORIGIN to your explicitly approved HTTPS test site');
 const RUN = process.env.MAIMAI_042_RUN || Date.now().toString();
 const manifest = JSON.parse(
   fs

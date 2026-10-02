@@ -3,7 +3,7 @@ const { chromium, expect } = require('@playwright/test');
 const fs = require('node:fs'), path = require('node:path'), crypto = require('node:crypto');
 const ROOT = path.resolve(__dirname, '../..');
 const BASE = process.env.MAIMAI_043_BASE || 'http://127.0.0.1:5173';
-if (!['http://127.0.0.1:5173', 'https://market.example.com'].includes(BASE)) throw Error('Unapproved test host');
+if (!['http://127.0.0.1:5173', process.env.MAIMAI_E2E_ALLOWED_ORIGIN].includes(BASE)) throw Error('Unapproved test host');
 const live = process.env.MAIMAI_043_LIVE_AI === '1';
 const catalog = process.env.MAIMAI_043_CATALOG === '1';
 const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, '.local/private/demo-accounts-040.json'), 'utf8').replace(/^\uFEFF/, ''));

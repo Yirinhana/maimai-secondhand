@@ -19,6 +19,14 @@ CAPABILITIES = {"adapter": "maimai-hermes", "version": 1, "runtime": "Hermes AIA
                 "tools": [], "memory": False, "context_files": False, "shared_sessions": False}
 
 
+def safe_answer(answer):
+    if not isinstance(answer, str) or not answer.strip() or len(answer) > 1800 or "<think" in answer.lower():
+        return False
+    # Even an upstream diagnostic presented as a successful answer cannot expose known credentials.
+    return not any(secret and secret in answer for secret in
+                   (TOKEN, os.environ.get("MAIMAI_SITE_PROVIDER_KEY", "")))
+
+
 def agent_factory():
     from run_agent import AIAgent
     agent = AIAgent(
@@ -76,7 +84,8 @@ class Handler(BaseHTTPRequestHandler):
             pass
 
     def authorized(self):
-        return hmac.compare_digest(self.headers.get("Authorization", ""), "Bearer " + TOKEN)
+        return bool(TOKEN.strip()) and hmac.compare_digest(
+            self.headers.get("Authorization", "").encode("utf-8"), ("Bearer " + TOKEN).encode("utf-8"))
 
     def do_GET(self):
         if self.path == "/health":
@@ -109,9 +118,7 @@ class Handler(BaseHTTPRequestHandler):
             answer = result.get("final_response")
             # Hermes failures are not successful advice. Only accept a final plain assistant turn.
             history = result.get("messages", [])
-            print(json.dumps({"api_calls": result.get("api_calls"), "failed": result.get("failed"),
-                "exit_kind": str(result.get("turn_exit_reason", "unknown")).split("(", 1)[0].split(":", 1)[0][:70]}), flush=True)
-            if not isinstance(answer, str) or not answer.strip() or len(answer) > 1800 or "<think" in answer.lower():
+            if not safe_answer(answer):
                 raise RuntimeError("Invalid final answer")
             if any(m.get("tool_calls") or m.get("role") == "tool" for m in history if isinstance(m, dict)):
                 raise RuntimeError("Unexpected tool call")
@@ -132,8 +139,13 @@ class Handler(BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
     logging.disable(logging.CRITICAL)
-    probe = agent_factory()
-    probe.close()
+    try:
+        if len(TOKEN.strip()) < 32 or not os.environ.get("MAIMAI_SITE_PROVIDER_KEY", "").strip():
+            raise ValueError("Missing or weak credentials")
+        probe = agent_factory()
+        probe.close()
+    except Exception:
+        raise SystemExit("Hermes startup rejected; check private server configuration") from None
     print("Hermes website adapter ready; tools=0; memory=off; context=off", flush=True)
     server = ThreadingHTTPServer(("127.0.0.1", int(os.environ.get("MAIMAI_SITE_PORT", "8643"))), Handler)
     server.daemon_threads = True

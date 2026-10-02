@@ -12,6 +12,7 @@ import pwd
 import secrets
 import shutil
 import subprocess
+from urllib.parse import urlsplit
 from datetime import datetime, timezone
 
 
@@ -59,7 +60,10 @@ def main():
     (directory / "python").mkdir(mode=0o755, exist_ok=True)
     shutil.copy2(args.source_dir / "hermes-site-gateway.py", directory / "hermes-site-gateway.py")
     if not site_env.exists():
-        if not values.get("MAIMAI_HERMES_BASE_URL", "").startswith("https://api.minimaxi.com"):
+        provider = urlsplit(values.get("MAIMAI_HERMES_BASE_URL", ""))
+        if (provider.scheme != "https" or provider.hostname not in {"api.minimaxi.com", "api.minimax.io"}
+                or provider.username or provider.password or provider.query or provider.fragment
+                or provider.path not in {"", "/", "/v1", "/v1/"} or provider.port not in {None, 443}):
             raise SystemExit("Provider configuration changed; inspect before copying approved credentials")
         settings = {"MAIMAI_SITE_TOKEN": secrets.token_urlsafe(48), "MAIMAI_SITE_PROVIDER_URL": values["MAIMAI_HERMES_BASE_URL"],
                     "MAIMAI_SITE_PROVIDER_KEY": values["MAIMAI_HERMES_TOKEN"], "MAIMAI_SITE_MODEL": values["MAIMAI_HERMES_MODEL"]}

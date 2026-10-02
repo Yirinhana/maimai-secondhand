@@ -3,6 +3,7 @@ import importlib.util
 import os
 from pathlib import Path
 import unittest
+from unittest.mock import patch
 
 os.environ.setdefault("MAIMAI_SITE_TOKEN", "test-only-not-a-deployed-token")
 spec = importlib.util.spec_from_file_location("gateway", Path(__file__).parents[1] / "hermes-site-gateway.py")
@@ -11,6 +12,23 @@ spec.loader.exec_module(gateway)
 
 
 class RequestBoundaryTests(unittest.TestCase):
+    def test_provider_key_and_internal_token_cannot_be_returned_as_answers(self):
+        key = "only-a-unit-test-provider-credential"
+        with patch.dict(os.environ, {"MAIMAI_SITE_PROVIDER_KEY": key}):
+            self.assertFalse(gateway.safe_answer("Upstream debug: " + key))
+            self.assertFalse(gateway.safe_answer("Bearer " + gateway.TOKEN))
+            self.assertTrue(gateway.safe_answer("请核对订单状态后再申请售后。"))
+
+    def test_authorization_handles_invalid_text_and_rejects_empty_token(self):
+        handler = object.__new__(gateway.Handler)
+        handler.headers = {"Authorization": "Bearer 非法令牌"}
+        self.assertFalse(handler.authorized())
+        with patch.object(gateway, "TOKEN", ""):
+            handler.headers = {"Authorization": "Bearer "}
+            self.assertFalse(handler.authorized())
+        handler.headers = {"Authorization": "Bearer " + gateway.TOKEN}
+        self.assertTrue(handler.authorized())
+
     def payload(self):
         return {"tool_choice": "none", "messages": [
             {"role": "system", "content": "Only approved website rules"},

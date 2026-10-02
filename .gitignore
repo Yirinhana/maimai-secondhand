@@ -2,6 +2,8 @@
 .env
 .env.*
 !.env.example
+*.env
+!*.env.example
 node_modules/
 dist/
 target/
@@ -18,3 +20,24 @@ playwright-report/
 !.vscode/launch.json
 !.vscode/tasks.json
 ~$*.docx
+
+# Course originals, exports and private audit archives stay on the local machine.
+# Already tracked blank templates and the generic policy draft remain reviewable.
+*.docx
+*.pdf
+*.zip
+*.bundle
+/Codex 图像*.png
+
+# Runtime credentials and database exports must never be added by a broad git add.
+*.pem
+*.key
+*.p12
+*.pfx
+*.sqlite
+*.sqlite3
+*.db
+*.sql.gz
+*.sql.zst
+id_rsa
+id_ed25519

@@ -5,7 +5,7 @@ const fs = require('node:fs'),
 const ROOT = path.resolve(__dirname, '../..'),
   BASE = process.env.MAIMAI_044_BASE || 'http://127.0.0.1:5173';
 if (
-  !['http://127.0.0.1:5173', 'https://market.example.com'].includes(BASE)
+  !['http://127.0.0.1:5173', process.env.MAIMAI_E2E_ALLOWED_ORIGIN].includes(BASE)
 )
   throw Error('Unapproved host');
 const privateData = JSON.parse(
