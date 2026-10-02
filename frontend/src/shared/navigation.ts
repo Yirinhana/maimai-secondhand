@@ -77,7 +77,8 @@ export const pageInfo: Record<string, { title: string; section: string }> = {
   'aftersale-detail': { title: '售后详情', section: 'transaction' },
   account: { title: '个人中心', section: 'account' },
   'account-closure': { title: '账号注销申请', section: 'account' },
-  messages: { title: '消息中心', section: 'messages' },
+  notifications: { title: '消息中心', section: 'messages' },
+  messages: { title: '私信', section: 'messages' },
   'message-chat': { title: '私信对话', section: 'messages' },
   login: { title: '登录', section: 'auth' },
   register: { title: '注册', section: 'auth' },
@@ -175,7 +176,7 @@ export const sectionInfo: Record<
   messages: {
     label: '消息中心',
     links: [
-      { to: '/messages', label: '私信收件箱' },
+      { to: '/notifications', label: '消息中心' },
       { to: '/support', label: '联系平台客服' },
     ],
   },

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ratingSourceText, ratingRefundText } from "./types";
+import RatingDetails from './RatingDetails.vue';
+import { ratingSourceText, ratingRefundText } from './types';
 import UserAvatar from '../../shared/components/UserAvatar.vue';
 import { onMounted, nextTick, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
@@ -25,13 +26,20 @@ async function load() {
       { page: page.value, size: 10 },
     );
     ratings.value = r.items;
-    const target=/^#rating-(\d+)$/.exec(route.hash)?.[1];
-    if(target && !r.items.some(item=>item.id===Number(target))) {
-      const linked=await get<Rating>(`/community/users/${props.sellerId}/ratings/${target}`);
-      ratings.value=[linked,...r.items];
+    const target = /^#rating-(\d+)$/.exec(route.hash)?.[1];
+    if (target && !r.items.some((item) => item.id === Number(target))) {
+      const linked = await get<Rating>(
+        `/community/users/${props.sellerId}/ratings/${target}`,
+      );
+      ratings.value = [linked, ...r.items];
     }
     pages.value = r.totalPages;
-    if(target){await nextTick();document.getElementById(`rating-${target}`)?.scrollIntoView({block:'center'});}
+    if (target) {
+      await nextTick();
+      document
+        .getElementById(`rating-${target}`)
+        ?.scrollIntoView({ block: 'center' });
+    }
   } catch (e) {
     feedback.value = (e as ApiError).message;
   }
@@ -48,7 +56,12 @@ async function follow() {
   }
 }
 onMounted(load);
-watch(()=>route.hash,hash=>{if(hash.startsWith('#rating-'))void load();});
+watch(
+  () => route.hash,
+  (hash) => {
+    if (hash.startsWith('#rating-')) void load();
+  },
+);
 </script>
 <template>
   <section class="mm-panel seller-reviews">
@@ -72,12 +85,14 @@ watch(()=>route.hash,hash=>{if(hash.startsWith('#rating-'))void load();});
         }}</RouterLink
         ><span>{{ r.rating }} / 5 分</span>
       </div>
-      <small v-if="r.paymentSource!=='LIVE'" class="seller-reviews__source"
-        >{{ ratingSourceText[r.paymentSource || 'UNVERIFIED'] }}</small
-      >
+      <small v-if="r.paymentSource !== 'LIVE'" class="seller-reviews__source">{{
+        ratingSourceText[r.paymentSource || 'UNVERIFIED']
+      }}</small>
       <p>{{ r.comment || '未填写文字评价' }}</p>
+      <RatingDetails :id="r.id" />
       <p class="mm-muted">
-        {{ formatTime(r.createdAt) }} · {{ ratingRefundText[r.refundStatus] || '退款状态待核查' }}
+        {{ formatTime(r.createdAt) }} ·
+        {{ ratingRefundText[r.refundStatus] || '退款状态待核查' }}
       </p>
       <ReportButton resource-type="ORDER_REVIEW" :resource-id="r.id" />
     </article>

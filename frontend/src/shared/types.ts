@@ -152,6 +152,7 @@ export interface ProductImage {
 }
 
 export interface ProductDetail {
+  specifications?: Record<string, string>
   experienceSource?: string | null
   supplyNote?: string | null
   id: number
@@ -204,6 +205,7 @@ export interface SellerProductItem {
 }
 
 export interface ProductUpsertRequest {
+  specifications?: Record<string, string>
   title: string
   categoryId: number
   description: string
@@ -223,6 +225,7 @@ export interface ProductUpsertRequest {
 
 /** PUT /seller/products/{id} 修改：不含 submit，库存调整走 /stock 端点 */
 export interface ProductUpdateRequest {
+  specifications?: Record<string, string>
   title: string
   categoryId: number
   description: string

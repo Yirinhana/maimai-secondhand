@@ -31,8 +31,25 @@ interface Revision {
     status: ProductStatus;
     reviewReason: string | null;
     images: { path: string }[];
+    specifications?: Record<string, string>;
   };
 }
+const parameterLabels: Record<string, string> = {
+  brand: '品牌 / 型号',
+  accessories: '随附配件',
+  capacity: '容量 / 规格',
+  battery: '电池状态',
+  repair: '维修记录',
+  dimensions: '尺寸',
+  disassembly: '拆装情况',
+  transport: '搬运条件',
+  size: '尺码',
+  material: '材质',
+  care: '清洁与使用情况',
+  edition: '版本 / ISBN',
+  annotations: '笔记与缺页',
+  usage: '使用情况',
+};
 const props = defineProps<{ productId: number; admin?: boolean }>(),
   expanded = ref(false),
   items = ref<Revision[]>([]),
@@ -96,6 +113,9 @@ async function toggle() {
               ? item.content.shippingProvinces.join('、')
               : '全国'
           }}
+        </p>
+        <p v-for="(value, key) in item.content.specifications" :key="key">
+          {{ parameterLabels[key] || '商品参数' }}：{{ value }}
         </p>
         <p>退货承诺：{{ item.content.returnPromise || '未填写' }}</p>
         <p v-if="item.content.reviewReason">

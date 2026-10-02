@@ -12,8 +12,9 @@ mkdir -m 0700 "$backup"
 /opt/maimai/runtime/mysql/usr/bin/mysqldump --defaults-file=/etc/maimai/mysql-root.cnf \
   --single-transaction --routines --events --triggers --no-tablespaces --set-gtid-purged=OFF maimai \
   | gzip > "$backup/database.sql.gz"
-tar -C /var/lib/maimai -czf "$backup/images.tar.gz" \
-  uploads avatars private-message-images private-aftersale-images
+media_dirs=(uploads avatars private-message-images private-aftersale-images)
+if test -d /var/lib/maimai/personal-media; then media_dirs+=(personal-media); fi
+tar -C /var/lib/maimai -czf "$backup/images.tar.gz" "${media_dirs[@]}"
 cp /opt/maimai/current/VERSION "$backup/VERSION"
 cd "$backup"
 sha256sum database.sql.gz images.tar.gz VERSION > SHA256SUMS

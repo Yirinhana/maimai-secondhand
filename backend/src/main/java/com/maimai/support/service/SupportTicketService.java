@@ -28,7 +28,8 @@ public class SupportTicketService {
             r.getString("author_kind"), r.getString("author_name"), r.getString("body"), instant(r,"created_at"));
     private final JdbcTemplate jdbc;
     private final SimpleRateLimiter limiter;
-    public SupportTicketService(JdbcTemplate jdbc, SimpleRateLimiter limiter) { this.jdbc=jdbc; this.limiter=limiter; }
+    private final com.maimai.notification.NotificationService notifications;
+    public SupportTicketService(JdbcTemplate jdbc, SimpleRateLimiter limiter,com.maimai.notification.NotificationService notifications) { this.jdbc=jdbc; this.limiter=limiter; this.notifications=notifications; }
 
     @Transactional
     public Ticket create(CreateTicket input) {
@@ -42,8 +43,21 @@ public class SupportTicketService {
             if (rows.isEmpty()) throw BizException.notFound("订单不存在或不属于本人");
             orderId=rows.getFirst();
         }
+        var transcripts=new ArrayList<String[]>();
+        var requests=input.aiRequestIds()==null?java.util.List.<String>of():input.aiRequestIds().stream().distinct().toList();
+        if(requests.size()>5)throw BizException.badRequest("HANDOFF_LIMIT","最多附上5段问答");
+        for(String request:requests){
+            var turns=jdbc.query("SELECT question,answer FROM support_ai_turns WHERE owner_id=? AND request_id=? AND status='COMPLETE'",(r,n)->new String[]{r.getString(1),r.getString(2)},actor,request);
+            if(turns.isEmpty())throw BizException.notFound("所选问答已不可用，请重新选择");
+            transcripts.add(turns.getFirst());
+        }
         long id=insert("INSERT INTO support_tickets(owner_id,title,order_id) VALUES (?,?,?)",actor,title,orderId);
         addMessage(id,actor,"USER",body);
+        for(var turn:transcripts){
+            addMessage(id,actor,"USER","用户选择转交的提问：\n"+turn[0]);
+            addMessage(id,null,"AI","麦仔当时的回复（仅供客服参考）：\n"+turn[1]);
+        }
+        notifications.notify(actor,"SUPPORT","人工工单已提交",title+"，可在工单内跟进回复。","/support/tickets/"+id);
         audit(id,actor,"CREATE",null,"OPEN");
         return ticket(id,false);
     }
@@ -71,6 +85,7 @@ public class SupportTicketService {
         limiter.require("support:reply:"+actor,30,60,"工单回复频繁，请稍后重试");
         var result=addMessage(id,actor,t.ownerId()==actor?"USER":"STAFF",text(input.body(),2000));
         audit(id,actor,"MESSAGE",t.status(),t.status());
+        if(t.ownerId()!=actor)notifications.notify(t.ownerId(),"SUPPORT","客服回复了你的工单",t.title(),"/support/tickets/"+id);
         return result;
     }
 
@@ -98,6 +113,7 @@ public class SupportTicketService {
         jdbc.update("UPDATE support_tickets SET status=?,updated_at=NOW(6) WHERE id=?",state,id);
         String assigneeAfter="CLAIM".equals(action)?Long.toString(actor):"REOPEN".equals(action)?"null":String.valueOf(t.assignedTo());
         audit(id,actor,action,t.status()+":"+t.assignedTo(),state+":"+assigneeAfter);
+        notifications.notify(t.ownerId(),"SUPPORT","工单进度已更新",t.title()+"："+switch(state){case "CLOSED"->"已关闭";case "IN_PROGRESS"->"客服处理中";default->"等待接待";},"/support/tickets/"+id);
         return ticket(id,false);
     }
 

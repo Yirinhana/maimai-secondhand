@@ -30,7 +30,7 @@ public class ProductRevisionService {
     @Transactional(propagation=Propagation.MANDATORY)
     public void record(Product product,Long actorId,String action) {
         int version=jdbc.queryForObject("SELECT COALESCE(MAX(version),0)+1 FROM product_revisions WHERE product_id=?",Integer.class,product.getId());
-        Content content=new Content(product.getTitle(),product.getCategoryId(),product.getDescription(),product.getItemCondition().name(),product.getDefects(),product.getPriceCents(),product.getRegion(),ProductAssembler.splitDeliveryMethods(product.getDeliveryMethods()),product.getFreightCents(),product.getReturnPromise(),ProductShipping.split(product.getShippingProvinces()),product.getLatitude(),product.getLongitude(),assembler.images(product.getId()),product.getStatus().name(),product.getReviewReason(),product.getExperienceSource(),product.getSupplyNote());
+        Content content=new Content(product.getTitle(),product.getCategoryId(),product.getDescription(),product.getItemCondition().name(),product.getDefects(),product.getPriceCents(),product.getRegion(),ProductAssembler.splitDeliveryMethods(product.getDeliveryMethods()),product.getFreightCents(),product.getReturnPromise(),ProductShipping.split(product.getShippingProvinces()),product.getLatitude(),product.getLongitude(),assembler.images(product.getId()),product.getStatus().name(),product.getReviewReason(),product.getExperienceSource(),product.getSupplyNote(),ProductSpecifications.decode(product.getSpecifications()));
         jdbc.update("INSERT INTO product_revisions(product_id,version,action,actor_id,content) VALUES(?,?,?,?,?)",product.getId(),version,action,actorId,json.writeValueAsString(content));
     }
     @Transactional(readOnly=true)
@@ -48,7 +48,7 @@ public class ProductRevisionService {
     private DisplayContent display(Content c) {
         String category=jdbc.query("SELECT name FROM categories WHERE id=?",(rs,n)->rs.getString(1),c.categoryId()).stream().findFirst().orElse("原分类已调整");
         return new DisplayContent(c.title(),category,c.description(),c.condition(),c.defects(),c.priceCents(),c.region(),c.deliveryMethods(),c.freightCents(),c.returnPromise(),c.shippingProvinces(),
-                c.images()==null?List.of():c.images().stream().map(i->ProductImagePaths.publicUrl(i.path())).filter(Objects::nonNull).map(DisplayImage::new).toList(),c.status(),c.reviewReason());
+                c.images()==null?List.of():c.images().stream().map(i->ProductImagePaths.publicUrl(i.path())).filter(Objects::nonNull).map(DisplayImage::new).toList(),c.status(),c.reviewReason(),c.specifications());
     }
     private String actionLabel(String action) {
         return switch(action) {
@@ -69,6 +69,6 @@ public class ProductRevisionService {
     // API 仅返回业务展示内容；原始审计记录留在数据库，不向页面暴露内部编号和来源标记。
     public record Revision(int version,String actionLabel,Instant createdAt,DisplayContent content) {}
     public record DisplayImage(String path) {}
-    public record DisplayContent(String title,String categoryName,String description,String condition,String defects,long priceCents,String region,List<String> deliveryMethods,long freightCents,String returnPromise,List<String> shippingProvinces,List<DisplayImage> images,String status,String reviewReason) {}
-    public record Content(String title,long categoryId,String description,String condition,String defects,long priceCents,String region,List<String> deliveryMethods,long freightCents,String returnPromise,List<String> shippingProvinces,BigDecimal latitude,BigDecimal longitude,List<ImageItem> images,String status,String reviewReason,String experienceSource,String supplyNote) {}
+    public record DisplayContent(String title,String categoryName,String description,String condition,String defects,long priceCents,String region,List<String> deliveryMethods,long freightCents,String returnPromise,List<String> shippingProvinces,List<DisplayImage> images,String status,String reviewReason,Map<String,String> specifications) {}
+    public record Content(String title,long categoryId,String description,String condition,String defects,long priceCents,String region,List<String> deliveryMethods,long freightCents,String returnPromise,List<String> shippingProvinces,BigDecimal latitude,BigDecimal longitude,List<ImageItem> images,String status,String reviewReason,String experienceSource,String supplyNote,Map<String,String> specifications) {}
 }

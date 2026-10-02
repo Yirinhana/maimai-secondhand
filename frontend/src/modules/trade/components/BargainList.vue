@@ -1,17 +1,165 @@
 <script setup lang="ts">
-import {onMounted,ref} from 'vue'
-import {useRouter} from 'vue-router'
-import {get,post,type ApiError} from '../../../shared/api'
-import {BARGAIN_STATUS_TEXT,type Bargain,type DeliveryMethod,type ProductDetail} from '../../../shared/types'
-import {formatTime} from '../../../shared/format'
-import MmButton from '../../../shared/components/MmButton.vue'
-import PriceText from '../../../shared/components/PriceText.vue'
-import EmptyState from '../../../shared/components/EmptyState.vue'
-const props=defineProps<{role:'buyer'|'seller'}>()
-const router=useRouter(),items=ref<Bargain[]>([]),error=ref(''),busy=ref(false),loading=ref(true),counter=ref<Record<number,string>>({}),delivery=ref<Record<number,DeliveryMethod>>({})
-async function load(){error.value='';try{items.value=await get<Bargain[]>(props.role==='buyer'?'/me/bargains':'/seller/bargains')}catch(e){error.value=(e as ApiError).message}finally{loading.value=false}}
-async function action(id:number,kind:string){busy.value=true;error.value='';try{let payload:unknown=undefined;if(kind==='counter'){const price=Number(counter.value[id]);if(!Number.isFinite(price)||price<=0)throw new Error('请输入有效还价');payload={counterPriceCents:Math.round(price*100)}}await post(`/${props.role==='buyer'?'me':'seller'}/bargains/${id}/${kind}`,payload);await load()}catch(e){error.value=(e as ApiError).message}finally{busy.value=false}}
-async function checkout(item:Bargain){busy.value=true;error.value='';try{const p=await get<ProductDetail>(`/products/${item.productId}`);const method=delivery.value[item.id]??p.deliveryMethods[0];if(!method||!p.deliveryMethods.includes(method))throw new Error('此商品不支持选定交付方式');await router.push({path:'/checkout',query:{items:JSON.stringify([{productId:item.productId,quantity:item.quantity,deliveryMethod:method,bargainId:item.id,priceCents:item.counterPriceCents??item.offerPriceCents}])}})}catch(e){error.value=(e as ApiError).message}finally{busy.value=false}}
-onMounted(load)
+import { onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { get, post, type ApiError } from '../../../shared/api';
+import {
+  BARGAIN_STATUS_TEXT,
+  type Bargain,
+  type DeliveryMethod,
+  type ProductDetail,
+} from '../../../shared/types';
+import { formatTime } from '../../../shared/format';
+import MmButton from '../../../shared/components/MmButton.vue';
+import PriceText from '../../../shared/components/PriceText.vue';
+import EmptyState from '../../../shared/components/EmptyState.vue';
+const props = defineProps<{ role: 'buyer' | 'seller' }>();
+const router = useRouter(),
+  items = ref<Bargain[]>([]),
+  error = ref(''),
+  busy = ref(false),
+  loading = ref(true),
+  counter = ref<Record<number, string>>({}),
+  delivery = ref<Record<number, DeliveryMethod>>({});
+async function load() {
+  error.value = '';
+  try {
+    items.value = await get<Bargain[]>(
+      props.role === 'buyer' ? '/me/bargains' : '/seller/bargains',
+    );
+  } catch (e) {
+    error.value = (e as ApiError).message;
+  } finally {
+    loading.value = false;
+  }
+}
+async function action(id: number, kind: string) {
+  busy.value = true;
+  error.value = '';
+  try {
+    let payload: unknown = undefined;
+    if (kind === 'counter') {
+      const price = Number(counter.value[id]);
+      if (!Number.isFinite(price) || price <= 0)
+        throw new Error('请输入有效还价');
+      payload = { counterPriceCents: Math.round(price * 100) };
+    }
+    await post(
+      `/${props.role === 'buyer' ? 'me' : 'seller'}/bargains/${id}/${kind}`,
+      payload,
+    );
+    await load();
+  } catch (e) {
+    error.value = (e as ApiError).message;
+  } finally {
+    busy.value = false;
+  }
+}
+async function checkout(item: Bargain) {
+  busy.value = true;
+  error.value = '';
+  try {
+    const p = await get<ProductDetail>(`/products/${item.productId}`);
+    const method = delivery.value[item.id] ?? p.deliveryMethods[0];
+    if (!method || !p.deliveryMethods.includes(method))
+      throw new Error('此商品不支持选定交付方式');
+    await router.push({
+      path: '/checkout',
+      query: {
+        items: JSON.stringify([
+          {
+            productId: item.productId,
+            quantity: item.quantity,
+            deliveryMethod: method,
+            bargainId: item.id,
+            priceCents: item.counterPriceCents ?? item.offerPriceCents,
+          },
+        ]),
+      },
+    });
+  } catch (e) {
+    error.value = (e as ApiError).message;
+  } finally {
+    busy.value = false;
+  }
+}
+onMounted(load);
 </script>
-<template><section class="mm-stack"><p class="mm-notice">议价有效期 24 小时，仅对本次商品和数量有效；议价不预留库存。</p><p v-if="error" class="mm-error" role="alert">{{error}}</p><p v-if="loading">正在加载…</p><article v-for="item in items" :key="item.id" class="mm-panel"><div class="mm-actions"><RouterLink :to="`/products/${item.productId}`"><strong>{{item.productTitle||'商品'}}</strong></RouterLink><span class="mm-chip">{{BARGAIN_STATUS_TEXT[item.status]}}</span></div><p>{{role==='seller'?item.buyerNickname:item.sellerNickname}} · {{item.quantity}} 件 · 报价 <PriceText :cents="item.offerPriceCents" /><template v-if="item.counterPriceCents!==null"> · 卖家还价 <PriceText :cents="item.counterPriceCents" /></template></p><p class="mm-muted">有效至 {{formatTime(item.expiresAt)}}</p><div v-if="role==='seller'&&item.status==='PENDING'" class="mm-actions"><MmButton :disabled="busy" @click="action(item.id,'accept')">接受报价</MmButton><MmButton variant="ghost" :disabled="busy" @click="action(item.id,'reject')">拒绝</MmButton><label>还价（元） <input v-model="counter[item.id]" type="number" min="0.01" step="0.01" :aria-label="`${item.productTitle}还价`" /></label><MmButton variant="ghost" :disabled="busy" @click="action(item.id,'counter')">发送还价</MmButton></div><MmButton v-if="role==='buyer'&&item.status==='COUNTERED'" :disabled="busy" @click="action(item.id,'confirm')">确认卖家还价</MmButton><div v-if="role==='buyer'&&item.status==='CONFIRMED'" class="mm-actions"><label>交付方式 <select v-model="delivery[item.id]"><option :value="undefined">使用商品默认方式</option><option value="EXPRESS">快递</option><option value="MEETUP">面交</option></select></label><MmButton :disabled="busy" @click="checkout(item)">按议价下单</MmButton></div></article><EmptyState v-if="!loading&&!items.length" title="暂无议价" /></section></template>
+<template>
+  <section class="mm-stack">
+    <p class="mm-notice">
+      议价有效期 24 小时，仅对本次商品和数量有效；议价不预留库存。
+    </p>
+    <p v-if="error" class="mm-error" role="alert">{{ error }}</p>
+    <p v-if="loading">正在加载…</p>
+    <article
+      v-for="item in items"
+      :key="item.id"
+      :id="String(item.id)"
+      class="mm-panel"
+    >
+      <div class="mm-actions">
+        <RouterLink :to="`/products/${item.productId}`"
+          ><strong>{{ item.productTitle || '商品' }}</strong></RouterLink
+        ><span class="mm-chip">{{ BARGAIN_STATUS_TEXT[item.status] }}</span>
+      </div>
+      <p>
+        {{ role === 'seller' ? item.buyerNickname : item.sellerNickname }} ·
+        {{ item.quantity }} 件 · 报价
+        <PriceText :cents="item.offerPriceCents" /><template
+          v-if="item.counterPriceCents !== null"
+        >
+          · 卖家还价 <PriceText :cents="item.counterPriceCents"
+        /></template>
+      </p>
+      <p class="mm-muted">有效至 {{ formatTime(item.expiresAt) }}</p>
+      <div
+        v-if="role === 'seller' && item.status === 'PENDING'"
+        class="mm-actions"
+      >
+        <MmButton :disabled="busy" @click="action(item.id, 'accept')"
+          >接受报价</MmButton
+        ><MmButton
+          variant="ghost"
+          :disabled="busy"
+          @click="action(item.id, 'reject')"
+          >拒绝</MmButton
+        ><label
+          >还价（元）
+          <input
+            v-model="counter[item.id]"
+            type="number"
+            min="0.01"
+            step="0.01"
+            :aria-label="`${item.productTitle}还价`" /></label
+        ><MmButton
+          variant="ghost"
+          :disabled="busy"
+          @click="action(item.id, 'counter')"
+          >发送还价</MmButton
+        >
+      </div>
+      <MmButton
+        v-if="role === 'buyer' && item.status === 'COUNTERED'"
+        :disabled="busy"
+        @click="action(item.id, 'confirm')"
+        >确认卖家还价</MmButton
+      >
+      <div
+        v-if="role === 'buyer' && item.status === 'CONFIRMED'"
+        class="mm-actions"
+      >
+        <label
+          >交付方式
+          <select v-model="delivery[item.id]">
+            <option :value="undefined">使用商品默认方式</option>
+            <option value="EXPRESS">快递</option>
+            <option value="MEETUP">面交</option>
+          </select></label
+        ><MmButton :disabled="busy" @click="checkout(item)"
+          >按议价下单</MmButton
+        >
+      </div>
+    </article>
+    <EmptyState v-if="!loading && !items.length" title="暂无议价" />
+  </section>
+</template>

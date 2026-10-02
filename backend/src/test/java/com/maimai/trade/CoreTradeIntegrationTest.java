@@ -567,7 +567,7 @@ class CoreTradeIntegrationTest {
     }
 
     private com.maimai.catalog.dto.CatalogDtos.ProductUpdateRequest edit(String title,List<String> provinces) {
-        return new com.maimai.catalog.dto.CatalogDtos.ProductUpdateRequest(title,1L,"修订商品描述","GOOD","已披露缺陷",10000L,null,"上海市",List.of("EXPRESS","MEETUP"),1200L,"按约售后",provinces,new java.math.BigDecimal("31.23"),new java.math.BigDecimal("121.47"));
+        return new com.maimai.catalog.dto.CatalogDtos.ProductUpdateRequest(title,1L,"修订商品描述","GOOD","已披露缺陷",10000L,null,"上海市",List.of("EXPRESS","MEETUP"),1200L,"按约售后",provinces,new java.math.BigDecimal("31.23"),new java.math.BigDecimal("121.47"),null);
     }
     private OrderDto create(String method) {return checkout.checkout(buyer,request(UUID.randomUUID().toString(),method,1)).orders().getFirst();}
     private OrderDto paid(String method) {

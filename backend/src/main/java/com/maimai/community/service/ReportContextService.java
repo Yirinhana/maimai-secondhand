@@ -25,7 +25,7 @@ public class ReportContextService {
             case "PRODUCT_COMMENT" -> repo.queryOne("SELECT author_id,content,product_id FROM product_comments WHERE id=?",(rs,n)->new Source(rs.getLong(1),rs.getString(2),"/products/"+rs.getLong(3)+"#discussion-"+id),id);
             case "DEMAND_POST" -> repo.queryOne("SELECT author_id,CONCAT(title,'\n',description) FROM community_demand_posts WHERE id=?",(rs,n)->new Source(rs.getLong(1),rs.getString(2),"/community/demands?demandId="+id),id);
             case "DEMAND_REPLY" -> repo.queryOne("SELECT author_id,content,demand_id FROM community_demand_replies WHERE id=?",(rs,n)->new Source(rs.getLong(1),rs.getString(2),"/community/demands?demandId="+rs.getLong(3)+"&replyId="+id),id);
-            case "ORDER_REVIEW" -> repo.queryOne("SELECT rater_id,CONCAT(rating,'分\n',COALESCE(comment,'')),ratee_id FROM community_order_ratings WHERE id=?",(rs,n)->new Source(rs.getLong(1),rs.getString(2),"/sellers/"+rs.getLong(3)+"#rating-"+id),id);
+            case "ORDER_REVIEW" -> repo.queryOne("SELECT r.rater_id,CONCAT(r.rating,'分\n',COALESCE(r.comment,''),CASE WHEN r.followup IS NULL THEN '' ELSE CONCAT('\n追加评价：',r.followup) END,CASE WHEN EXISTS(SELECT 1 FROM rating_images i WHERE i.rating_id=r.id) THEN CONCAT('\n附图', (SELECT COUNT(*) FROM rating_images i WHERE i.rating_id=r.id),'张，请打开原评价核查；本次文本分析不识别图片。') ELSE '' END),r.ratee_id FROM community_order_ratings r WHERE r.id=?",(rs,n)->new Source(rs.getLong(1),rs.getString(2),"/sellers/"+rs.getLong(3)+"#rating-"+id),id);
             default -> null;
         };
     }

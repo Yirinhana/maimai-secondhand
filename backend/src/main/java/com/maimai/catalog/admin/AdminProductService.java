@@ -143,6 +143,6 @@ public class AdminProductService {
         if (reason != null && !reason.isBlank()) {
             content.append("理由：").append(reason);
         }
-        notificationService.notify(product.getSellerId(), "PRODUCT_REVIEW", title, content.toString());
+        notificationService.notify(product.getSellerId(), "PRODUCT_REVIEW", title, content.toString(),"/publish/"+product.getId());
     }
 }

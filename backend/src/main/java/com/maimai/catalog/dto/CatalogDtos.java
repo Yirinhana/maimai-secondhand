@@ -62,7 +62,7 @@ public final class CatalogDtos {
                                 SellerBrief seller,
                                 Instant createdAt, List<String> shippingProvinces,
                                 java.math.BigDecimal latitude, java.math.BigDecimal longitude,
-                                String experienceSource, String supplyNote) {
+                                String experienceSource, String supplyNote, long categoryId, java.util.Map<String,String> specifications) {
     }
 
     public record SellerProfile(long id, String nickname, Instant joinedAt, long onSaleCount, String avatarUrl, boolean sellerApproved) {
@@ -72,7 +72,7 @@ public final class CatalogDtos {
             String condition, String defects, long priceCents, int stockAvailable, int stockReserved,
             int stockSold, String region, List<String> deliveryMethods, long freightCents,
             String returnPromise, String status, String reviewReason, List<ImageItem> images,
-            List<String> shippingProvinces,java.math.BigDecimal latitude,java.math.BigDecimal longitude) {}
+            List<String> shippingProvinces,java.math.BigDecimal latitude,java.math.BigDecimal longitude,java.util.Map<String,String> specifications) {}
 
     /** 卖家“我的商品”列表项：含全部状态与审核原因。 */
     public record SellerProductItem(long id,
@@ -104,7 +104,7 @@ public final class CatalogDtos {
                                        @NotNull @Min(0) Long freightCents,
                                        @Size(max = 200) String returnPromise,
                                        Boolean submit, List<String> shippingProvinces,
-                                       java.math.BigDecimal latitude,java.math.BigDecimal longitude) {
+                                       java.math.BigDecimal latitude,java.math.BigDecimal longitude,java.util.Map<String,String> specifications) {
     }
 
     /** 修改商品：不含 stock/submit；库存调整必须走 /stock 端点。 */
@@ -119,7 +119,7 @@ public final class CatalogDtos {
                                        @NotEmpty List<String> deliveryMethods,
                                        @NotNull @Min(0) Long freightCents,
                                        @Size(max = 200) String returnPromise, List<String> shippingProvinces,
-                                       java.math.BigDecimal latitude,java.math.BigDecimal longitude) {
+                                       java.math.BigDecimal latitude,java.math.BigDecimal longitude,java.util.Map<String,String> specifications) {
     }
 
     public record StockAdjustRequest(@NotNull Integer delta) {

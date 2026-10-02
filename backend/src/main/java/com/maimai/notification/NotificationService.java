@@ -20,11 +20,16 @@ public class NotificationService {
     }
 
     public void notify(Long userId, String type, String title, String content) {
+        notify(userId,type,title,content,null);
+    }
+
+    public void notify(Long userId, String type, String title, String content,String target) {
         Notification notification = new Notification();
         notification.setUserId(userId);
         notification.setType(type);
         notification.setTitle(title);
         notification.setContent(content);
+        notification.setTargetPath(target);
         notificationRepository.save(notification);
     }
 

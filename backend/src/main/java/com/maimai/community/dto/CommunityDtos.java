@@ -120,7 +120,12 @@ public final class CommunityDtos {
     }
 
     public record RatingRequest(@NotNull @Min(1) @Max(5) Integer rating,
-                               @Size(max = 500) String comment) {
+                               @Size(max = 500) String comment,
+                               @Min(1) @Max(5) Integer descriptionRating,
+                               @Min(1) @Max(5) Integer communicationRating,
+                               @Min(1) @Max(5) Integer fulfillmentRating,
+                               @Size(max=4) List<String> imageIds) {
+        public RatingRequest(Integer rating,String comment){this(rating,comment,null,null,null,List.of());}
     }
 
     public record RatingItem(long id,

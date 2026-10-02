@@ -210,6 +210,7 @@
         </section>
       </div>
 
+      <ReputationSummary :user-id="product.seller.id" />
       <nav class="mm-detail__section-nav" aria-label="商品详情导航">
         <a href="#product-description-title">物品详情</a
         ><a href="#product-ratings">买家评价</a
@@ -222,6 +223,10 @@
         >
           <p class="mm-eyebrow">ABOUT THIS ITEM</p>
           <h2 id="product-description-title">商品描述</h2>
+          <ProductSpecifications
+            :category-id="product.categoryId"
+            :model-value="product.specifications"
+          />
           <p
             v-for="(paragraph, index) in (
               product.description || '卖家还没有填写描述。'
@@ -259,7 +264,11 @@
           </div>
         </aside>
       </div>
-      <WorkflowAssistant stage="PRODUCT" :resource-id="product.id" title="购买前，让麦仔帮你核对" />
+      <WorkflowAssistant
+        stage="PRODUCT"
+        :resource-id="product.id"
+        title="购买前，让麦仔帮你核对"
+      />
       <ProductConversation :key="product.id" :product-id="product.id" />
     </template>
 
@@ -317,10 +326,12 @@
 </template>
 
 <script setup lang="ts">
-import WorkflowAssistant from "../support/WorkflowAssistant.vue";
+import WorkflowAssistant from '../support/WorkflowAssistant.vue';
 import { computed, onScopeDispose, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import ProductSocialActions from '../community/ProductSocialActions.vue';
+import ProductSpecifications from './ProductSpecifications.vue';
+import ReputationSummary from '../community/ReputationSummary.vue';
 import ProductConversation from '../community/ProductConversation.vue';
 import ProductGallery from './components/ProductGallery.vue';
 import CatalogDialog from './components/CatalogDialog.vue';

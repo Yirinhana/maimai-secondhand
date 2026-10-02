@@ -8,6 +8,17 @@
       </div>
     </header>
 
+    <SavedSearches
+      :criteria="{
+        ...applied,
+        minPriceCents: applied.minPrice
+          ? Math.round(Number(applied.minPrice) * 100)
+          : undefined,
+        maxPriceCents: applied.maxPrice
+          ? Math.round(Number(applied.maxPrice) * 100)
+          : undefined,
+      }"
+    />
     <CategoryBrowser
       :categories="categoryTree"
       :selected="applied.categoryId"
@@ -171,17 +182,10 @@
       </p>
     </form>
 
-    <section
-      class="mm-search__results"
-      aria-labelledby="catalog-results-title"
-    >
+    <section class="mm-search__results" aria-labelledby="catalog-results-title">
       <div class="mm-search__toolbar">
         <div>
-          <h2
-            id="catalog-results-title"
-            ref="resultsHeading"
-            tabindex="-1"
-          >
+          <h2 id="catalog-results-title" ref="resultsHeading" tabindex="-1">
             {{ applied.keyword ? '搜索结果' : '在售好物' }}
           </h2>
           <p aria-live="polite">
@@ -196,11 +200,7 @@
         </div>
         <label class="mm-search__sort"
           ><span>排序</span
-          ><select
-            aria-label="排序"
-            :value="applied.sort"
-            @change="changeSort"
-          >
+          ><select aria-label="排序" :value="applied.sort" @change="changeSort">
             <option value="time_desc">最新发布</option>
             <option value="price_asc">价格从低到高</option>
             <option value="price_desc">价格从高到低</option>
@@ -225,11 +225,7 @@
           @click="removeFilter(chip.key)"
         >
           {{ chip.label }} <span aria-hidden="true">×</span></button
-        ><button
-          class="mm-search__clear"
-          type="button"
-          @click="resetFilters"
-        >
+        ><button class="mm-search__clear" type="button" @click="resetFilters">
           清除全部
         </button>
       </div>
@@ -245,9 +241,7 @@
         :description="error"
         ><div class="mm-search__recovery">
           <MmButton @click="load">重试</MmButton
-          ><MmButton variant="ghost" @click="resetFilters"
-            >重置筛选</MmButton
-          >
+          ><MmButton variant="ghost" @click="resetFilters">重置筛选</MmButton>
         </div></EmptyState
       >
       <EmptyState
@@ -264,10 +258,7 @@
             <ProductCard :product="product" />
           </li>
         </ul>
-        <MmPagination
-          :page="page"
-          :total-pages="totalPages"
-          @change="goPage"
+        <MmPagination :page="page" :total-pages="totalPages" @change="goPage"
       /></template>
     </section>
   </div>
@@ -284,6 +275,7 @@ import {
   watch,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import SavedSearches from './SavedSearches.vue';
 import CategoryBrowser from './components/CategoryBrowser.vue';
 import {
   readNearbyOrigin,
@@ -383,8 +375,7 @@ const advancedCount = computed(
 const chips = computed(() => {
   const f = applied.value;
   const result: { key: FilterKey; label: string }[] = [];
-  if (f.keyword)
-    result.push({ key: 'keyword', label: `关键词：${f.keyword}` });
+  if (f.keyword) result.push({ key: 'keyword', label: `关键词：${f.keyword}` });
   if (f.categoryId)
     result.push({
       key: 'categoryId',
@@ -471,9 +462,7 @@ async function load() {
   try {
     const data = await get<Page<ProductSummary>>('/products', {
       keyword: filters.keyword || undefined,
-      categoryId: filters.categoryId
-        ? Number(filters.categoryId)
-        : undefined,
+      categoryId: filters.categoryId ? Number(filters.categoryId) : undefined,
       condition: (filters.condition || undefined) as Condition | undefined,
       deliveryMethod: (filters.deliveryMethod || undefined) as
         DeliveryMethod | undefined,
@@ -517,10 +506,7 @@ function navigate(filters: Filters, pageNo = 0) {
 }
 async function applyFilters() {
   const filters = Object.fromEntries(
-    Object.entries(form).map(([key, value]) => [
-      key,
-      String(value).trim(),
-    ]),
+    Object.entries(form).map(([key, value]) => [key, String(value).trim()]),
   ) as unknown as Filters;
   validationError.value = validate(filters);
   if (validationError.value) {
@@ -598,8 +584,7 @@ async function loadCategories() {
     flatten(tree);
     categoryOptions.value = options;
   } catch {
-    if (!disposed)
-      categoryError.value = '分类暂时未加载，仍可按其他条件搜索。';
+    if (!disposed) categoryError.value = '分类暂时未加载，仍可按其他条件搜索。';
   }
 }
 onMounted(loadCategories);

@@ -124,7 +124,7 @@ public class AftersaleService {
         tradeOrderOps.pauseAutoConfirm(order.getId(), "售后单 " + aftersale.getAftersaleNo() + " 处理中");
         notificationService.notify(order.getSellerId(), "AFTERSALE", "收到新的售后申请",
                 "订单 " + order.getOrderNo() + " 售后单 " + aftersale.getAftersaleNo()
-                        + "（" + request.type().name() + "），请在 48 小时内响应");
+                        + "（" + request.type().name() + "），请在 48 小时内响应","/aftersales/"+aftersale.getId());
         if (manualRequired) {
             notifySuperAdmins("售后需要人工处理",
                     "订单 " + order.getOrderNo() + " 超常规售后窗口或卖家账号不可用，售后单 "
@@ -202,7 +202,7 @@ public class AftersaleService {
             writeLog(id, sellerId, "SELLER", "SELLER_REJECT", request.reply());
             tradeOrderOps.resumeAutoConfirm(order.getId());
             notificationService.notify(aftersale.getBuyerId(), "AFTERSALE", "售后申请被卖家拒绝",
-                    "售后单 " + aftersale.getAftersaleNo() + " 被拒绝：" + request.reply());
+                    "售后单 " + aftersale.getAftersaleNo() + " 被拒绝：" + request.reply(),"/aftersales/"+aftersale.getId());
             return detail(id);
         }
         aftersale.setSellerReply(request.reply());
@@ -215,7 +215,7 @@ public class AftersaleService {
             writeLog(id, sellerId, "SELLER", "SELLER_AGREE_REFUND", "卖家同意仅退款，退款已发起");
             tradeOrderOps.resumeAutoConfirm(order.getId());
             notificationService.notify(aftersale.getBuyerId(), "AFTERSALE", "售后已完成",
-                    "售后单 " + aftersale.getAftersaleNo() + " 卖家已同意退款，退款处理完成");
+                    "售后单 " + aftersale.getAftersaleNo() + " 卖家已同意退款，退款处理完成","/aftersales/"+aftersale.getId());
         } else {
             String recipient = requiredReturnField(request.returnRecipient(), 50, "请填写退货收件人");
             String phone = requiredReturnField(request.returnPhone(), 30, "请填写退货联系电话");
@@ -232,7 +232,7 @@ public class AftersaleService {
             aftersaleRepository.save(aftersale);
             writeLog(id, sellerId, "SELLER", "SELLER_AGREE_RETURN", "卖家提供退货地址并同意退货，买家可在7天内寄回或申请人工核查地址");
             notificationService.notify(aftersale.getBuyerId(), "AFTERSALE", "卖家同意退货退款",
-                    "售后单 " + aftersale.getAftersaleNo() + " 请在 7 天内填写退货物流寄回商品");
+                    "售后单 " + aftersale.getAftersaleNo() + " 请在 7 天内填写退货物流寄回商品","/aftersales/"+aftersale.getId());
         }
         return detail(id);
     }
@@ -263,7 +263,7 @@ public class AftersaleService {
                 .orElseThrow(() -> BizException.notFound("订单不存在"));
         notificationService.notify(order.getSellerId(), "AFTERSALE", "买家已寄回商品",
                 "售后单 " + aftersale.getAftersaleNo() + " 退货物流：" + request.carrier()
-                        + " " + request.trackingNo() + "，收货后请及时确认");
+                        + " " + request.trackingNo() + "，收货后请及时确认","/aftersales/"+aftersale.getId());
         return detail(id);
     }
 
@@ -289,7 +289,7 @@ public class AftersaleService {
         writeLog(id, SecurityUtils.currentUserId(), "SELLER", "CONFIRM_RETURN", "卖家确认收到退货，退款已发起");
         tradeOrderOps.resumeAutoConfirm(order.getId());
         notificationService.notify(aftersale.getBuyerId(), "AFTERSALE", "售后已完成",
-                "售后单 " + aftersale.getAftersaleNo() + " 卖家已确认收到退货，退款处理完成");
+                "售后单 " + aftersale.getAftersaleNo() + " 卖家已确认收到退货，退款处理完成","/aftersales/"+aftersale.getId());
         return detail(id);
     }
 
@@ -343,9 +343,9 @@ public class AftersaleService {
         tradeOrderOps.pauseAutoConfirm(aftersale.getOrderId(), reason);
         writeLog(id, null, "SYSTEM", "ESCALATE_MANUAL", reason);
         notifySuperAdmins("售后超时转人工", "售后单 " + aftersale.getAftersaleNo() + " " + reason);
-        notificationService.notify(aftersale.getBuyerId(), "AFTERSALE", "售后已转人工", reason);
+        notificationService.notify(aftersale.getBuyerId(), "AFTERSALE", "售后已转人工", reason,"/aftersales/"+aftersale.getId());
         orderRepository.findById(aftersale.getOrderId()).ifPresent(order ->
-                notificationService.notify(order.getSellerId(), "AFTERSALE", "售后已转人工", reason));
+                notificationService.notify(order.getSellerId(), "AFTERSALE", "售后已转人工", reason,"/aftersales/"+aftersale.getId()));
     }
 
     /** 卖家主动确认实物签收；未确认的签收争议由买家随时请求人工，不能假造物流签收。 */
@@ -364,7 +364,7 @@ public class AftersaleService {
             recordReturnReceived(aftersale);
             aftersaleRepository.save(aftersale);
             notificationService.notify(aftersale.getBuyerId(), "AFTERSALE", "卖家已确认退件签收",
-                    "售后单 " + aftersale.getAftersaleNo() + " 已进入48小时验退窗口，超时转人工处理");
+                    "售后单 " + aftersale.getAftersaleNo() + " 已进入48小时验退窗口，超时转人工处理","/aftersales/"+aftersale.getId());
         }
         return detail(id);
     }

@@ -126,7 +126,7 @@ public class ProductQueryService {
                 ProductAssembler.splitDeliveryMethods(product.getDeliveryMethods()),
                 product.getFreightCents(), product.getReturnPromise(), product.getStatus().name(),
                 assembler.images(product.getId()), new SellerBrief(product.getSellerId(), nickname, avatar(product.getSellerId())),
-                product.getCreatedAt(),ProductShipping.split(product.getShippingProvinces()),product.getLatitude(),product.getLongitude(),product.getExperienceSource(),product.getSupplyNote());
+                product.getCreatedAt(),ProductShipping.split(product.getShippingProvinces()),product.getLatitude(),product.getLongitude(),product.getExperienceSource(),product.getSupplyNote(),product.getCategoryId(),ProductSpecifications.decode(product.getSpecifications()));
     }
 
     public SellerProfile sellerProfile(Long sellerId) {

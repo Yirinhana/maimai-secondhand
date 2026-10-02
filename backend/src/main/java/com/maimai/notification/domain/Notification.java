@@ -12,6 +12,10 @@ import java.time.Instant;
 @Entity
 @Table(name = "notifications")
 public class Notification {
+    @jakarta.persistence.Column(name="target_path",length=240)
+    private String targetPath;
+    public String getTargetPath(){return targetPath;}
+    public void setTargetPath(String value){targetPath=value;}
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

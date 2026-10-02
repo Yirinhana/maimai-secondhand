@@ -14,6 +14,10 @@ import java.time.Instant;
 @Entity
 @Table(name = "products")
 public class Product {
+    @Column(columnDefinition="TEXT")
+    private String specifications;
+    public String getSpecifications(){return specifications;}
+    public void setSpecifications(String value){specifications=value;}
 
     public enum Condition {NEW, LIKE_NEW, GOOD, FAIR, POOR}
 

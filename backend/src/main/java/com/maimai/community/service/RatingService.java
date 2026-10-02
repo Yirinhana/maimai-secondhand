@@ -21,7 +21,8 @@ public class RatingService {
     private final CommunityRepository repo;
     private final CommunitySupport support;
     private final com.maimai.notification.NotificationService notifications;
-    public RatingService(CommunityRepository repo, CommunitySupport support,com.maimai.notification.NotificationService notifications) { this.repo = repo; this.support = support;this.notifications=notifications; }
+    private final RatingDetailsService details;
+    public RatingService(CommunityRepository repo, CommunitySupport support,com.maimai.notification.NotificationService notifications,RatingDetailsService details) { this.repo = repo; this.support = support;this.notifications=notifications;this.details=details; }
 
     @Transactional
     public RatingItem create(Long actor, Long orderId, RatingRequest request) {
@@ -37,6 +38,7 @@ public class RatingService {
         try {
             long id = repo.insertReturningId("INSERT INTO community_order_ratings(order_id, rater_id, ratee_id, rating, comment) VALUES (?, ?, ?, ?, ?)",
                     orderId, actor, ratee, request.rating(), comment);
+            details.attach(actor,id,request);
             String orderNo=repo.queryOne("SELECT order_no FROM orders WHERE id=?",(rs,n)->rs.getString(1),orderId);
             notifications.notify(actor,"RATING_SUBMITTED","评价已提交","订单 "+orderNo+" 的评价已保存。有效评价将按付款来源分别计入站内信誉，模拟付款不代表真实资金交易。");
             notifications.notify(ratee,"REPUTATION_UPDATED","收到交易评价","订单 "+orderNo+" 收到对方的评价，个人主页信誉已按有效记录更新。如评价失实，可在评价处举报并提供依据。");

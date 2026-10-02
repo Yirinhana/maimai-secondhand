@@ -7,6 +7,7 @@ import {
   type Page,
   type SellerProductItem,
 } from '../../shared/types';
+import SellerTaskList from './SellerTaskList.vue';
 import UserAvatar from '../../shared/components/UserAvatar.vue';
 import ItemImage from '../../shared/components/ItemImage.vue';
 const auth = useAuthStore();
@@ -86,6 +87,7 @@ onMounted(load);
           ><small>查看商品 →</small></RouterLink
         >
       </div>
+      <SellerTaskList />
       <div class="seller-home__columns">
         <section class="mm-panel mm-stack">
           <h2>最近发布</h2>
@@ -205,10 +207,13 @@ h2 {
 }
 @media (max-width: 760px) {
   .seller-home__heading {
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 60px minmax(0, 1fr);
+    align-items: start;
   }
   .seller-home__heading > a {
-    margin-left: 76px;
+    grid-column: 2;
+    margin-left: 0;
   }
   .seller-home__columns {
     grid-template-columns: minmax(0, 1fr);

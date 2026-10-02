@@ -96,10 +96,7 @@
               >
               <RouterLink role="menuitem" to="/me"
                 ><MmIcon name="user" />个人中心</RouterLink
-              ><RouterLink
-                v-if="!adminWorkspace"
-                role="menuitem"
-                to="/orders"
+              ><RouterLink v-if="!adminWorkspace" role="menuitem" to="/orders"
                 ><MmIcon name="bag" />我买到的</RouterLink
               ><RouterLink
                 v-if="auth.isSeller && !adminWorkspace"
@@ -111,10 +108,13 @@
                 role="menuitem"
                 to="/me/community"
                 ><MmIcon name="heart" />收藏与关注</RouterLink
-              ><RouterLink role="menuitem" to="/messages"
-                ><MmIcon name="message" />私信</RouterLink
+              ><RouterLink role="menuitem" to="/notifications"
+                ><MmIcon name="message" />消息中心</RouterLink
               ><RouterLink v-if="auth.isAdmin" role="menuitem" to="/admin"
                 ><MmIcon name="grid" />管理后台</RouterLink
+              >
+              <RouterLink role="menuitem" to="/welcome"
+                >重看麦麦开场</RouterLink
               >
               <RouterLink role="menuitem" to="/login?switch=1"
                 ><MmIcon name="user" />切换账号</RouterLink
@@ -181,9 +181,7 @@
       </div>
     </header>
     <SectionNavigation
-      v-if="
-        ['buyer', 'seller', 'account', 'transaction'].includes(section)
-      "
+      v-if="['buyer', 'seller', 'account', 'transaction'].includes(section)"
       :section="section"
       :title="title"
     />
@@ -224,14 +222,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import {
-  computed,
-  nextTick,
-  onMounted,
-  onUnmounted,
-  ref,
-  watch,
-} from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from './shared/stores/auth';
 import ConfirmationDialog from './shared/components/ConfirmationDialog.vue';
@@ -319,7 +310,7 @@ const primaryNav = computed(() =>
       icon: 'box',
     },
     {
-      to: '/messages',
+      to: '/notifications',
       label: '消息',
       section: 'messages',
       icon: 'message',
@@ -384,8 +375,7 @@ function escape(event: KeyboardEvent) {
 }
 function menuKeydown(event: KeyboardEvent) {
   const items = Array.from(
-    userRoot.value?.querySelectorAll<HTMLElement>('[role="menuitem"]') ??
-      [],
+    userRoot.value?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [],
   );
   const index = items.indexOf(document.activeElement as HTMLElement);
   let next = index;

@@ -35,15 +35,17 @@ public class BargainService {
     private final ProductRepository productRepository;
     private final ProductImageRepository productImageRepository;
     private final UserRepository userRepository;
+    private final com.maimai.notification.NotificationService notifications;
 
     public BargainService(BargainOfferRepository bargainOfferRepository,
                           ProductRepository productRepository,
                           ProductImageRepository productImageRepository,
-                          UserRepository userRepository) {
+                          UserRepository userRepository,com.maimai.notification.NotificationService notifications) {
         this.bargainOfferRepository = bargainOfferRepository;
         this.productRepository = productRepository;
         this.productImageRepository = productImageRepository;
         this.userRepository = userRepository;
+        this.notifications=notifications;
     }
 
     public BargainDto create(Long buyerId, Long productId, int quantity, long offerPriceCents) {
@@ -66,6 +68,7 @@ public class BargainService {
         offer.setStatus(BargainOffer.Status.PENDING);
         offer.setExpiresAt(Instant.now().plus(OFFER_TTL));
         bargainOfferRepository.save(offer);
+        notifications.notify(product.getSellerId(),"BARGAIN","收到新的议价",product.getTitle()+" 收到买家出价，请在有效期内回复。","/seller/bargains#"+offer.getId());
         return toDtos(List.of(offer)).get(0);
     }
 
@@ -94,6 +97,7 @@ public class BargainService {
         BargainOffer offer = requireSellerPendingOffer(sellerId, offerId);
         offer.setStatus(BargainOffer.Status.CONFIRMED);
         bargainOfferRepository.save(offer);
+        notifications.notify(offer.getBuyerId(),"BARGAIN","卖家接受了报价","请在议价有效期内下单，议价不会预留库存。","/me/bargains#"+offer.getId());
         return toDtos(List.of(offer)).get(0);
     }
 
@@ -102,6 +106,7 @@ public class BargainService {
         offer.setCounterPriceCents(counterPriceCents);
         offer.setStatus(BargainOffer.Status.COUNTERED);
         bargainOfferRepository.save(offer);
+        notifications.notify(offer.getBuyerId(),"BARGAIN","卖家给出了还价","可以查看新报价并决定是否接受。","/me/bargains#"+offer.getId());
         return toDtos(List.of(offer)).get(0);
     }
 
@@ -110,6 +115,7 @@ public class BargainService {
         BargainOffer offer = requireSellerPendingOffer(sellerId, offerId);
         offer.setStatus(BargainOffer.Status.REJECTED);
         bargainOfferRepository.save(offer);
+        notifications.notify(offer.getBuyerId(),"BARGAIN","卖家暂未接受报价","可以继续沟通，或寻找更合适的商品。","/me/bargains#"+offer.getId());
         return toDtos(List.of(offer)).get(0);
     }
 

@@ -41,6 +41,7 @@ public class SellerProductService {
     private final CategoryRepository categoryRepository;
     private final SellerApplicationRepository sellerApplicationRepository;
     private final ProductAssembler assembler;
+    private final ProductSpecifications specifications;
     private final ProductRevisionService revisions;
     private final CategoryAvailability categoryAvailability;
     private final org.springframework.jdbc.core.JdbcTemplate jdbc;
@@ -52,6 +53,7 @@ public class SellerProductService {
                                 SellerApplicationRepository sellerApplicationRepository,
                                 ProductAssembler assembler,ProductRevisionService revisions,
                                 CategoryAvailability categoryAvailability,org.springframework.jdbc.core.JdbcTemplate jdbc) {
+        this.specifications=new ProductSpecifications(jdbc);
         this.productRepository = productRepository;
         this.productImageRepository = productImageRepository;
         this.stockLogRepository = stockLogRepository;
@@ -74,6 +76,7 @@ public class SellerProductService {
         applyFields(product, request.title(), request.categoryId(), request.description(),
                 request.condition(), request.defects(), request.priceCents(), request.region(),
                 request.deliveryMethods(), request.freightCents(), request.returnPromise());
+        product.setSpecifications(specifications.encode(request.categoryId(),request.specifications()));
         product.setStockAvailable(request.stock());
         setCoverageAndLocation(product,request.shippingProvinces(),request.latitude(),request.longitude());
         product.setStatus(Product.Status.DRAFT);
@@ -96,7 +99,8 @@ public class SellerProductService {
         validateCategory(request.categoryId());
         ProductLocation.validate(request.latitude(),request.longitude());
         String shipping=String.join(",",ProductShipping.normalize(request.shippingProvinces()));
-        boolean keyChanged = ProductAssembler.keyFieldsChanged(product, request.title(), request.categoryId(),
+        String encodedSpecs=request.specifications()==null ? product.getSpecifications() : specifications.encode(request.categoryId(),request.specifications());
+        boolean keyChanged = !java.util.Objects.equals(encodedSpecs,product.getSpecifications()) || ProductAssembler.keyFieldsChanged(product, request.title(), request.categoryId(),
                 request.description(), condition, request.defects(), request.priceCents(),
                 deliveryMethods, request.freightCents())
                 || !java.util.Objects.equals(product.getRegion(), request.region())
@@ -105,6 +109,7 @@ public class SellerProductService {
                 || !sameCoordinate(product.getLatitude(),request.latitude())
                 || !sameCoordinate(product.getLongitude(),request.longitude());
         if(keyChanged)revisions.baseline(product,userId);
+        product.setSpecifications(encodedSpecs);
         product.setTitle(request.title());
         product.setCategoryId(request.categoryId());
         product.setDescription(request.description());
@@ -190,7 +195,7 @@ public class SellerProductService {
                 product.getFreightCents(), product.getReturnPromise(), product.getStatus().name(), product.getReviewReason(),
                 productImageRepository.findByProductIdOrderBySort(productId).stream().map(image ->
                     new com.maimai.catalog.dto.CatalogDtos.ImageItem(image.getId(), ProductImagePaths.publicUrl(image.getPath()), image.getSort())).toList(),
-                ProductShipping.split(product.getShippingProvinces()),product.getLatitude(),product.getLongitude());
+                ProductShipping.split(product.getShippingProvinces()),product.getLatitude(),product.getLongitude(),ProductSpecifications.decode(product.getSpecifications()));
     }
 
     @Transactional(readOnly = true)

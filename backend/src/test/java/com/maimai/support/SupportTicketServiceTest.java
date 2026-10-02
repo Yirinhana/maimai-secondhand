@@ -43,6 +43,7 @@ class SupportTicketServiceTest {
         jdbc.update("DELETE FROM support_messages WHERE ticket_id IN (SELECT id FROM support_tickets WHERE owner_id IN ("+ids+"))",args);
         jdbc.update("DELETE FROM support_tickets WHERE owner_id IN ("+ids+")",args);
         jdbc.update("DELETE FROM orders WHERE id IN (?,?)",order,foreignOrder);
+        jdbc.update("DELETE FROM notifications WHERE user_id IN ("+ids+")",args);
         jdbc.update("DELETE FROM user_roles WHERE user_id IN ("+ids+")",args);
         jdbc.update("DELETE FROM users WHERE id IN ("+ids+")",args); users.clear();
     }

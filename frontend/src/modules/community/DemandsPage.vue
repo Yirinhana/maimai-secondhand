@@ -54,8 +54,12 @@ async function load() {
       return;
     }
     if (route.query.demandId && !mine.value) {
-      const demand = await get<Demand>(`/community/demands/${encodeURIComponent(String(route.query.demandId))}`);
-      items.value = [demand]; pages.value = 1; expanded.value = demand.id;
+      const demand = await get<Demand>(
+        `/community/demands/${encodeURIComponent(String(route.query.demandId))}`,
+      );
+      items.value = [demand];
+      pages.value = 1;
+      expanded.value = demand.id;
       return;
     }
     const r = await get<CommunityPage<Demand>>(
@@ -173,7 +177,13 @@ async function contact(id: number) {
     busy.value = false;
   }
 }
-watch(() => route.query.demandId, () => { page.value = 0; void load(); });
+watch(
+  () => route.query.demandId,
+  () => {
+    page.value = 0;
+    void load();
+  },
+);
 watch(mine, () => {
   page.value = 0;
   void load();
@@ -322,6 +332,19 @@ onMounted(async () => {
       </div>
       <p v-if="mine && d.reviewReason">审核说明：{{ d.reviewReason }}</p>
       <div class="mm-actions">
+        <RouterLink
+          v-if="d.authorId === auth.me?.id && !d.isClosed"
+          :to="{
+            path: '/search',
+            query: {
+              categoryId: d.categoryId || undefined,
+              minPrice: d.budgetMinCents / 100,
+              maxPrice: d.budgetMaxCents / 100,
+              region: d.region || undefined,
+            },
+          }"
+          >按这份预算找货与设置提醒 →</RouterLink
+        >
         <MmButton
           variant="ghost"
           @click="expanded = expanded === d.id ? null : d.id"

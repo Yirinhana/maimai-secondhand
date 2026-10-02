@@ -8,7 +8,12 @@
     </div>
 
     <template v-else>
-      <WorkflowAssistant stage="LISTING" :resource-id="productId ?? undefined" :draft="[form.title, form.description].filter(Boolean).join('；')" title="发布前，让麦仔检查描述" />
+      <WorkflowAssistant
+        stage="LISTING"
+        :resource-id="productId ?? undefined"
+        :draft="[form.title, form.description].filter(Boolean).join('；')"
+        title="发布前，让麦仔检查描述"
+      />
       <p
         v-if="
           isEdit &&
@@ -25,7 +30,7 @@
         <div>
           <strong>未完成内容自动保留</strong>
           <p>
-            按账号保存在当前浏览器，回来可继续填写。完整草稿保存后可在「我的商品」管理。
+            文字先保留在本机，并自动同步到当前账号。云端同步成功后，换设备也可以接着填写。
           </p>
           <p
             v-if="draftNotice"
@@ -43,6 +48,41 @@
           >一键清空</MmButton
         >
       </div>
+      <section class="mm-panel mm-stack" aria-label="云端草稿状态">
+        <p role="status">{{ cloud.status.value }}</p>
+        <div v-if="cloud.conflict.value" class="mm-stack">
+          <p>
+            云端更新时间：{{
+              cloud.conflict.value.updatedAt
+                ? new Date(cloud.conflict.value.updatedAt).toLocaleString()
+                : '暂无'
+            }}
+          </p>
+          <details>
+            <summary>预览云端内容</summary>
+            <p>{{ cloudPreview?.form?.title || '未填标题' }}</p>
+            <p>{{ cloudPreview?.form?.description || '未填描述' }}</p>
+          </details>
+          <MmButton variant="ghost" @click="cloud.choose(true)"
+            >采用云端版本</MmButton
+          >
+          <MmButton @click="cloud.choose(false)">用本机内容更新云端</MmButton>
+        </div>
+        <MmButton
+          v-else
+          variant="ghost"
+          :disabled="cloud.busy.value"
+          @click="
+            cloud.ready.value
+              ? cloud.flush()
+              : cloud.initialize(hasLocalDraft())
+          "
+          >立即同步 / 重试</MmButton
+        >
+        <p v-if="createdProductId" class="mm-muted">
+          商品草稿已建立；如图片保存失败，重试会继续保存到同一商品。
+        </p>
+      </section>
       <form ref="formElement" class="mm-edit__form" novalidate @submit.prevent>
         <MmCard title="基本信息" class="mm-edit__section">
           <div class="mm-edit__fields">
@@ -59,6 +99,7 @@
               <span class="mm-edit__label">分类</span>
               <select
                 v-model="form.categoryId"
+                aria-label="分类"
                 @input="fieldErrors.categoryId = ''"
                 :aria-invalid="!!fieldErrors.categoryId"
                 :aria-describedby="
@@ -119,6 +160,16 @@
           </div>
         </MmCard>
 
+        <MmCard title="商品参数" class="mm-edit__section">
+          <ProductSpecifications
+            v-model="form.specifications"
+            :category-id="form.categoryId"
+            editable
+          />
+          <p v-if="!form.categoryId" class="mm-muted">
+            选择分类后，会显示适合这类商品的参数。
+          </p>
+        </MmCard>
         <MmCard title="价格与库存" class="mm-edit__section">
           <div class="mm-edit__fields mm-edit__fields--row">
             <label class="mm-edit__field">
@@ -326,7 +377,7 @@
           </div>
         </MmCard>
 
-        <!-- 图片管理：仅编辑模式（新建需先保存草稿获得商品 ID） -->
+        <!-- New-listing photos remain private until the draft becomes a product. -->
         <MmCard title="商品图片" class="mm-edit__section">
           <template v-if="isEdit">
             <p class="mm-edit__hint">
@@ -375,9 +426,11 @@
               {{ imageError }}
             </p>
           </template>
-          <p v-else class="mm-edit__hint">
-            新建商品需先「保存草稿」，之后即可在本页上传图片。
-          </p>
+          <DraftPhotos
+            v-else
+            v-model="draftImageIds"
+            @busy="draftPhotoUploading = $event"
+          />
         </MmCard>
 
         <!-- 库存调整：编辑模式独立入口 -->
@@ -450,7 +503,9 @@
               保存并提交审核
             </MmButton>
           </template>
-          <MmButton variant="ghost" @click="router.push(previousListPath('/seller/products'))"
+          <MmButton
+            variant="ghost"
+            @click="router.push(previousListPath('/seller/products'))"
             >返回我的商品</MmButton
           >
         </div>
@@ -465,7 +520,10 @@
 </template>
 
 <script setup lang="ts">
-import WorkflowAssistant from "../support/WorkflowAssistant.vue";
+import { useCloudDraft } from './useCloudDraft';
+import DraftPhotos from './DraftPhotos.vue';
+import ProductSpecifications from './ProductSpecifications.vue';
+import WorkflowAssistant from '../support/WorkflowAssistant.vue';
 import ItemImage from '../../shared/components/ItemImage.vue';
 import MapPicker, {
   type SelectedAddress,
@@ -475,7 +533,12 @@ import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue';
 import { useAuthStore } from '../../shared/stores/auth';
 import { parseYuan } from '../../shared/moneyInput';
 import { askConfirmation } from '../../shared/confirm';
-import { useRoute, useRouter } from 'vue-router';
+import {
+  useRoute,
+  useRouter,
+  onBeforeRouteLeave,
+  onBeforeRouteUpdate,
+} from 'vue-router';
 import { del, get, post, put, upload, type ApiError } from '../../shared/api';
 import EmptyState from '../../shared/components/EmptyState.vue';
 import MmButton from '../../shared/components/MmButton.vue';
@@ -523,6 +586,7 @@ const pageLoading = ref(true);
 const pageError = ref('');
 
 const emptyForm = () => ({
+  specifications: {} as Record<string, string>,
   title: '',
   categoryId: '',
   description: '',
@@ -539,6 +603,8 @@ const emptyForm = () => ({
   shippingProvinces: [] as string[],
 });
 const form = reactive(emptyForm());
+const draftImageIds = ref<string[]>([]),
+  createdProductId = ref<number | null>(null);
 const limitShipping = ref(false),
   provinceOptions = ref<string[]>([]),
   provinceError = ref('');
@@ -560,9 +626,17 @@ const fieldErrors = reactive({
 });
 
 const savingDraft = ref(false);
+const draftPhotoUploading = ref(false);
 const savingSubmit = ref(false);
 const saveError = ref('');
 const saveMessage = ref('');
+function allowLeave() {
+  if (!draftPhotoUploading.value) return;
+  saveError.value = '照片正在上传，请完成后再离开页面。';
+  return false;
+}
+onBeforeRouteLeave(allowLeave);
+onBeforeRouteUpdate(allowLeave);
 
 const fileInput = ref<HTMLInputElement | null>(null);
 const pendingFiles = ref<File[]>([]);
@@ -587,6 +661,7 @@ function flattenCategories(
 }
 
 function fillForm(p: ProductDetail) {
+  form.specifications = { ...(p.specifications ?? {}) };
   form.title = p.title;
   form.description = p.description ?? '';
   form.condition = p.condition;
@@ -635,6 +710,7 @@ onMounted(async () => {
     }
   }
   restoreDraft();
+  await cloud.initialize(hasLocalDraft());
   pageLoading.value = false;
 });
 
@@ -642,10 +718,7 @@ const yuanToCents = parseYuan;
 function persistDraft(): boolean {
   if (!trackDraft || !activeDraftKey) return false;
   try {
-    localStorage.setItem(
-      activeDraftKey,
-      JSON.stringify({ schema: 1, form, limitShipping: limitShipping.value }),
-    );
+    localStorage.setItem(activeDraftKey, cloudSource.value);
     draftFailure.value = false;
     draftNotice.value = '填写内容已自动保留在本机';
     return true;
@@ -656,6 +729,107 @@ function persistDraft(): boolean {
     return false;
   }
 }
+function hasLocalDraft() {
+  try {
+    return !!activeDraftKey && !!localStorage.getItem(activeDraftKey);
+  } catch {
+    return false;
+  }
+}
+function applyDraftData(raw: unknown) {
+  if (!raw) {
+    trackDraft = false;
+    Object.assign(form, emptyForm());
+    draftImageIds.value = [];
+    createdProductId.value = null;
+    limitShipping.value = false;
+    if (product.value) {
+      fillForm(product.value);
+      form.categoryId = String(product.value.categoryId ?? '');
+    }
+    removeSavedDraft();
+    trackDraft = true;
+    return;
+  }
+  if (typeof raw !== 'object') return;
+  const data = raw as Record<string, unknown>;
+  if (data.schema !== 1 || !data.form || typeof data.form !== 'object') return;
+  const saved = data.form as Record<string, unknown>,
+    defaults = emptyForm();
+  trackDraft = false;
+  Object.assign(form, defaults);
+  for (const key of Object.keys(defaults) as (keyof typeof defaults)[]) {
+    const value = saved[key];
+    if (
+      typeof defaults[key] === 'string' &&
+      (typeof value === 'string' || typeof value === 'number')
+    )
+      Object.assign(form, { [key]: String(value) });
+  }
+  form.deliveryMethods = Array.isArray(saved.deliveryMethods)
+    ? saved.deliveryMethods.filter(
+        (v): v is DeliveryMethod => v === 'EXPRESS' || v === 'MEETUP',
+      )
+    : defaults.deliveryMethods;
+  form.shippingProvinces = Array.isArray(saved.shippingProvinces)
+    ? saved.shippingProvinces.filter((v): v is string => typeof v === 'string')
+    : [];
+  form.latitude =
+    typeof saved.latitude === 'number' && Math.abs(saved.latitude) <= 90
+      ? saved.latitude
+      : null;
+  form.longitude =
+    typeof saved.longitude === 'number' && Math.abs(saved.longitude) <= 180
+      ? saved.longitude
+      : null;
+  form.specifications =
+    saved.specifications && typeof saved.specifications === 'object'
+      ? (Object.fromEntries(
+          Object.entries(saved.specifications).filter(
+            ([, v]) => typeof v === 'string' && v.length <= 200,
+          ),
+        ) as Record<string, string>)
+      : {};
+  limitShipping.value = data.limitShipping === true;
+  draftImageIds.value = Array.isArray(data.imageIds)
+    ? data.imageIds
+        .filter(
+          (v): v is string =>
+            typeof v === 'string' && /^[a-f0-9-]{36}$/.test(v),
+        )
+        .slice(0, 9)
+    : [];
+  createdProductId.value =
+    typeof data.productId === 'number' &&
+    Number.isSafeInteger(data.productId) &&
+    data.productId > 0
+      ? data.productId
+      : null;
+  mapResetKey.value++;
+  trackDraft = true;
+  persistDraft();
+}
+const cloudSource = computed(() =>
+  JSON.stringify({
+    schema: 1,
+    form,
+    limitShipping: limitShipping.value,
+    imageIds: draftImageIds.value,
+    productId: createdProductId.value,
+  }),
+);
+const cloud = useCloudDraft(
+  () => String(productId.value ?? 'new'),
+  cloudSource,
+  applyDraftData,
+  auth.me!.id,
+);
+const cloudPreview = computed(
+  () =>
+    cloud.conflict.value?.payload as {
+      form?: { title?: string; description?: string };
+    } | null,
+);
 function restoreDraft() {
   activeDraftKey = auth.me
     ? `maimai:product-form:v1:${auth.me.id}:${productId.value ?? 'new'}`
@@ -663,41 +837,8 @@ function restoreDraft() {
   try {
     const saved = activeDraftKey ? localStorage.getItem(activeDraftKey) : null;
     if (saved) {
-      const data = JSON.parse(saved);
-      if (data.schema === 1 && data.form && typeof data.form === 'object') {
-        const defaults = emptyForm();
-        // Read only known field shapes; browser storage is not trusted as a request payload.
-        for (const key of Object.keys(defaults) as (keyof typeof defaults)[]) {
-          const value = data.form[key];
-          if (
-            typeof defaults[key] === 'string' &&
-            (typeof value === 'string' || typeof value === 'number')
-          )
-            Object.assign(form, { [key]: String(value) });
-        }
-        form.deliveryMethods = Array.isArray(data.form.deliveryMethods)
-          ? data.form.deliveryMethods.filter(
-              (v: unknown) => v === 'EXPRESS' || v === 'MEETUP',
-            )
-          : defaults.deliveryMethods;
-        form.shippingProvinces = Array.isArray(data.form.shippingProvinces)
-          ? data.form.shippingProvinces.filter(
-              (v: unknown) => typeof v === 'string',
-            )
-          : [];
-        form.latitude =
-          typeof data.form.latitude === 'number' &&
-          Math.abs(data.form.latitude) <= 90
-            ? data.form.latitude
-            : null;
-        form.longitude =
-          typeof data.form.longitude === 'number' &&
-          Math.abs(data.form.longitude) <= 180
-            ? data.form.longitude
-            : null;
-        limitShipping.value = data.limitShipping === true;
-        draftNotice.value = '已恢复上次未完成的内容，请核对后继续填写';
-      }
+      applyDraftData(JSON.parse(saved));
+      draftNotice.value = '已恢复本机填写内容，正在核对云端版本';
     }
   } catch {
     draftNotice.value = '上次本机草稿暂时无法读取，可以重新填写';
@@ -712,13 +853,17 @@ function removeSavedDraft() {
   }
 }
 watch(
-  [form, limitShipping],
+  [form, limitShipping, draftImageIds, createdProductId],
   () => {
     if (trackDraft) persistDraft();
   },
   { deep: true, flush: 'sync' },
 );
 async function clearForm() {
+  if (draftPhotoUploading.value) {
+    saveError.value = '照片正在上传，请完成后再清空。';
+    return;
+  }
   if (
     !(await askConfirmation(
       '清空当前未发布内容并重新填写？已保存到「我的商品」的商品不受影响。',
@@ -727,6 +872,9 @@ async function clearForm() {
     return;
   trackDraft = false;
   Object.assign(form, emptyForm());
+  draftImageIds.value = [];
+  createdProductId.value = null;
+  await cloud.clear();
   mapResetKey.value++;
   limitShipping.value = false;
   pendingFiles.value = [];
@@ -788,6 +936,7 @@ function validate(): boolean {
 
 function buildBasePayload() {
   return {
+    specifications: form.specifications,
     title: form.title.trim(),
     categoryId: Number(form.categoryId),
     description: form.description,
@@ -805,6 +954,10 @@ function buildBasePayload() {
 }
 
 async function save(submit: boolean) {
+  if (draftPhotoUploading.value) {
+    saveError.value = '照片正在上传，请完成后再保存。';
+    return;
+  }
   if (savingDraft.value || savingSubmit.value) return;
   const retained = persistDraft();
   if (!validate()) {
@@ -827,7 +980,18 @@ async function save(submit: boolean) {
         stock: Number(form.stock),
         submit,
       };
-      const res = await post<{ id: number }>('/seller/products', payload);
+      const res = createdProductId.value
+        ? { id: createdProductId.value }
+        : await post<{ id: number }>('/seller/products', payload);
+      if (createdProductId.value)
+        await put(`/seller/products/${res.id}`, buildBasePayload());
+      createdProductId.value = res.id;
+      await cloud.flush();
+      if (draftImageIds.value.length)
+        await post(`/seller/products/${res.id}/draft-images`, {
+          ids: draftImageIds.value,
+        });
+      await cloud.clear();
       trackDraft = false;
       removeSavedDraft();
       if (submit) {
@@ -840,9 +1004,15 @@ async function save(submit: boolean) {
     } else {
       const payload: ProductUpdateRequest = buildBasePayload();
       await put(`/seller/products/${productId.value}`, payload);
+      if (draftImageIds.value.length)
+        await post(`/seller/products/${productId.value}/draft-images`, {
+          ids: draftImageIds.value,
+        });
+      draftImageIds.value = [];
       trackDraft = false;
       removeSavedDraft();
       await loadProduct();
+      await cloud.clear();
       trackDraft = true;
       draftNotice.value = '完整内容已保存到我的商品';
       saveMessage.value =
@@ -874,7 +1044,13 @@ async function saveAndSubmit() {
       `/seller/products/${productId.value}`,
       buildBasePayload() satisfies ProductUpdateRequest,
     );
+    if (draftImageIds.value.length)
+      await post(`/seller/products/${productId.value}/draft-images`, {
+        ids: draftImageIds.value,
+      });
+    draftImageIds.value = [];
     await post(`/seller/products/${productId.value}/submit`);
+    await cloud.clear();
     saveMessage.value = '已提交审核，可在「我的商品」查看进度';
     trackDraft = false;
     removeSavedDraft();
@@ -969,6 +1145,9 @@ watch(
   async (id, previous) => {
     if (id === previous) return;
     trackDraft = false;
+    cloud.ready.value = false;
+    draftImageIds.value = [];
+    createdProductId.value = null;
     pageLoading.value = true;
     pageError.value = '';
     try {
@@ -979,6 +1158,7 @@ watch(
         limitShipping.value = false;
       }
       restoreDraft();
+      await cloud.initialize(hasLocalDraft());
     } catch (e) {
       pageError.value = (e as ApiError).message;
     } finally {
@@ -986,8 +1166,9 @@ watch(
     }
     if (!previous && id && !pageError.value) {
       await nextTick();
-      saveMessage.value =
-        '草稿已保存，请继续添加至少一张商品图片，再提交审核。';
+      saveMessage.value = product.value?.images.length
+        ? '草稿与照片已保存，核对内容后即可提交审核。'
+        : '草稿已保存，请添加至少一张商品图片后提交审核。';
       fileInput.value?.focus({ preventScroll: true });
       fileInput.value?.scrollIntoView({ block: 'center' });
     }

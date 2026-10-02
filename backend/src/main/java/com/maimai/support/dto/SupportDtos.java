@@ -10,7 +10,9 @@ import java.util.List;
 public final class SupportDtos {
     private SupportDtos() { }
     public record CreateTicket(@NotBlank @Size(max=100) String title, @NotBlank @Size(max=2000) String body,
-                               @Size(max=32) String orderNo) { }
+                               @Size(max=32) String orderNo, @Size(max=5) List<String> aiRequestIds) {
+        public CreateTicket(String title,String body,String orderNo){this(title,body,orderNo,List.of());}
+    }
     public record WriteMessage(@NotBlank @Size(max=2000) String body) { }
     public record AiHelp(@NotNull SupportFaq.Topic topic) { }
     public record Ticket(long id, long ownerId, String ownerNickname, String title, String orderNo, String status,

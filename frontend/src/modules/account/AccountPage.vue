@@ -15,7 +15,9 @@
           {{ tabDescriptions[activeTab] }}
         </p>
       </div>
-      <RouterLink :to="auth.isAdmin ? '/admin' : '/orders'" class="mm-account__orders"
+      <RouterLink
+        :to="auth.isAdmin ? '/admin' : '/orders'"
+        class="mm-account__orders"
         >{{ auth.isAdmin ? '进入管理后台 →' : '查看我的订单 →' }}</RouterLink
       >
     </header>
@@ -45,8 +47,14 @@
       </button>
     </div>
 
-    <OperationsDashboard v-if="auth.isAdmin && activeTab === 'profile'" title="我的管理概览" />
-    <ReputationCard v-if="auth.me && !auth.isAdmin && activeTab === 'profile'" :user-id="auth.me.id" />
+    <OperationsDashboard
+      v-if="auth.isAdmin && activeTab === 'profile'"
+      title="我的管理概览"
+    />
+    <ReputationCard
+      v-if="auth.me && !auth.isAdmin && activeTab === 'profile'"
+      :user-id="auth.me.id"
+    />
     <!-- 资料 -->
     <MmCard
       id="account-panel-profile"
@@ -359,6 +367,9 @@
       v-show="activeTab === 'notifications'"
       title="站内通知"
     >
+      <RouterLink to="/notifications" class="mm-text-link"
+        >打开消息中心，查看分类与关联事项 →</RouterLink
+      >
       <template #extra>
         <MmButton
           v-if="unreadCount > 0"
@@ -427,8 +438,8 @@
 </template>
 
 <script setup lang="ts">
-import OperationsDashboard from "../admin/OperationsDashboard.vue";
-import ReputationCard from "../community/ReputationCard.vue";
+import OperationsDashboard from '../admin/OperationsDashboard.vue';
+import ReputationCard from '../community/ReputationCard.vue';
 import { askConfirmation } from '../../shared/confirm';
 import UserAvatar from '../../shared/components/UserAvatar.vue';
 import { defaultAvatars } from '../../shared/defaultAvatars';
