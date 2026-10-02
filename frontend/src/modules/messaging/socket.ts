@@ -1,5 +1,5 @@
 /**
- * 私信实时连接 composable（契约见 docs/tasks/004-messaging-report.md）。
+ * 私信实时连接 composable。
  * - 同源 ws(s)://当前站点/api/v1/messages/socket
  * - 收到 {"type":"ready"} 后开始工作，随后每 30 秒发送字符串 ping
  * - 收到 {"type":"messages.changed","conversationId"} 回调刷新（推送不含正文）

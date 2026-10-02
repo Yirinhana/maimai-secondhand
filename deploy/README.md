@@ -36,7 +36,7 @@ MAIMAI_FRONTEND_ORIGIN 要与浏览器使用的 HTTPS 域名完全一致。Nginx
 
 SMTP、地图、物流按 maimai.env.example 逐项配置并验证。体验支付只产生站内状态记录，不发生真实资金变化；真实渠道仍需另外接入。
 
-AI 配置与防泄露措施见 [AI 密钥与数据边界](../docs/development/ai-secrets.md)。网站专用 Hermes 服务采用独立用户、HOME、令牌与 systemd 沙箱，禁止个人记忆和工具执行。
+AI 配置与防泄露措施见 [安全说明](../SECURITY.md)。网站专用 Hermes 服务采用独立用户、HOME、令牌与 systemd 沙箱，禁止个人记忆和工具执行。
 
 安装样例假定已审查的 Hermes 运行库在 /opt/hermes/runtime，其虚拟环境为 venv/，对应 Python 3.11 运行时在 /opt/hermes/python。两处路径是部署约定，需自行准备并核对 systemd 的只读挂载，不能指向未审查的个人配置目录。Python 版本或运行库结构不同，需要先调整样例并执行适配器测试。
 
@@ -54,4 +54,4 @@ backup.sh 和对应定时器只提供本机备份样例，不包含自动清理�
 
 ## 验证记录
 
-docs/testing/ 保存各版本的历史验证范围。公开版中的部署地址已脱敏，旧记录不代表任意新部署当前可用。服务器核验清单见 [server-readiness.md](../docs/development/server-readiness.md)。
+源码构建结果见对应提交的 [GitHub Actions](https://github.com/Yirinhana/maimai-secondhand/actions)。部署者仍需单独核验服务器服务状态、HTTPS、角色权限、业务流程和备份恢复；CI 通过不代表线上部署已经通过验收。包含实际主机信息的检查记录只保存在自己的受限目录中。

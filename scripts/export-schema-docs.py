@@ -35,5 +35,6 @@ for table, fields in groups.items():
         content += ['', '外键：' + '；'.join('`'+rel['COLUMN_NAME']+'` → `'+rel['REFERENCED_TABLE_NAME']+'.'+rel['REFERENCED_COLUMN_NAME']+'`' for rel in refs) + '。']
     content += ['']
 output = root / 'docs/design/data-dictionary.md'
+output.parent.mkdir(parents=True, exist_ok=True)
 output.write_text('\n'.join(content), encoding='utf-8')
 print(f'Exported {len(groups)} tables and {len(columns)} columns to {output}')

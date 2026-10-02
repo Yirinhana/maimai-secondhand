@@ -22,8 +22,17 @@ playwright-report/
 ~$*.docx
 
 # Course originals, exports and private audit archives stay on the local machine.
-# Already tracked blank templates and the generic policy draft remain reviewable.
+# Internal documentation stays local; public usage and security READMEs remain tracked.
+/docs/
+/AGENTS.md
+*.doc
 *.docx
+*.odt
+*.rtf
+*.ppt
+*.pptx
+*.xls
+*.xlsx
 *.pdf
 *.zip
 *.bundle

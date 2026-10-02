@@ -1,5 +1,5 @@
 /**
- * API v1 契约 DTO 类型（docs/design/api-v1.md）。
+ * API v1 契约 DTO 类型，与服务端响应结构保持一致。
  * 金额一律整数分（*Cents），时间为 ISO-8601 UTC 字符串。
  */
 

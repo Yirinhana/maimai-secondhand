@@ -10,13 +10,7 @@ import sys
 import zipfile
 from pathlib import Path, PurePosixPath
 
-PUBLIC_DOCUMENTS = {
-    "1-组号-组员姓名-题目名称--需求分析.docx",
-    "2-组号-组员姓名-题目名称--系统设计.docx",
-    "3-组号-组员姓名-题目名称--专周报告.docx",
-    "4-组号-组员姓名-题目名称--操作说明书.docx",
-    "docs/policies/麦麦二手 用户协议与交易售后规则 草案.docx",
-}
+DOCUMENT_SUFFIXES = {".doc", ".docx", ".odt", ".rtf", ".ppt", ".pptx", ".xls", ".xlsx"}
 PRIVATE_SUFFIXES = {".pem", ".key", ".p12", ".pfx", ".db", ".sqlite", ".sqlite3", ".bundle", ".zip", ".pdf"}
 PATTERNS = {
     "private-key": re.compile(r"-----BEGIN (?:RSA |OPENSSH |EC |DSA )?PRIVATE KEY-----"),
@@ -28,13 +22,15 @@ PATTERNS = {
 def inspect(path: str, data: bytes) -> list[str]:
     p = PurePosixPath(path)
     reasons = []
+    if p.parts[0] == "docs" or p.name == "AGENTS.md":
+        reasons.append("internal-project-document")
     if any(part in {".local", ".ssh", ".workbuddy"} for part in p.parts):
         reasons.append("private-directory")
     if p.name in {"id_rsa", "id_ed25519", ".env"} or p.name.endswith(".env") or (p.name.startswith(".env.") and p.name != ".env.example"):
         reasons.append("private-configuration")
     if p.suffix.lower() in PRIVATE_SUFFIXES:
         reasons.append("private-export-or-key")
-    if p.suffix.lower() == ".docx" and path not in PUBLIC_DOCUMENTS:
+    if p.suffix.lower() in DOCUMENT_SUFFIXES:
         reasons.append("personal-course-document")
     if p.name.lower().endswith((".sql.gz", ".sql.zst")):
         reasons.append("database-export")

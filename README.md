@@ -20,7 +20,7 @@
 | AI 辅助 | 客服问答、发布建议、商品与订单解释、售后和评价建议、举报辅助分析 |
 | 交互 | 响应式页面、品牌欢迎页、可拖动贴边的麦仔客服入口 |
 
-支付体验通过站内记录完成，不发生真实微信扣款、退款、到账或分账。体验收银页的二维码指向订单页面，不是个人微信收款码。真实支付渠道尚需另外实现和验收，详见 [支付设计](docs/design/experience-payments.md)。种子商品和生成图片是开发素材，不代表真实供货或成交。
+支付体验通过站内记录完成，不发生真实微信扣款、退款、到账或分账。体验收银页的二维码指向订单页面，不是个人微信收款码。真实支付渠道尚需另外实现和验收。种子商品和生成图片是开发素材，不代表真实供货或成交。
 
 ## 技术与结构
 
@@ -47,8 +47,6 @@ Spring Boot ─── MySQL / 受控图片存储
 | `tests/e2e/` | 浏览器场景测试，部分历史套件需要自行准备体验账号 |
 | `scripts/` | 本地启动、构建、测试与公开仓库检查 |
 | `deploy/` | 环境变量、Nginx、systemd、备份和 AI 网关样例 |
-| `docs/design/` | 架构、接口、数据字典与业务设计 |
-| `docs/testing/` | 各版本验证范围与结果，历史记录不代表当前部署状态 |
 | `VERSION` | 产品版本的唯一来源 |
 
 ## 本地运行
@@ -103,7 +101,7 @@ mvn -f backend/pom.xml "-Drevision=$(tr -d '\r\n' < VERSION)" spring-boot:run \
   -Dspring-boot.run.profiles=local -Dspring-boot.run.arguments=--server.port=8081
 ```
 
-Windows / VS Code 还提供 `MaimaiLocalApplication.java` 全站启动器。它要求依赖和数据库已准备好，不负责安装软件、初始化数据库或重置密码，具体见 [开发说明](docs/development.md)。
+Windows / VS Code 还提供 [MaimaiLocalApplication.java](backend/src/main/java/com/maimai/MaimaiLocalApplication.java) 全站启动器。准备好 Java、Maven、Node.js、前端依赖和上述数据库配置后，可从项目根目录打开 VS Code，运行该类的 `main` 方法。它不负责安装软件、初始化数据库或重置密码。
 
 `local` 环境会创建以下公开测试账号，密码均为 `Maimai#2026`：
 
@@ -129,7 +127,7 @@ Windows / VS Code 还提供 `MaimaiLocalApplication.java` 全站启动器。它�
 
 麦仔使用 LLM，不是 JEPA 或独立执行交易的决策引擎。后端按用户权限组装业务上下文并对部分个人字段脱敏；客服自由文本会发送到所配置的模型服务，因此请勿在对话中填写密钥或其他敏感资料。发布、付款、退款、封号和举报裁决均不由模型自动执行。
 
-模型密钥仅在服务端保存，不能使用 `VITE_*` 变量注入浏览器。网站网关令牌与模型供应商 API Key 应分开配置。详细边界见 [安全说明](SECURITY.md) 和 [AI 密钥配置](docs/development/ai-secrets.md)。
+模型密钥仅在服务端保存，不能使用 `VITE_*` 变量注入浏览器。网站网关令牌与模型供应商 API Key 应分开配置，配置方式和数据边界见 [安全说明](SECURITY.md)。
 
 ## 测试与构建
 
@@ -154,4 +152,4 @@ npm test --prefix frontend
 
 欢迎通过 Issue 反馈问题或提交 PR。开始前请阅读 [贡献指南](CONTRIBUTING.md)；安全问题请使用 [私密漏洞报告](https://github.com/Yirinhana/maimai-secondhand/security/advisories/new)，不要公开密钥、个人资料或攻击细节。
 
-项目原创代码采用 [MIT License](LICENSE)。第三方依赖与课程模板保留各自许可，生成素材的用途和限制见 [素材说明](ASSETS.md)。开源代码不包含真实账号、课程个人报告、服务器凭据或线上业务数据，也不承诺开箱即用的商业支付服务。
+项目原创代码采用 [MIT License](LICENSE)。第三方依赖保留各自许可，生成素材的用途和限制见 [素材说明](ASSETS.md)。课程报告、模板、ER 图和内部开发记录只在本地保留，不随源码分发。公开仓库保留运行、贡献与安全所需说明，不包含真实账号、服务器凭据或线上业务数据，也不承诺开箱即用的商业支付服务。

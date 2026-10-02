@@ -35,7 +35,7 @@ async function api(context, method, endpoint) {
     for (const [id,seller,suffix] of [[7,'seller','A'],[8,'seller2','B']]) {
       candidates.set(id,{id,title:`E2E1789331577296-${suffix} 本地演示用品`,seller,
         sourceRun:'1789331577296',sourceScreenshot:earlyProof,
-        sourceReport:'docs/tasks/022-browser-e2e-report.md: first interrupted run API setup'});
+        sourceReport:'Browser E2E batch 022: first interrupted run API setup'});
     }
   }
   const browser = await chromium.launch({channel:'chrome',headless:true});

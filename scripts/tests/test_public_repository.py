@@ -27,6 +27,20 @@ class PublicRepositoryTest(unittest.TestCase):
         self.assertIn("private-export-or-key", guard.inspect("release.zip", b""))
         self.assertIn("personal-course-document", guard.inspect("docs/course/report.docx", b""))
 
+    def test_internal_documents_and_blank_templates_are_blocked(self):
+        for path in ("docs/course/er.svg", "docs/testing/checks.md", "AGENTS.md"):
+            with self.subTest(path=path):
+                self.assertIn("internal-project-document", guard.inspect(path, b""))
+        for path in ("template.docx", "report.DOCX", "slides.pptx", "planning.xlsx"):
+            with self.subTest(path=path):
+                self.assertIn("personal-course-document", guard.inspect(path, b""))
+
+    def test_public_instructions_and_source_data_are_allowed(self):
+        for path in ("README.md", "SECURITY.md", "deploy/README.md", "scripts/data/demo-catalog-plan.json",
+                     "tests/e2e/fixtures/community-content-v060.json"):
+            with self.subTest(path=path):
+                self.assertEqual([], guard.inspect(path, b"{}"))
+
     def test_generated_secret_patterns_are_detected_without_echoing_value(self):
         token = "gh" + "p_" + "x" * 30
         self.assertEqual(["provider-token"], guard.inspect("config.txt", token.encode()))
@@ -35,8 +49,7 @@ class PublicRepositoryTest(unittest.TestCase):
         buffer = io.BytesIO()
         with zipfile.ZipFile(buffer, "w") as archive:
             archive.writestr("word/document.xml", "<p><t>学号：</t><t>1234</t><t>567890</t></p>")
-        allowed = next(iter(guard.PUBLIC_DOCUMENTS))
-        self.assertIn("student-id", guard.inspect(allowed, buffer.getvalue()))
+        self.assertIn("student-id", guard.inspect("template.docx", buffer.getvalue()))
 
     def test_schema_and_public_fixture_do_not_trigger(self):
         self.assertEqual([], guard.inspect("backend/src/main/resources/db/migration/V1__identity.sql", b"CREATE TABLE users (id BIGINT);"))

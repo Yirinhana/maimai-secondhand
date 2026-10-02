@@ -1,5 +1,5 @@
 /**
- * 统一 fetch 封装（契约见 docs/design/api-v1.md）。
+ * 统一 fetch 封装；响应类型定义见同目录 types.ts。
  * - credentials: 'same-origin'，携带 HttpOnly 会话 Cookie
  * - 非 GET 请求自动从 Cookie 读取 XSRF-TOKEN 并附带 X-XSRF-TOKEN 头
  * - 错误统一抛出 { code, message }
