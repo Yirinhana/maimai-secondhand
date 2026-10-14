@@ -18,6 +18,8 @@
   <description>麦麦二手后端</description>
 
   <properties>
+    <!-- IDE import fallback only. Release scripts and CI supply -Drevision from VERSION. -->
+    <revision>0.0.0-local</revision>
     <java.version>21</java.version>
     <!-- Security patch overrides; revisit when the Spring Boot BOM includes these fixes. -->
     <jackson-bom.version>3.1.7</jackson-bom.version>

@@ -103,7 +103,27 @@ mvn -f backend/pom.xml "-Drevision=$(tr -d '\r\n' < VERSION)" spring-boot:run \
   -Dspring-boot.run.profiles=local -Dspring-boot.run.arguments=--server.port=8081
 ```
 
-Windows / VS Code 还提供 [MaimaiLocalApplication.java](backend/src/main/java/com/maimai/MaimaiLocalApplication.java) 全站启动器。准备好 Java、Maven、Node.js、前端依赖和上述数据库配置后，可从项目根目录打开 VS Code，运行该类的 `main` 方法。它不负责安装软件、初始化数据库或重置密码。
+### Windows / VS Code 全站启动
+
+安装 JDK 21、Maven 3.9、Node.js 24，以及 VS Code 的 Extension Pack for Java 和 Vue - Official。在 VS Code 打开包含 `backend`、`frontend`、`scripts` 的项目根目录，等待 Java 项目导入。
+
+可以把 [本机配置样例](config/local-environment.example.json) 复制到忽略的 `.local/environment.json`，填写自己的 JDK 和 Maven 安装目录、MySQL 端口与项目账号密码；已有配置只需编辑，不要覆盖。样例没有可用密码，不要把填好的私密配置发给其他同学或提交到 Git。
+
+```powershell
+New-Item -ItemType Directory -Force .local | Out-Null
+if (-not (Test-Path .local/environment.json)) {
+    Copy-Item config/local-environment.example.json .local/environment.json
+}
+npm.cmd ci --prefix frontend
+```
+
+先启动自己的 MySQL 服务并按前文创建两个专用数据库，再从“运行和调试”选择“麦麦全站（数据库＋后端＋前端）”，按 F5；也可以运行 [MaimaiLocalApplication.java](backend/src/main/java/com/maimai/MaimaiLocalApplication.java) 的 `main` 方法。终端显示就绪后，打开 `http://127.0.0.1:5173/`。MySQL 管理客户端窗口不能代替数据库服务。
+
+统一启动器复用已运行的数据库，不替新电脑安装软件、初始化数据库或重置密码。它自动启动数据库的能力只适用于已经准备好的项目专用实例；源码交接包不包含该实例。停止时在启动器终端按回车，它只关闭本次启动的服务。
+
+`MaimaiApplication.java` 仅为后端入口；要单独调试后端，请选择“麦麦后端（本地 8081）”，前端另开终端启动。单独访问后端端口不能浏览完整网站。
+
+Maven 未传入版本参数时使用 `0.0.0-local` 作为 IDE 导入占位版本；产品版本只在 `VERSION` 维护。生成正式构建请使用项目脚本或按本文命令传入 `-Drevision`，不能把 IDE 占位版本当作发布版本。
 
 `local` 环境会创建以下公开测试账号，密码均为 `Maimai#2026`：
 
