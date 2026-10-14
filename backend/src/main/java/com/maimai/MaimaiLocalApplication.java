@@ -57,8 +57,7 @@ public final class MaimaiLocalApplication {
     }
 
     public static void main(String[] args) throws Exception {
-        System.setOut(new PrintStream(System.out, true, StandardCharsets.UTF_8));
-        System.setErr(new PrintStream(System.err, true, StandardCharsets.UTF_8));
+        configureConsole();
         if (!System.getProperty("os.name").startsWith("Windows")) {
             throw new IllegalStateException("此本地启动器适用于 Windows；其他系统请使用各服务的开发脚本。");
         }
@@ -83,6 +82,15 @@ public final class MaimaiLocalApplication {
                 Runtime.getRuntime().removeShutdownHook(shutdown);
             }
         }
+    }
+
+    static void configureConsole() {
+        // Windows terminals may use GBK even when Java's default file encoding is UTF-8.
+        // Match the attached console; redirected launcher logs remain UTF-8.
+        var console = System.console();
+        var charset = console == null ? StandardCharsets.UTF_8 : console.charset();
+        System.setOut(new PrintStream(System.out, true, charset));
+        System.setErr(new PrintStream(System.err, true, charset));
     }
 
     private static Path findProjectRoot() throws IOException {
