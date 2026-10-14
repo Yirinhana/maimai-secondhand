@@ -53,4 +53,11 @@ class GovernanceModelTest {
         var normal=source("商品看起来不错");
         assertThat(GovernanceTriage.candidate(new GovernanceSnapshot.Snapshot("REPORT",1,"PUBLIC","x","/x","举报",1L,2L,normal.text(),""))).isTrue();
     }
+    @Test void repairsEscapedLineBreaksButNeverAcceptsInventedEvidence(){
+        String source="商品破损\n希望处理退款";
+        assertThat(MiniMaxGovernanceModel.parse(answer("商品破损\\n希望处理退款"),source).evidence()).isEqualTo(source);
+        assertThatThrownBy(()->MiniMaxGovernanceModel.parse(answer("商品破损\\n卖家已承认诈骗"),source)).isInstanceOf(IllegalArgumentException.class);
+        String normal=json.writeValueAsString(new GovernanceModel.Assessment("NONE","LOW","维护测试，暂无真实投诉","不属于原文的无关引用","","无需处罚，请保留人工核查入口"));
+        assertThat(MiniMaxGovernanceModel.parse(normal,source).evidence()).isEmpty();
+    }
 }

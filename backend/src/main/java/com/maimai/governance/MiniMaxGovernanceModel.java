@@ -61,7 +61,7 @@ public class MiniMaxGovernanceModel implements GovernanceModel {
         if(raw.contains(key))throw unavailable("GOV_RESPONSE_INVALID");
         try {
             JsonNode message=json.readTree(raw).path("choices").path(0).path("message");
-            if(message.hasNonNull("tool_calls")||message.hasNonNull("function_call")||!message.path("content").isString())throw new IllegalArgumentException();
+            if((message.hasNonNull("tool_calls")&&(!message.path("tool_calls").isArray()||!message.path("tool_calls").isEmpty()))||message.hasNonNull("function_call")||!message.path("content").isString())throw new IllegalArgumentException();
             return parse(message.path("content").asString(),snapshot.text());
         }catch(RuntimeException invalid){throw unavailable("GOV_RESPONSE_INVALID");}
     }
@@ -70,6 +70,14 @@ public class MiniMaxGovernanceModel implements GovernanceModel {
         if(!node.isObject()||node.size()!=6)throw new IllegalArgumentException("Invalid assessment shape");
         String category=field(node,"category",24),priority=field(node,"priority",12),summary=field(node,"summary",220),
             evidence=field(node,"evidence",250),missing=field(node,"missing",250),suggestion=field(node,"suggestion",250);
+        // Providers sometimes echo the JSON-escaped line break, rather than the original newline.
+        // Accept only a lossless formatting repair that still exactly occurs in the stored source.
+        if(!evidence.isBlank()&&!source.contains(evidence)) {
+            String decoded=evidence.replace("\\r\\n","\r\n").replace("\\n","\n").replace("\\t","\t");
+            if(source.contains(decoded))evidence=decoded;
+        }
+        // NONE carries no finding. Discard an unnecessary quote instead of presenting an ungrounded one.
+        if("NONE".equals(category))evidence="";
         if(!CATEGORIES.contains(category)||!PRIORITIES.contains(priority)||summary.isBlank()||suggestion.isBlank()
                 || (!"NONE".equals(category)&&evidence.isBlank()) || (!evidence.isBlank()&&!source.contains(evidence)))throw new IllegalArgumentException("Ungrounded assessment");
         return new Assessment(category,priority,GovernanceSnapshot.redact(summary),evidence,GovernanceSnapshot.redact(missing),GovernanceSnapshot.redact(suggestion));
