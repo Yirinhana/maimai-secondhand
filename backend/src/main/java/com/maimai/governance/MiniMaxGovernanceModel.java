@@ -66,6 +66,12 @@ public class MiniMaxGovernanceModel implements GovernanceModel {
         }catch(RuntimeException invalid){throw unavailable("GOV_RESPONSE_INVALID");}
     }
     public static Assessment parse(String answer,String source) {
+        if(answer==null||answer.length()>8192)throw new IllegalArgumentException("Assessment exceeds output limit");
+        answer=answer.strip();
+        // Some compatible endpoints wrap even explicitly requested JSON in one Markdown fence.
+        // Unwrap only that complete outer wrapper; never extract JSON from arbitrary prose.
+        var fence=java.util.regex.Pattern.compile("(?is)\\A```(?:json)?[ \\t]*\\R(.*?)\\R```\\z").matcher(answer);
+        if(fence.matches())answer=fence.group(1).strip();
         var node=JsonMapper.builder().build().readTree(answer);
         if(!node.isObject()||node.size()!=6)throw new IllegalArgumentException("Invalid assessment shape");
         String category=field(node,"category",24),priority=field(node,"priority",12),summary=field(node,"summary",220),

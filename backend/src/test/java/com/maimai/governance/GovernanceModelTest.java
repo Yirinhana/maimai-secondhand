@@ -17,7 +17,8 @@ class GovernanceModelTest {
         assertThat(MiniMaxGovernanceModel.parse(answer("一直没有收到货"),"我一直没有收到货，帮我查一下").category()).isEqualTo("COMPLAINT");
         assertThatThrownBy(()->MiniMaxGovernanceModel.parse(answer("已查明卖家欺诈"),"正常留言")).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(()->MiniMaxGovernanceModel.parse(answer(""),"正常留言")).isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(()->MiniMaxGovernanceModel.parse("```json\n"+answer("留言")+"\n```","留言")).isInstanceOf(RuntimeException.class);
+        assertThat(MiniMaxGovernanceModel.parse("```json\n"+answer("留言")+"\n```","留言").evidence()).isEqualTo("留言");
+        assertThatThrownBy(()->MiniMaxGovernanceModel.parse("说明文字\n```json\n"+answer("留言")+"\n```","留言")).isInstanceOf(RuntimeException.class);
     }
     @Test void refusesUnexpectedFieldsAndUnsupportedActions(){
         var values=new java.util.HashMap<String,String>(Map.of("category","BAN_USER","priority","HIGH","summary","违规","evidence","原文","missing","","suggestion","封号"));
@@ -59,5 +60,13 @@ class GovernanceModelTest {
         assertThatThrownBy(()->MiniMaxGovernanceModel.parse(answer("商品破损\\n卖家已承认诈骗"),source)).isInstanceOf(IllegalArgumentException.class);
         String normal=json.writeValueAsString(new GovernanceModel.Assessment("NONE","LOW","维护测试，暂无真实投诉","不属于原文的无关引用","","无需处罚，请保留人工核查入口"));
         assertThat(MiniMaxGovernanceModel.parse(normal,source).evidence()).isEmpty();
+    }
+    @Test void wrappedProviderResultStillEnforcesSchemaAndDoesNotLeakMarkdown(){
+        var wire=mock(HermesTransport.class);
+        when(wire.post(any(),anyString(),anyString())).thenReturn(json.writeValueAsString(Map.of("choices",java.util.List.of(Map.of("message",Map.of("content","```json\n"+answer("申请退款")+"\n```","tool_calls",java.util.List.of()))))));
+        var model=new MiniMaxGovernanceModel(true,"https://api.minimaxi.com/v1","test-credential","model",wire);
+        assertThat(model.assess(source("申请退款")).evidence()).isEqualTo("申请退款");
+        assertThatThrownBy(()->MiniMaxGovernanceModel.parse("```json\n{\"execute\":\"ban\"}\n```","申请退款")).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(()->MiniMaxGovernanceModel.parse("x".repeat(8193),"申请退款")).isInstanceOf(IllegalArgumentException.class);
     }
 }
