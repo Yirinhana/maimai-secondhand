@@ -106,6 +106,8 @@
           <systemPropertyVariables>
             <!-- Bound retained test contexts/pools; do not weaken each test's concurrency limit. -->
             <spring.test.context.cache.maxSize>4</spring.test.context.cache.maxSize>
+            <!-- Tests must never consume the operator's live background AI budget. -->
+            <MAIMAI_GOVERNANCE_ENABLED>false</MAIMAI_GOVERNANCE_ENABLED>
           </systemPropertyVariables>
           <includes>
             <include>**/*Test.java</include>

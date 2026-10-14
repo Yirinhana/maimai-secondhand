@@ -262,6 +262,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import('../modules/admin/CommunityModerationPage.vue'),
       },
       {
+        path: 'governance',
+        name: 'admin-governance',
+        meta: { title: '麦仔预审' },
+        component: () => import('../modules/admin/GovernancePage.vue'),
+      },
+      {
         path: '',
         name: 'admin-dashboard',
         component: () => import('../modules/admin/DashboardPage.vue'),

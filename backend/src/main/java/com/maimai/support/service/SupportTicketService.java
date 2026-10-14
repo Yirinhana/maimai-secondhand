@@ -29,7 +29,8 @@ public class SupportTicketService {
     private final JdbcTemplate jdbc;
     private final SimpleRateLimiter limiter;
     private final com.maimai.notification.NotificationService notifications;
-    public SupportTicketService(JdbcTemplate jdbc, SimpleRateLimiter limiter,com.maimai.notification.NotificationService notifications) { this.jdbc=jdbc; this.limiter=limiter; this.notifications=notifications; }
+    private final com.maimai.governance.GovernanceSignals governance;
+    public SupportTicketService(JdbcTemplate jdbc, SimpleRateLimiter limiter,com.maimai.notification.NotificationService notifications,com.maimai.governance.GovernanceSignals governance) { this.jdbc=jdbc; this.limiter=limiter; this.notifications=notifications;this.governance=governance; }
 
     @Transactional
     public Ticket create(CreateTicket input) {
@@ -144,6 +145,7 @@ public class SupportTicketService {
         return jdbc.queryForObject("SELECT m.*,u.nickname author_name FROM support_messages m LEFT JOIN users u ON u.id=m.author_id WHERE m.id=?",MESSAGE,message);
     }
     private void audit(long ticket,long actor,String action,String before,String after) {
+        if(!"AI_FAQ".equals(action))governance.touch("SUPPORT_TICKET",ticket);
         jdbc.update("INSERT INTO support_action_logs(ticket_id,actor_id,action,before_state,after_state) VALUES (?,?,?,?,?)",ticket,actor,action,before,after);
     }
     private long insert(String sql,Object...args) {

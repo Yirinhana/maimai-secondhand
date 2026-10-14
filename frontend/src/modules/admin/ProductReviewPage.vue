@@ -6,16 +6,24 @@
 import ProductRevisions from '../catalog/ProductRevisions.vue'
 import ItemImage from '../../shared/components/ItemImage.vue'
 import {computed,onMounted,ref} from 'vue'
+import {useRoute} from 'vue-router'
 import {get,post,type ApiError} from '../../shared/api'
 import {useAuthStore} from '../../shared/stores/auth'
 import {PRODUCT_STATUS_TEXT,type AdminProductItem,type Page,type ProductDetail} from '../../shared/types'
 import MmButton from '../../shared/components/MmButton.vue'
 import MmPagination from '../../shared/components/MmPagination.vue'
 import PriceText from '../../shared/components/PriceText.vue'
-const auth=useAuthStore(),items=ref<AdminProductItem[]>([]),status=ref('PENDING_REVIEW'),page=ref(0),pages=ref(0),loading=ref(false),busy=ref(false),error=ref(''),selected=ref<ProductDetail|null>(null),reason=ref('')
+const route=useRoute(),auth=useAuthStore(),items=ref<AdminProductItem[]>([]),status=ref('PENDING_REVIEW'),page=ref(0),pages=ref(0),loading=ref(false),busy=ref(false),error=ref(''),selected=ref<ProductDetail|null>(null),reason=ref('')
 const canReview=computed(()=>auth.me?.roles.some(r=>['SUPER_ADMIN','OPERATOR'].includes(r)))
 async function load(){loading.value=true;error.value='';try{const r=await get<Page<AdminProductItem>>('/admin/products',{status:status.value,page:page.value,size:12});items.value=r.content;pages.value=r.totalPages}catch(e){error.value=(e as ApiError).message}finally{loading.value=false}}
 async function inspect(id:number){busy.value=true;error.value='';try{selected.value=await get<ProductDetail>(`/admin/products/${id}`);reason.value=''}catch(e){error.value=(e as ApiError).message}finally{busy.value=false}}
 async function review(id:number,approve:boolean){busy.value=true;try{await post(`/admin/products/${id}/review`,{approve,reason:reason.value});selected.value=null;await load()}catch(e){error.value=(e as ApiError).message}finally{busy.value=false}}
-onMounted(load)
+onMounted(async()=>{
+  const id=Number(route.query.productId)
+  if(Number.isSafeInteger(id)&&id>0){
+    await inspect(id)
+    if(selected.value){const p=selected.value;status.value=p.status;items.value=[{...p,sellerId:p.seller.id,sellerNickname:p.seller.nickname,categoryId:p.categoryId ?? 0,reviewReason:null,updatedAt:p.createdAt,coverImage:p.images[0]?.path ?? null}];return}
+  }
+  await load()
+})
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <AppFeedback />
+  <AppFeedback /><ReleaseNotice />
   <router-view v-if="route.meta.standalone" />
   <div v-else class="mm-app" :class="`mm-app--${section}`">
     <ConfirmationDialog />
@@ -227,6 +227,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from './shared/stores/auth';
 import ConfirmationDialog from './shared/components/ConfirmationDialog.vue';
 import AppFeedback from './shared/components/AppFeedback.vue';
+import ReleaseNotice from './shared/components/ReleaseNotice.vue';
 import TinaSupportDock from './modules/support/TinaSupportDock.vue';
 import UserAvatar from './shared/components/UserAvatar.vue';
 import MmIcon from './shared/components/MmIcon.vue';

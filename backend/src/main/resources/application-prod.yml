@@ -1,5 +1,6 @@
 # 候选生产配置：只能由同机Nginx访问；不能用local/test profile公开运行。
 server:
+  shutdown: graceful
   address: 127.0.0.1
   port: ${MAIMAI_PORT:8080}
   forward-headers-strategy: framework
@@ -10,6 +11,8 @@ server:
     max-connections: 200
     accept-count: 50
 spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 25s
   datasource:
     hikari:
       maximum-pool-size: 5

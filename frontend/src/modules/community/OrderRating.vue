@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import GovernanceNotice from '../../shared/components/GovernanceNotice.vue';
 import { ratingSourceText, ratingRefundText } from './types';
 import { computed, onMounted, ref } from 'vue';
 import { get, post, upload, type ApiError } from '../../shared/api';
@@ -166,7 +167,7 @@ onMounted(load);
       <MmButton type="submit" :loading="busy" :disabled="uploading"
         >提交评价</MmButton
       >
-    </form>
+    <GovernanceNotice /></form>
   </section>
 </template>
 <style scoped>

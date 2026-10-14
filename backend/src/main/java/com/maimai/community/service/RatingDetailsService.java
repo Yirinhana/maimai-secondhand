@@ -14,7 +14,8 @@ import java.util.*;
 public class RatingDetailsService {
     private final JdbcTemplate jdbc;
     private final NotificationService notifications;
-    public RatingDetailsService(JdbcTemplate jdbc,NotificationService notifications){this.jdbc=jdbc;this.notifications=notifications;}
+    private final com.maimai.governance.GovernanceSignals governance;
+    public RatingDetailsService(JdbcTemplate jdbc,NotificationService notifications,com.maimai.governance.GovernanceSignals governance){this.jdbc=jdbc;this.notifications=notifications;this.governance=governance;}
     public record Details(Integer description,Integer communication,Integer fulfillment,String followup,Instant followedUpAt,List<String> images){}
     public void attach(long actor,long rating,RatingRequest input){
         for(var score:Arrays.asList(input.descriptionRating(),input.communicationRating(),input.fulfillmentRating()))if(score!=null&&(score<1||score>5))throw BizException.badRequest("RATING_DIMENSION","分项评分须为1至5分");
@@ -42,6 +43,7 @@ public class RatingDetailsService {
         if(orders.isEmpty())throw BizException.notFound("评价不存在或当前订单不可追评");
         if(jdbc.update("UPDATE community_order_ratings SET followup=?,followed_up_at=UTC_TIMESTAMP(6) WHERE id=? AND followed_up_at IS NULL",text.strip(),id)!=1)throw BizException.conflict("FOLLOWUP_EXISTS","每条评价可追加一次，原有内容会保留");
         notifications.notify((Long)orders.getFirst()[1],"REPUTATION_UPDATED","收到一条追评","对方补充了本次交易的使用体验。","/orders/"+orders.getFirst()[0]);
+        governance.touch("ORDER_REVIEW",id);
         return detail(id);
     }
 }

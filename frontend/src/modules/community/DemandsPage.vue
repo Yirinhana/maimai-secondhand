@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import GovernanceNotice from '../../shared/components/GovernanceNotice.vue';
 import { askConfirmation } from '../../shared/confirm';
 import { nextTick, onMounted, reactive, ref, watch } from 'vue';
 import { parseYuan } from '../../shared/moneyInput';
@@ -306,7 +307,7 @@ onMounted(async () => {
         <MmButton type="submit" :loading="busy">提交审核</MmButton
         ><MmButton variant="ghost" @click="showForm = false">取消</MmButton>
       </div>
-    </form>
+    <GovernanceNotice /></form>
     <p v-if="loading">加载中…</p>
     <article v-for="d in items" :key="d.id" class="mm-panel mm-demand-post">
       <div class="mm-actions">

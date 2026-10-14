@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import GovernanceNotice from '../../shared/components/GovernanceNotice.vue';
 import { onMounted, ref } from 'vue';
 import { get, post } from '../../shared/api';
 import { formatTime } from '../../shared/format';
@@ -91,7 +92,7 @@ onMounted(load);
             maxlength="500"
           /></label
         ><button :disabled="busy || !text.trim()">保存追评</button>
-      </form></template
+      <GovernanceNotice /></form></template
     >
     <p v-if="error" class="mm-error" role="alert">
       {{ error }} <button @click="load">重试</button>

@@ -20,7 +20,9 @@ public class ProductRevisionService {
     private final ProductRepository products;
     private final ProductAssembler assembler;
     private final JsonMapper json;
-    public ProductRevisionService(JdbcTemplate jdbc,ProductRepository products,ProductAssembler assembler,JsonMapper json) {
+    private final com.maimai.governance.GovernanceSignals governance;
+    public ProductRevisionService(JdbcTemplate jdbc,ProductRepository products,ProductAssembler assembler,JsonMapper json,com.maimai.governance.GovernanceSignals governance) {
+        this.governance=governance;
         this.jdbc=jdbc;this.products=products;this.assembler=assembler;this.json=json;
     }
     @Transactional(propagation=Propagation.MANDATORY)
@@ -32,6 +34,7 @@ public class ProductRevisionService {
         int version=jdbc.queryForObject("SELECT COALESCE(MAX(version),0)+1 FROM product_revisions WHERE product_id=?",Integer.class,product.getId());
         Content content=new Content(product.getTitle(),product.getCategoryId(),product.getDescription(),product.getItemCondition().name(),product.getDefects(),product.getPriceCents(),product.getRegion(),ProductAssembler.splitDeliveryMethods(product.getDeliveryMethods()),product.getFreightCents(),product.getReturnPromise(),ProductShipping.split(product.getShippingProvinces()),product.getLatitude(),product.getLongitude(),assembler.images(product.getId()),product.getStatus().name(),product.getReviewReason(),product.getExperienceSource(),product.getSupplyNote(),ProductSpecifications.decode(product.getSpecifications()));
         jdbc.update("INSERT INTO product_revisions(product_id,version,action,actor_id,content) VALUES(?,?,?,?,?)",product.getId(),version,action,actorId,json.writeValueAsString(content));
+        governance.touch("PRODUCT",product.getId());
     }
     @Transactional(readOnly=true)
     public PageResult<Revision> list(long productId,int page,int size,boolean admin) {

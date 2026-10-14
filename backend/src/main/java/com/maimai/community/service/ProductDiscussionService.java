@@ -17,7 +17,8 @@ public class ProductDiscussionService {
                           boolean seller,String content,Long replyToId,String replyToNickname,String replyPreview,Instant createdAt) {}
     private final CommunityRepository repo;
     private final CommunitySupport support;
-    public ProductDiscussionService(CommunityRepository repo,CommunitySupport support){this.repo=repo;this.support=support;}
+    private final com.maimai.governance.GovernanceSignals governance;
+    public ProductDiscussionService(CommunityRepository repo,CommunitySupport support,com.maimai.governance.GovernanceSignals governance){this.repo=repo;this.support=support;this.governance=governance;}
     private static final String VISIBLE=" c.status='PUBLISHED' AND u.status='ACTIVE' ";
     private static final String SELECT="""
         SELECT c.*,u.nickname,CONCAT('/api/v1/avatars/',a.filename) avatar_url,p.seller_id,
@@ -45,6 +46,7 @@ public class ProductDiscussionService {
         if(repo.count("SELECT COUNT(*) FROM product_comments WHERE author_id=? AND created_at>DATE_SUB(UTC_TIMESTAMP(6),INTERVAL 1 MINUTE)",actor)>=5)throw BizException.tooMany("留言过于频繁，请稍后再试");
         if(request.replyToId()!=null && repo.count("SELECT COUNT(*) FROM product_comments c JOIN users u ON u.id=c.author_id WHERE c.id=? AND c.product_id=? AND "+VISIBLE,request.replyToId(),product)!=1)throw BizException.notFound("回复的留言不存在或不属于这件商品");
         long id=repo.insertReturningId("INSERT INTO product_comments(product_id,author_id,reply_to_id,content) VALUES(?,?,?,?)",product,actor,request.replyToId(),text(request.content(),"留言",1,1000));
+        governance.touch("PRODUCT_COMMENT",id);
         return repo.queryOne(SELECT+" WHERE c.id=?",MAPPER,id);
     }
     @Transactional
@@ -54,5 +56,6 @@ public class ProductDiscussionService {
         if(owner==null)throw BizException.notFound("留言不存在");
         if(owner!=actor)throw BizException.forbidden("只能删除自己的留言");
         repo.update("UPDATE product_comments SET status='DELETED',updated_at=UTC_TIMESTAMP(6) WHERE id=?",id);
+        governance.touch("PRODUCT_COMMENT",id);
     }
 }

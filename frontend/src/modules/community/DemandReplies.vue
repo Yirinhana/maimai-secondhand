@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import GovernanceNotice from '../../shared/components/GovernanceNotice.vue';
 import UserAvatar from '../../shared/components/UserAvatar.vue';
 import { askConfirmation } from '../../shared/confirm';
 import { onMounted, nextTick, ref } from 'vue';
@@ -160,7 +161,7 @@ onMounted(load);
         >
       </div>
       <p v-if="hint" class="mm-muted" role="status">{{ hint }}</p>
-    </form>
+    <GovernanceNotice /></form>
     <RouterLink v-else-if="!auth.me" to="/login">登录后回复</RouterLink>
   </section>
 </template>

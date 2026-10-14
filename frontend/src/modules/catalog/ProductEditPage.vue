@@ -509,7 +509,7 @@
             >返回我的商品</MmButton
           >
         </div>
-      </form>
+      <GovernanceNotice /></form>
       <ProductRevisions
         v-if="productId"
         :key="productId"
@@ -520,6 +520,7 @@
 </template>
 
 <script setup lang="ts">
+import GovernanceNotice from '../../shared/components/GovernanceNotice.vue';
 import { useCloudDraft } from './useCloudDraft';
 import DraftPhotos from './DraftPhotos.vue';
 import ProductSpecifications from './ProductSpecifications.vue';

@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router';
 import { get, post, type ApiError } from '../../shared/api';
 import { useAuthStore } from '../../shared/stores/auth';
 import MmButton from '../../shared/components/MmButton.vue';
+import AiActivity from './AiActivity.vue';
 const props = defineProps<{ stage: string; resourceId?: number; draft?: string; title?: string }>();
 interface Result { id: number; status: string; answer: string | null; failureCode: string | null; model: string; createdAt: string }
 const auth = useAuthStore(), route = useRoute(), open = ref(false), busy = ref(false), error = ref(''), question = ref(''), result = ref<Result | null>(null), available = ref<boolean | null>(null);
@@ -44,7 +45,7 @@ async function ask() {
         <p v-if="available === false" class="mm-notice">麦仔暂未接通，正常交易和人工客服仍可使用。</p>
         <label>补充说明（可选）<textarea v-model="question" :disabled="busy" maxlength="700" rows="2" placeholder="例如：这件商品还需要向卖家确认哪些细节？" /></label>
         <div class="mm-actions"><MmButton type="button" :loading="busy" :disabled="available === false" @click="ask">{{ result?.status === 'RUNNING' ? '获取分析结果' : '请麦仔分析' }}</MmButton><RouterLink :to="{ path: '/support', query: { title: title || '交易流程咨询', body: '我在页面 ' + route.fullPath + ' 需要人工协助。' } }">转人工客服</RouterLink></div>
-        <p v-if="busy || result?.status === 'RUNNING'" role="status" class="workflow-assistant__thinking">麦仔正在核对这一步的资料…</p>
+        <AiActivity :active="busy || result?.status === 'RUNNING'" :outcome="error ? 'error' : result?.status === 'SUCCEEDED' ? 'success' : 'idle'" />
         <p v-if="error" class="mm-error" role="alert">{{ error }}</p>
         <div v-if="result?.status === 'SUCCEEDED'" class="workflow-assistant__answer" role="status"><p>{{ result.answer }}</p><small>AI 辅助建议 · 根据请求时的数据生成 · {{ result.model }}</small></div>
       </template>

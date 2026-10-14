@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import GovernanceNotice from '../../shared/components/GovernanceNotice.vue';
 import RatingDetails from './RatingDetails.vue';
 import { ratingSourceText } from './types';
 import { ref, watch, onBeforeUnmount, nextTick } from 'vue';
@@ -270,6 +271,7 @@ watch(
           {{ busy ? '正在发布…' : reply ? '发布回复' : '发布留言' }}
         </button>
       </div>
+      <GovernanceNotice />
     </form>
     <p v-else class="product-talk__login">
       <RouterLink :to="{ path: '/login', query: { redirect: route.fullPath } }"

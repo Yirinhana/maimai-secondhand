@@ -19,7 +19,9 @@ public class ReportService {
     private final DemandService demands;
     private final ReportContextService contexts;
     private final com.maimai.notification.NotificationService notifications;
-    public ReportService(CommunityRepository repo, CommunitySupport support, DemandService demands,ReportContextService contexts,com.maimai.notification.NotificationService notifications) {
+    private final com.maimai.governance.GovernanceSignals governance;
+    public ReportService(CommunityRepository repo, CommunitySupport support, DemandService demands,ReportContextService contexts,com.maimai.notification.NotificationService notifications,com.maimai.governance.GovernanceSignals governance) {
+        this.governance=governance;
         this.repo = repo; this.support = support; this.demands = demands;this.contexts=contexts;this.notifications=notifications;
     }
 
@@ -53,6 +55,7 @@ public class ReportService {
         long id = repo.insertReturningId("INSERT INTO community_reports(reporter_id, resource_type, resource_id, reason,target_owner_id,content_snapshot,target_url) VALUES (?, ?, ?, ?,?,?,?)",
                 actor, type.name(), target, text(request.reason(), "举报原因", 6, 500),source==null?null:source.ownerId(),source==null?null:source.text(),source==null?null:source.url());
         notifications.notify(actor,"REPORT_RECEIVED","举报已进入审核队列","举报编号 "+id+" 已关联原文和对象，由管理员核查；你可以在我的社区查看处理结果。");
+        governance.touch("REPORT",id);
         return report(id, false);
     }
 
@@ -66,6 +69,11 @@ public class ReportService {
         String filter = status == null || status.isBlank() ? "PENDING" : status.strip().toUpperCase(Locale.ROOT);
         if (!java.util.Set.of("PENDING", "RESOLVED", "DISMISSED", "FORWARDED").contains(filter)) throw BizException.badRequest("REPORT_STATUS_INVALID", "举报状态不支持");
         return list("status = ?", filter, page, size);
+    }
+
+    public ReportItem adminDetail(long id) {
+        support.moderator(SecurityUtils.currentUserId());
+        return report(id,false);
     }
 
     @Transactional
@@ -85,6 +93,8 @@ public class ReportService {
                 WHERE id = ? AND status = 'PENDING'""", status, actor, action.name(), reason, id);
         // Report ID makes concurrent processing and each moderation decision separately traceable.
         support.audit(actor, "REPORT_PROCESS", "REPORT", id, report.status(), status, reason);
+        governance.touch("REPORT",id);
+        governance.touch(report.resourceType(),report.resourceId());
         notifications.notify(report.reporterId(),"REPORT_PROCESSED","举报已有处理结果","举报编号 "+id+"："+reason+"。对结果有异议可提交客服工单。");
         if(action==ReportAction.HIDE){
             var source=contexts.source(report.resourceType(),report.resourceId());

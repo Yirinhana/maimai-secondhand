@@ -268,7 +268,7 @@
             {{ actionError }}
           </p>
           <MmButton type="submit" :loading="acting">提交答复</MmButton>
-        </form>
+        <GovernanceNotice /></form>
       </MmCard>
 
       <!-- 买家寄回（买家视角，待寄回） -->
@@ -301,7 +301,7 @@
             {{ actionError }}
           </p>
           <MmButton type="submit" :loading="acting">确认寄出</MmButton>
-        </form>
+        <GovernanceNotice /></form>
       </MmCard>
 
       <!-- 卖家验退确认（卖家视角，退货已发出） -->
@@ -364,6 +364,7 @@
 </template>
 
 <script setup lang="ts">
+import GovernanceNotice from '../../shared/components/GovernanceNotice.vue';
 import WorkflowAssistant from "../support/WorkflowAssistant.vue";
 import { computed, reactive, ref, watch } from 'vue';
 import { askConfirmation } from '../../shared/confirm';

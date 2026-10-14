@@ -20,7 +20,8 @@ public class DemandService {
     private static final String PUBLIC = "d.status = 'PUBLISHED' AND d.is_closed = 0 AND d.is_deleted = 0";
     private final CommunityRepository repo;
     private final CommunitySupport support;
-    public DemandService(CommunityRepository repo, CommunitySupport support) { this.repo = repo; this.support = support; }
+    private final com.maimai.governance.GovernanceSignals governance;
+    public DemandService(CommunityRepository repo, CommunitySupport support,com.maimai.governance.GovernanceSignals governance) { this.repo = repo; this.support = support;this.governance=governance; }
 
     @Transactional
     public DemandItem create(Long actor, DemandCreateRequest request) {
@@ -33,6 +34,7 @@ public class DemandService {
                 INSERT INTO community_demand_posts(author_id, title, description, budget_min_cents, budget_max_cents, category_id, region)
                 VALUES (?, ?, ?, ?, ?, ?, ?)""", actor, title, description, request.budgetMinCents(), request.budgetMaxCents(),
                 request.categoryId(), text(request.region(), "地区", 0, 100));
+        governance.touch("DEMAND_POST",id);
         return demand(id, false);
     }
 
@@ -58,6 +60,7 @@ public class DemandService {
                 UPDATE community_demand_posts SET title = ?, description = ?, budget_min_cents = ?, budget_max_cents = ?,
                 category_id = ?, region = ?, status = 'PENDING', reviewed_by = NULL, reviewed_at = NULL,
                 review_reason = NULL, updated_at = NOW(6) WHERE id = ?""", title, description, min, max, category, region, id);
+        governance.touch("DEMAND_POST",id);
         return demand(id, false);
     }
 
@@ -67,6 +70,7 @@ public class DemandService {
         DemandItem current = demand(id, true);
         owner(actor, current.authorId());
         repo.update("UPDATE community_demand_posts SET is_closed = 1, status = 'CLOSED', updated_at = NOW(6) WHERE id = ?", id);
+        governance.touch("DEMAND_POST",id);
     }
 
     public DemandItem publicDetail(Long id) {
@@ -91,6 +95,7 @@ public class DemandService {
         visible(demand(id, true));
         long reply = repo.insertReturningId("INSERT INTO community_demand_replies(demand_id, author_id, content) VALUES (?, ?, ?)",
                 id, actor, text(request.content(), "回复", 1, 800));
+        governance.touch("DEMAND_REPLY",reply);
         return reply(reply, false);
     }
 
@@ -106,6 +111,7 @@ public class DemandService {
         repo.update("""
                 UPDATE community_demand_replies SET content = ?, status = 'PENDING', reviewed_by = NULL,
                 reviewed_at = NULL, review_reason = NULL, updated_at = NOW(6) WHERE id = ?""", text(request.content(), "回复", 1, 800), id);
+        governance.touch("DEMAND_REPLY",id);
         return reply(id, true);
     }
 
@@ -117,6 +123,7 @@ public class DemandService {
         demand(preliminary.demandId(), true);
         owner(actor, reply(id, true).authorId());
         repo.update("UPDATE community_demand_replies SET is_deleted = 1, updated_at = NOW(6) WHERE id = ?", id);
+        governance.touch("DEMAND_REPLY",id);
     }
 
     public PageResult<DemandReplyItem> publicReplies(Long id, Integer page, Integer size) {
@@ -150,6 +157,7 @@ public class DemandService {
         var status = approve ? "PUBLISHED" : "REJECTED";
         repo.update("UPDATE community_demand_posts SET status = ?, reviewed_by = ?, reviewed_at = NOW(6), review_reason = ?, updated_at = NOW(6) WHERE id = ?", status, actor, note, id);
         support.audit(actor, "DEMAND_REVIEW", "DEMAND_POST", id, current.status(), status, note);
+        governance.touch("DEMAND_POST",id);
     }
 
     @Transactional
@@ -164,6 +172,7 @@ public class DemandService {
         var status = approve ? "PUBLISHED" : "REJECTED";
         repo.update("UPDATE community_demand_replies SET status = ?, reviewed_by = ?, reviewed_at = NOW(6), review_reason = ?, updated_at = NOW(6) WHERE id = ?", status, actor, note, id);
         support.audit(actor, "REPLY_REVIEW", "DEMAND_REPLY", id, current.status(), status, note);
+        governance.touch("DEMAND_REPLY",id);
     }
 
     DemandItem demand(Long id, boolean lock) {

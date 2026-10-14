@@ -46,6 +46,7 @@ public class AftersaleService {
     private final TradeOrderOps tradeOrderOps;
     private final NotificationService notificationService;
     private final JdbcTemplate jdbcTemplate;
+    private final com.maimai.governance.GovernanceSignals governance;
 
     public AftersaleService(AftersaleRepository aftersaleRepository,
                             AftersaleLogRepository aftersaleLogRepository,
@@ -54,7 +55,8 @@ public class AftersaleService {
                             RefundService refundService,
                             TradeOrderOps tradeOrderOps,
                             NotificationService notificationService,
-                            JdbcTemplate jdbcTemplate) {
+                            JdbcTemplate jdbcTemplate,com.maimai.governance.GovernanceSignals governance) {
+        this.governance=governance;
         this.aftersaleRepository = aftersaleRepository;
         this.aftersaleLogRepository = aftersaleLogRepository;
         this.aftersaleQueryRepository = aftersaleQueryRepository;
@@ -399,6 +401,7 @@ public class AftersaleService {
     }
 
     void writeLog(Long aftersaleId, Long actorId, String actorRole, String action, String note) {
+        governance.touch("AFTERSALE",aftersaleId);
         AftersaleLog log = new AftersaleLog();
         log.setAftersaleId(aftersaleId);
         log.setActorId(actorId);

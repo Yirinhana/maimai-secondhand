@@ -7,7 +7,9 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/community/admin/reports")
 public class ReportContextController {
     private final ReportContextService service;
-    public ReportContextController(ReportContextService service){this.service=service;}
+    private final com.maimai.community.service.ReportService reports;
+    public ReportContextController(ReportContextService service,com.maimai.community.service.ReportService reports){this.service=service;this.reports=reports;}
+    @GetMapping("/{id}") public com.maimai.community.dto.CommunityDtos.ReportItem report(@PathVariable long id){return reports.adminDetail(id);}
     @GetMapping("/{id}/context") public ReportContextService.Context detail(@PathVariable long id){return service.detail(id);}
     @PostMapping("/{id}/ai-assessment") public ReportContextService.Context assess(@PathVariable long id){return service.assess(id);}
 }

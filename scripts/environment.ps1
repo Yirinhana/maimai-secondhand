@@ -30,6 +30,19 @@ $env:MAIMAI_AFTERSALE_IMAGE_DIR = Join-Path $ProjectRoot '.local/private-aftersa
 $env:MAIMAI_MAIL_CAPTURE_DIR = Join-Path $ProjectRoot '.local/mail-capture'
 $env:JAVA_TOOL_OPTIONS = '-Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8'
 
+# Optional, project-private background AI settings. Parse data only; never evaluate shell text.
+$governanceConfigPath = Join-Path $ProjectRoot '.local/private/governance.env'
+if (Test-Path -LiteralPath $governanceConfigPath) {
+    $allowedGovernanceNames = @('MAIMAI_GOVERNANCE_ENABLED', 'MAIMAI_GOVERNANCE_BASE_URL',
+        'MAIMAI_GOVERNANCE_API_KEY', 'MAIMAI_GOVERNANCE_MODEL', 'MAIMAI_GOVERNANCE_DAILY_LIMIT', 'MAIMAI_GOVERNANCE_GAP_SECONDS')
+    foreach ($line in (Get-Content -LiteralPath $governanceConfigPath -Encoding UTF8)) {
+        if ([string]::IsNullOrWhiteSpace($line) -or $line.TrimStart().StartsWith('#')) { continue }
+        $parts = $line.Split(@('='), 2)
+        if ($parts.Length -ne 2 -or $allowedGovernanceNames -notcontains $parts[0].Trim()) { throw 'Invalid governance configuration field; check the private sample format.' }
+        [Environment]::SetEnvironmentVariable($parts[0].Trim(), $parts[1].Trim(), 'Process')
+    }
+}
+
 function Invoke-CheckedCommand {
     param([string]$Executable, [string[]]$Arguments)
     & $Executable @Arguments

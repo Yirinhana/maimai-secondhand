@@ -60,6 +60,7 @@ const navItems = computed(() =>
     { to: '/admin/categories', label: '分类维护' },
     { to: '/admin/official', label: '官方内容' },
     { to: '/admin/community', label: '社区与举报' },
+    { to: '/admin/governance', label: '麦仔预审' },
     { to: '/admin/aftersales', label: '售后仲裁' },
     { to: '/admin/support', label: '客服工单' },
     { to: '/admin/orders', label: '订单核查' },
@@ -110,7 +111,7 @@ const navGroups = computed(() =>
         '/admin/finance',
       ],
     },
-    { label: '内容与社区', paths: ['/admin/official', '/admin/community'] },
+    { label: '内容与社区', paths: ['/admin/governance', '/admin/official', '/admin/community'] },
   ]
     .map((group) => ({
       label: group.label,
