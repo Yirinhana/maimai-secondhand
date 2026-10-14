@@ -35,6 +35,8 @@ playwright-report/
 *.xlsx
 *.pdf
 *.zip
+/*.mp4
+/*.webm
 *.bundle
 /Codex 图像*.png
 

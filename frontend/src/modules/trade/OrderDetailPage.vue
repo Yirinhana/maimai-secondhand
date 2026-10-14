@@ -5,11 +5,13 @@
         <RouterLink
           v-if="detailSection"
           :to="
-            previousListPath(detailSection === 'seller'
-              ? '/seller/orders'
-              : detailSection === 'admin'
-                ? '/admin'
-                : '/orders')
+            previousListPath(
+              detailSection === 'seller'
+                ? '/seller/orders'
+                : detailSection === 'admin'
+                  ? '/admin'
+                  : '/orders',
+            )
           "
           class="mm-order-detail__back"
           >←
@@ -28,7 +30,12 @@
         >刷新状态</MmButton
       >
     </header>
-    <WorkflowAssistant v-if="order" stage="ORDER" :resource-id="order.id" title="麦仔交易指引" />
+    <WorkflowAssistant
+      v-if="order && (isBuyer || isSeller)"
+      stage="ORDER"
+      :resource-id="order.id"
+      title="麦仔交易指引"
+    />
     <div
       v-if="error"
       ref="errorNotice"
@@ -515,8 +522,12 @@
             v-if="
               order.fulfillmentStatus === 'COMPLETED' && (isBuyer || isSeller)
             "
-              :order-id="order.id"
-              :read-only="order.refundStatus === 'FULL' || (!!order.experienceSource && order.experienceSource !== 'maimai-experience-checkout-v1')"
+            :order-id="order.id"
+            :read-only="
+              order.refundStatus === 'FULL' ||
+              (!!order.experienceSource &&
+                order.experienceSource !== 'maimai-experience-checkout-v1')
+            "
           />
         </div>
 
@@ -599,7 +610,7 @@
 </template>
 
 <script setup lang="ts">
-import WorkflowAssistant from "../support/WorkflowAssistant.vue";
+import WorkflowAssistant from '../support/WorkflowAssistant.vue';
 import ItemImage from '../../shared/components/ItemImage.vue';
 import ExperiencePaymentPanel from './components/ExperiencePaymentPanel.vue';
 import { EXPERIENCE_ORDER_SOURCE } from './experiencePayment';
@@ -658,13 +669,19 @@ const nextStep = computed(() => {
         : '等待买家付款，确认订单状态更新后再安排交付。';
     case 'PAID_PENDING_SHIP':
       return isSeller.value
-        ? '买家已付款，请准备商品并登记实际快递信息。'
+        ? item.simulated
+          ? '站内付款状态已确认。可登记体验交付信息继续流程，请勿实际寄件。'
+          : '买家已付款，请准备商品并登记实际快递信息。'
         : '等待卖家发货；发货后可在这里查看物流进度。';
     case 'SHIPPED':
       return isBuyer.value
         ? '商品已发出，收到并检查物品后再确认收货。'
         : '商品已发出，可查看物流并与买家保持沟通。';
     case 'AWAITING_MEETUP':
+      if (item.simulated)
+        return isBuyer.value
+          ? '这是体验面交。可生成一次性交付码，由对应卖家账号核验，不需要实际见面或转账。'
+          : '这是体验面交。请使用对应买家账号生成的交付码完成核验，不需要实际见面。';
       return isBuyer.value
         ? '按约定时间面交，检查商品后再出示交付码。'
         : '与买家确认面交安排，交付物品后核验买家出示的交付码。';

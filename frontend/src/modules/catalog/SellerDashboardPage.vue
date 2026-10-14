@@ -10,6 +10,7 @@ import {
 import SellerTaskList from './SellerTaskList.vue';
 import UserAvatar from '../../shared/components/UserAvatar.vue';
 import ItemImage from '../../shared/components/ItemImage.vue';
+import JourneyGuide from '../../shared/components/JourneyGuide.vue';
 const auth = useAuthStore();
 const error = ref(''),
   loading = ref(true),
@@ -65,7 +66,12 @@ onMounted(load);
     <div v-if="!auth.isSeller" class="mm-panel mm-stack">
       <h2>开一家自己的闲置小店</h2>
       <p>先在个人中心填写卖家资料，审核通过后即可管理商品。</p>
-      <RouterLink to="/me" class="mm-text-link">前往个人中心 →</RouterLink>
+      <RouterLink to="/me?tab=seller" class="mm-text-link"
+        >查看申请与审核进度 →</RouterLink
+      >
+      <RouterLink to="/publish" class="mm-text-link"
+        >先整理一份闲置草稿 →</RouterLink
+      >
     </div>
     <template v-else>
       <p v-if="loading" role="status">正在读取店铺数据…</p>
@@ -88,6 +94,29 @@ onMounted(load);
         >
       </div>
       <SellerTaskList />
+      <JourneyGuide
+        title="从第一件闲置到完成交付"
+        :steps="[
+          {
+            title: '先保存，再上架',
+            body: '还没想好卖什么可先问麦仔。写清使用情况、瑕疵和配件，上传自己的实拍；草稿不会直接上架。',
+            to: '/publish',
+            action: '整理闲置',
+          },
+          {
+            title: '审核结果在商品管理查看',
+            body: '未通过时按审核原因修改。已经上架的商品，关键信息变更会重新审核，待审核期间暂停新成交。',
+            to: '/seller/products',
+            action: '管理商品',
+          },
+          {
+            title: '确认状态，再安排交付',
+            body: '快递订单核对付款后填写运单；面交先确认物品，再核验买家交付码。体验订单不实际寄件。',
+            to: '/seller/orders',
+            action: '处理订单',
+          },
+        ]"
+      />
       <div class="seller-home__columns">
         <section class="mm-panel mm-stack">
           <h2>最近发布</h2>

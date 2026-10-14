@@ -195,7 +195,8 @@ public class SellerProductService {
                 product.getFreightCents(), product.getReturnPromise(), product.getStatus().name(), product.getReviewReason(),
                 productImageRepository.findByProductIdOrderBySort(productId).stream().map(image ->
                     new com.maimai.catalog.dto.CatalogDtos.ImageItem(image.getId(), ProductImagePaths.publicUrl(image.getPath()), image.getSort())).toList(),
-                ProductShipping.split(product.getShippingProvinces()),product.getLatitude(),product.getLongitude(),ProductSpecifications.decode(product.getSpecifications()));
+                ProductShipping.split(product.getShippingProvinces()),product.getLatitude(),product.getLongitude(),ProductSpecifications.decode(product.getSpecifications()),
+                new com.maimai.catalog.dto.CatalogDtos.SellerBrief(product.getSellerId(),jdbc.query("SELECT nickname FROM users WHERE id=?",(rs,n)->rs.getString(1),product.getSellerId()).stream().findFirst().orElse("账号已不可用"),null),product.getCreatedAt(),product.getUpdatedAt());
     }
 
     @Transactional(readOnly = true)

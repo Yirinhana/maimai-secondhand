@@ -294,7 +294,7 @@ button:disabled {
 
 /* Keep touch editors readable in portrait and landscape. Component rules must
    not shrink these below the size that avoids automatic focus zoom on iOS. */
-@media (max-width: 760px), (pointer: coarse) {
+@media (max-width: 900px), (pointer: coarse) {
   input:not([type='checkbox']):not([type='radio']):not([type='range']),
   textarea,
   select {

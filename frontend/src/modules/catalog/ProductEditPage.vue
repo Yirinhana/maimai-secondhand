@@ -8,11 +8,47 @@
     </div>
 
     <template v-else>
+      <section
+        v-if="product"
+        class="mm-edit__state"
+        aria-label="商品当前状态"
+        tabindex="-1"
+      >
+        <div>
+          <span>当前状态</span
+          ><strong>{{ PRODUCT_STATUS_TEXT[product.status] }}</strong>
+        </div>
+        <p>{{ stateNotice }}</p>
+        <RouterLink to="/seller/products">查看商品与审核记录 →</RouterLink>
+      </section>
       <WorkflowAssistant
         stage="LISTING"
         :resource-id="productId ?? undefined"
         :draft="[form.title, form.description].filter(Boolean).join('；')"
-        title="发布前，让麦仔检查描述"
+        title="从选一件闲置开始，麦仔陪你整理"
+      />
+      <div v-if="!auth.isSeller" class="mm-notice" role="status">
+        可以先填写并保留草稿。正式提交商品前，需要完成卖家资料审核。
+        <RouterLink to="/me?tab=seller">查看卖家申请与进度 →</RouterLink>
+      </div>
+      <JourneyGuide
+        title="内容不用一次填完，按这三步就好"
+        :steps="[
+          {
+            title: '整理真实信息',
+            body: '先写物品和实际使用情况。未填写的型号、品牌不用猜；描述和价格可以继续修改。',
+          },
+          {
+            title: '保存草稿与实拍',
+            body: '填写内容会自动保留。保存成商品后，可检查照片、库存、交付方式与运费，草稿对其他买家不可见。',
+          },
+          {
+            title: '主动提交审核',
+            body: '核对完成后点击提交审核，通过后才会上架。审核意见会保留在商品管理中。',
+            to: '/seller/products',
+            action: '查看我的商品',
+          },
+        ]"
       />
       <p
         v-if="
@@ -509,7 +545,8 @@
             >返回我的商品</MmButton
           >
         </div>
-      <GovernanceNotice /></form>
+        <GovernanceNotice />
+      </form>
       <ProductRevisions
         v-if="productId"
         :key="productId"
@@ -525,6 +562,7 @@ import { useCloudDraft } from './useCloudDraft';
 import DraftPhotos from './DraftPhotos.vue';
 import ProductSpecifications from './ProductSpecifications.vue';
 import WorkflowAssistant from '../support/WorkflowAssistant.vue';
+import JourneyGuide from '../../shared/components/JourneyGuide.vue';
 import ItemImage from '../../shared/components/ItemImage.vue';
 import MapPicker, {
   type SelectedAddress,
@@ -547,6 +585,7 @@ import MmCard from '../../shared/components/MmCard.vue';
 import MmInput from '../../shared/components/MmInput.vue';
 import {
   CONDITION_TEXT,
+  PRODUCT_STATUS_TEXT,
   type Category,
   type Condition,
   type DeliveryMethod,
@@ -585,6 +624,24 @@ const categoryOptions = ref<CategoryOption[]>([]);
 const product = ref<ProductDetail | null>(null);
 const pageLoading = ref(true);
 const pageError = ref('');
+
+const stateNotice = computed(() =>
+  product.value
+    ? (
+        {
+          DRAFT:
+            '只有你能看到这份草稿。补充照片并核对后，主动提交审核才会上架。',
+          PENDING_REVIEW:
+            '商品已进入审核队列，暂未向买家上架，不需要重复提交。',
+          CHANGES_REVIEW:
+            '修改正在复审，期间暂停新成交。审核结果可在商品管理查看。',
+          REJECTED: '请先查看审核说明，再修改对应内容并重新提交。',
+          ON_SALE: '买家可以看到这件商品。请保持库存和实际物品数量一致。',
+          OFF_SHELF: '当前已下架，买家暂时不能下单。',
+        } as Record<string, string>
+      )[product.value.status] || '商品状态以这里的最新记录为准。'
+    : '',
+);
 
 const emptyForm = () => ({
   specifications: {} as Record<string, string>,
@@ -961,6 +1018,21 @@ async function save(submit: boolean) {
   }
   if (savingDraft.value || savingSubmit.value) return;
   const retained = persistDraft();
+  if (!auth.isSeller && !isEdit.value) {
+    savingDraft.value = true;
+    saveError.value = '';
+    try {
+      const synced = await cloud.flush();
+      saveMessage.value = synced
+        ? '填写内容已保存到云端。完成卖家审核后，可继续保存为商品并提交审核。'
+        : retained
+          ? '填写内容已保留在本机，云端同步情况请看上方草稿状态。完成卖家审核后可继续发布。'
+          : '';
+    } finally {
+      savingDraft.value = false;
+    }
+    return;
+  }
   if (!validate()) {
     saveError.value = '';
     saveMessage.value =
@@ -1057,6 +1129,10 @@ async function saveAndSubmit() {
     removeSavedDraft();
     await loadProduct();
     trackDraft = true;
+    await nextTick();
+    const statePanel = document.querySelector<HTMLElement>('.mm-edit__state');
+    statePanel?.focus({ preventScroll: true });
+    statePanel?.scrollIntoView({ block: 'center', behavior: 'smooth' });
   } catch (e) {
     saveError.value = (e as ApiError).message || '提交失败，请稍后重试';
   } finally {
@@ -1178,6 +1254,32 @@ watch(
 </script>
 
 <style scoped>
+.mm-edit__state {
+  border: 1px solid var(--mm-border);
+  border-left: 4px solid var(--mm-primary);
+  border-radius: 12px;
+  background: white;
+  padding: 18px;
+  margin: 18px 0;
+}
+.mm-edit__state > div {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.mm-edit__state span {
+  font-size: 12px;
+  color: var(--mm-muted);
+}
+.mm-edit__state p {
+  font-size: 14px;
+  line-height: 1.8;
+  margin: 10px 0;
+}
+.mm-edit__state a {
+  font-size: 13px;
+  color: var(--mm-primary);
+}
 .mm-edit__draft-strip {
   display: flex;
   align-items: center;

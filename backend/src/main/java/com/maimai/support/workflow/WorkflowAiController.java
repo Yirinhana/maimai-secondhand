@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.*;
 public class WorkflowAiController {
     private final WorkflowAiService service;
     public WorkflowAiController(WorkflowAiService service){this.service=service;}
-    public record Request(@NotBlank String stage,@Positive Long resourceId,@Size(max=1400) String question,@NotBlank @Size(max=64) String requestKey){}
+    public record Request(@NotBlank String stage,@Positive Long resourceId,@Size(max=1400) String question,@NotBlank @Size(max=64) String requestKey,@Size(max=1400) String draft,@Positive Long previousRunId){}
     @GetMapping("/availability") public WorkflowAiService.Availability availability(){return service.availability();}
-    @PostMapping public WorkflowAiService.Result ask(@Valid @RequestBody Request request){return service.ask(request.stage(),request.resourceId(),request.question(),request.requestKey());}
+    @PostMapping public WorkflowAiService.Result ask(@Valid @RequestBody Request request){return service.ask(request.stage(),request.resourceId(),request.question(),request.requestKey(),request.draft(),request.previousRunId());}
     @GetMapping("/{id}") public WorkflowAiService.Result result(@PathVariable long id){return service.result(id,SecurityUtils.currentUserId());}
 }

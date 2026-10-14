@@ -30,6 +30,7 @@ import static org.mockito.Mockito.*;
 class LinkedGovernanceIT {
     @Autowired JdbcTemplate db;
     @Autowired WorkflowAiService workflow;
+    @Autowired com.maimai.catalog.service.SellerProductService sellerProducts;
     @Autowired ReputationService reputation;
     @Autowired RatingService ratings;
     @Autowired ReportService reports;
@@ -71,6 +72,55 @@ class LinkedGovernanceIT {
         var result=workflow.ask("ORDER",order,"请求帮助",UUID.randomUUID().toString());
         assertThat(result.status()).isEqualTo("FAILED");assertThat(result.answer()).isNull();
         assertThat(db.queryForObject("SELECT fulfillment_status FROM orders WHERE id=?",String.class,order)).isEqualTo("COMPLETED");
+    }
+    @Test void undecidedSellerGetsUsefulStartingPointWithoutModelCost(){
+        for(String text:java.util.List.of("我不知道应该卖啥，给我建议","我还没有想好发布什么闲置","有什么可以卖")){
+            var answer=workflow.ask("LISTING",null,text,UUID.randomUUID().toString(),"",null);
+            assertThat(answer.status()).isEqualTo("SUCCEEDED");
+            assertThat(answer.model()).isEqualTo("platform-guide");
+            assertThat(answer.answer()).contains("读完的书","先挑一件","你手边").doesNotContain("资料不足","请补充闲置物品的核心信息");
+        }
+        verify(ai,never()).advise(anyString(),anyString());
+    }
+    @Test void productReviewDetailCarriesActualSellerAndTimestamps(){
+        var detail=sellerProducts.detailMine(seller,product);
+        assertThat(detail.seller().id()).isEqualTo(seller);
+        assertThat(detail.seller().nickname()).isEqualTo("核查卖家");
+        assertThat(detail.createdAt()).isNotNull();
+        assertThat(detail.updatedAt()).isNotNull();
+        assertCode("NOT_FOUND",()->sellerProducts.detailMine(other,product));
+    }
+    @Test void commonHelpWorksWithoutProviderAndDoesNotPretendToBeModelOutput(){
+        when(ai.configured()).thenReturn(false);
+        assertThat(workflow.availability().enabled()).isTrue();
+        assertThat(workflow.availability().modelEnabled()).isFalse();
+        var empty=workflow.ask("LISTING",null,"",UUID.randomUUID().toString(),"",null);
+        assertThat(empty.answer()).contains("不需要一次");
+        var guide=workflow.ask("GUIDE",null,"第一次买二手，从哪里开始？",UUID.randomUUID().toString());
+        assertThat(guide.model()).isEqualTo("platform-guide");
+        assertThat(guide.answer()).contains("不扣真实资金");
+        var fallback=workflow.ask("ORDER",order,"帮我分析一下",UUID.randomUUID().toString());
+        assertThat(fallback.answer()).contains("暂时无法","不要");
+        verify(ai,never()).advise(anyString(),anyString());
+    }
+    @Test void followupKeepsDraftSeparateAndRedactsBothInputs(){
+        login(seller,"SELLER");
+        var first=workflow.ask("LISTING",product,"我不知道卖什么",UUID.randomUUID().toString(),"",null);
+        String key=UUID.randomUUID().toString();
+        var next=workflow.ask("LISTING",product,"一本编程书",key,"草稿联系a@example.test 13800138000",first.id());
+        assertThat(next.status()).isEqualTo("SUCCEEDED");
+        verify(ai).advise(argThat(s->s.contains("只问一个")&&s.contains("不虚构")),argThat(s->s.contains("上次辅助答复")&&s.contains("商品描述草稿")&&s.contains("用户本次想解决的问题：\n一本编程书")&&!s.contains("a@example.test")&&!s.contains("13800138000")));
+        assertThat(workflow.ask("LISTING",product,"一本编程书",key,"草稿联系a@example.test 13800138000",first.id()).id()).isEqualTo(next.id());
+        verify(ai,times(1)).advise(anyString(),anyString());
+        assertCode("AI_REQUEST_REUSED",()->workflow.ask("LISTING",product,"一本编程书",key,"另一个草稿",first.id()));
+        assertCode("AI_FOLLOWUP_INVALID",()->workflow.ask("GUIDE",null,"追问",UUID.randomUUID().toString(),null,first.id()));
+        login(other,"USER");
+        assertCode("NOT_FOUND",()->workflow.ask("LISTING",null,"追问",UUID.randomUUID().toString(),null,first.id()));
+    }
+    @Test void localHelpCannotBypassResourceOwnership(){
+        login(other,"USER");
+        assertCode("NOT_FOUND",()->workflow.ask("LISTING",product,"我不知道卖什么",UUID.randomUUID().toString(),"",null));
+        verify(ai,never()).advise(anyString(),anyString());
     }
     @Test void sourceSeparatedReputationExcludesHistoricalHiddenRefundedAndInvalidRatings(){
         var rating=ratings.create(buyer,order,new RatingRequest(5,"如实说明交付过程"));

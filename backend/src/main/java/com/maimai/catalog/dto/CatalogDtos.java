@@ -72,7 +72,8 @@ public final class CatalogDtos {
             String condition, String defects, long priceCents, int stockAvailable, int stockReserved,
             int stockSold, String region, List<String> deliveryMethods, long freightCents,
             String returnPromise, String status, String reviewReason, List<ImageItem> images,
-            List<String> shippingProvinces,java.math.BigDecimal latitude,java.math.BigDecimal longitude,java.util.Map<String,String> specifications) {}
+            List<String> shippingProvinces,java.math.BigDecimal latitude,java.math.BigDecimal longitude,java.util.Map<String,String> specifications,
+            SellerBrief seller, Instant createdAt, Instant updatedAt) {}
 
     /** 卖家“我的商品”列表项：含全部状态与审核原因。 */
     public record SellerProductItem(long id,
