@@ -269,7 +269,9 @@ function backToTop() {
       ? 'instant'
       : 'smooth',
   });
-  searchInput.value?.focus({ preventScroll: true });
+  // Return keyboard users to the page without opening the mobile keyboard.
+  // Focusing search also hides the dock while a mobile editor is active.
+  document.getElementById('main-content')?.focus({ preventScroll: true });
 }
 const info = computed(() => {
   const base = pageInfo[String(route.name)] ?? {

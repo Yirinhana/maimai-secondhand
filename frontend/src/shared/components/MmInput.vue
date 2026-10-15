@@ -148,6 +148,11 @@ function onInput(event: Event) {
 .has-reveal .mm-field__input {
   padding-right: 48px;
 }
+/* MmInput owns the reveal action; keep Edge from drawing a second eye.
+   This does not disable password autofill or password-manager controls. */
+.has-reveal .mm-field__input::-ms-reveal {
+  display: none;
+}
 
 .mm-field__label {
   font-size: var(--mm-font-s);

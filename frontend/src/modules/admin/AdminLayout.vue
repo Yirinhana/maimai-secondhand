@@ -1,6 +1,6 @@
 <template>
   <div class="mm-admin">
-    <aside ref="navRoot" class="mm-admin__navigation">
+    <aside ref="navRoot" class="mm-admin__navigation" tabindex="-1">
       <div class="mm-admin__heading">
         <span><MmIcon name="grid" />工作导航</span
         ><small>{{
@@ -23,23 +23,27 @@
         class="mm-admin__nav"
         aria-label="后台导航"
       >
-        <div
+        <section
           v-for="group in navGroups"
           :key="group.label"
           class="mm-admin__group"
+          :aria-labelledby="`admin-group-${group.id}`"
         >
-          <p>{{ group.label }}</p>
-          <div>
+          <h2 :id="`admin-group-${group.id}`" class="mm-admin__group-title">
+            <MmIcon :name="group.icon" />{{ group.label }}
+          </h2>
+          <div class="mm-admin__group-links">
             <RouterLink
               v-for="item in group.items"
               :key="item.to"
               :to="item.to"
               class="mm-admin__link"
               @click="navOpen = false"
-              >{{ item.label }}</RouterLink
-            >
+              ><span>{{ item.label }}</span
+              ><MmIcon name="chevron"
+            /></RouterLink>
           </div>
-        </div>
+        </section>
       </nav>
     </aside>
     <div class="mm-admin__main">
@@ -113,14 +117,20 @@ const navItems = computed(() =>
 const navGroups = computed(() =>
   [
     {
+      id: 'accounts',
+      icon: 'user',
       label: '概览与账号',
       paths: ['/admin', '/admin/users', '/admin/audit-logs'],
     },
     {
+      id: 'catalog',
+      icon: 'box',
       label: '商品与卖家',
       paths: ['/admin/seller-apps', '/admin/products', '/admin/categories'],
     },
     {
+      id: 'services',
+      icon: 'shield',
       label: '交易与服务',
       paths: [
         '/admin/orders',
@@ -131,11 +141,15 @@ const navGroups = computed(() =>
       ],
     },
     {
+      id: 'community',
+      icon: 'message',
       label: '内容与社区',
       paths: ['/admin/governance', '/admin/official', '/admin/community'],
     },
   ]
     .map((group) => ({
+      id: group.id,
+      icon: group.icon,
       label: group.label,
       items: navItems.value.filter((item) => group.paths.includes(item.to)),
     }))
@@ -189,29 +203,58 @@ const navGroups = computed(() =>
 }
 .mm-admin__nav {
   display: grid;
-  gap: 12px;
-  padding: 16px 12px;
+  gap: 20px;
+  padding: 14px 10px;
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
 }
-.mm-admin__group > p {
-  font-size: 11px;
-  color: #687889;
-  padding: 0 10px 6px;
+.mm-admin__group {
+  min-width: 0;
 }
-.mm-admin__group > div {
+.mm-admin__group-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 8px;
+  padding: 10px;
+  border-bottom: 1px solid #d6e0e8;
+  border-radius: 5px 5px 0 0;
+  background: #edf1f5;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #526475;
+  letter-spacing: 0.04em;
+}
+.mm-admin__group-title .mm-icon {
+  width: 16px;
+  height: 16px;
+}
+.mm-admin__group-links {
   display: grid;
   gap: 2px;
 }
 .mm-admin__link {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
   min-height: 44px;
-  font-size: 13px;
+  font-size: 14px;
   padding: 10px 12px;
   border-radius: 5px;
   color: #3f5366;
+}
+.mm-admin__link > span {
+  min-width: 0;
+}
+.mm-admin__link > .mm-icon {
+  width: 14px;
+  height: 14px;
+  transform: rotate(-90deg);
+  opacity: 0.55;
 }
 .mm-admin__link:hover {
   background: #f0f3f7;

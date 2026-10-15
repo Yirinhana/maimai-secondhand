@@ -41,19 +41,25 @@ export function useEdgeDock(launcher: Ref<HTMLButtonElement | null>) {
     const element = launcher.value;
     if (!element) return null;
     const css = getComputedStyle(element);
+    const visual = window.visualViewport;
+    const scale = Math.max(1, visual?.scale || 1);
     const safe = (side: string) =>
       Math.max(
         12,
         parseFloat(css.getPropertyValue('--dock-safe-' + side)) || 0,
-      );
-    const visual = window.visualViewport;
+      ) / scale;
+    // Keep the edge gap constant on screen while leaving the button itself
+    // magnifiable. Otherwise a pinch zoom pushes the dock visibly inward.
+    // VisualViewport coordinates and pointer/client rects share layout CSS
+    // pixels. Do not multiply these by scale: pinch zoom already reduces the
+    // visual width/height. Ignore transient zero sizes during browser UI changes.
     const width = Math.min(
       document.documentElement.clientWidth,
-      visual?.width ?? innerWidth,
+      visual && visual.width > 0 ? visual.width : innerWidth,
     );
-    const height = visual?.height ?? innerHeight;
-    const left = visual?.offsetLeft ?? 0;
-    const top = visual?.offsetTop ?? 0;
+    const height = visual && visual.height > 0 ? visual.height : innerHeight;
+    const left = Math.max(0, visual?.offsetLeft ?? 0);
+    const top = Math.max(0, visual?.offsetTop ?? 0);
     return {
       minX: left + safe('left'),
       maxX: Math.max(
@@ -135,11 +141,18 @@ export function useEdgeDock(launcher: Ref<HTMLButtonElement | null>) {
     }
   }
   function schedulePlace() {
-    if (resizeFrame) cancelAnimationFrame(resizeFrame);
+    if (resizeFrame) return;
     resizeFrame = requestAnimationFrame(() => {
       resizeFrame = 0;
       place();
     });
+  }
+  function fitViewport() {
+    // A snap destination belongs to the previous viewport. On pinch/pan or
+    // rotation, reposition immediately instead of animating through offscreen
+    // coordinates for another 460ms.
+    stopSnap();
+    schedulePlace();
   }
   function stopSnap() {
     if (snapTimer) clearTimeout(snapTimer);
@@ -299,11 +312,11 @@ export function useEdgeDock(launcher: Ref<HTMLButtonElement | null>) {
       contentObserver = new MutationObserver(schedulePlace);
       contentObserver.observe(main, { childList: true, subtree: true });
     }
-    window.addEventListener('resize', schedulePlace);
+    window.addEventListener('resize', fitViewport);
     window.addEventListener('scroll', schedulePlace, { passive: true });
     window.addEventListener('blur', cancel);
-    window.visualViewport?.addEventListener('resize', schedulePlace);
-    window.visualViewport?.addEventListener('scroll', schedulePlace);
+    window.visualViewport?.addEventListener('resize', fitViewport);
+    window.visualViewport?.addEventListener('scroll', fitViewport);
     schedulePlace();
   });
   onBeforeUnmount(() => {
@@ -312,11 +325,11 @@ export function useEdgeDock(launcher: Ref<HTMLButtonElement | null>) {
     observer?.disconnect();
     contentObserver?.disconnect();
     if (resizeFrame) cancelAnimationFrame(resizeFrame);
-    window.removeEventListener('resize', schedulePlace);
+    window.removeEventListener('resize', fitViewport);
     window.removeEventListener('scroll', schedulePlace);
     window.removeEventListener('blur', cancel);
-    window.visualViewport?.removeEventListener('resize', schedulePlace);
-    window.visualViewport?.removeEventListener('scroll', schedulePlace);
+    window.visualViewport?.removeEventListener('resize', fitViewport);
+    window.visualViewport?.removeEventListener('scroll', fitViewport);
   });
   return {
     position,

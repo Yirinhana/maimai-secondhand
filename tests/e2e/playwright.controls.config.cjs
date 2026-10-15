@@ -6,6 +6,8 @@ module.exports = defineConfig({
     'controls-interaction.e2e.cjs',
     'layout-hierarchy.e2e.cjs',
     'workspace-layout.e2e.cjs',
+    'admin-password.e2e.cjs',
+    'dock-viewport.e2e.cjs',
   ],
   workers: 1,
   retries: 0,

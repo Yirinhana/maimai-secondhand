@@ -304,3 +304,59 @@ test('page actions stay clear of the launcher without overwriting the saved pref
   f.flushResize();
   assert.equal(f.dock.style.value.top, '750px');
 });
+
+test('pinch viewport offsets use CSS pixels and keep the selected side without saving', () => {
+  const f = fixture();
+  Object.assign(f.win.visualViewport, {
+    width: 195,
+    height: 422,
+    offsetLeft: 120,
+    offsetTop: 60,
+    scale: 2,
+  });
+  f.win.visualViewport.dispatchEvent(new Event('resize'));
+  f.flushResize();
+  assert.equal(f.dock.style.value.left, '233px');
+  assert.equal(f.dock.style.value.top, '394px');
+  assert.equal(f.saved.size, 0);
+  f.dock.keyboard({ key: 'ArrowLeft', preventDefault() {} });
+  assert.equal(f.dock.style.value.left, '126px');
+  const preference = [...f.saved.entries()];
+  Object.assign(f.win.visualViewport, { offsetLeft: 60, offsetTop: 160 });
+  f.win.visualViewport.dispatchEvent(new Event('scroll'));
+  f.flushResize();
+  assert.equal(f.dock.style.value.left, '66px');
+  assert.equal(f.dock.style.value.top, '494px');
+  assert.equal(
+    f.dock.snapping.value,
+    false,
+    'do not animate through old offscreen positions',
+  );
+  assert.deepEqual([...f.saved.entries()], preference);
+});
+
+test('viewport resizing cancels an in-progress snap while preserving the dock preference', () => {
+  const f = fixture();
+  f.dock.keyboard({ key: 'ArrowLeft', preventDefault() {} });
+  assert.equal(f.dock.snapping.value, true);
+  Object.assign(f.win.visualViewport, { width: 320, height: 390 });
+  f.win.dispatchEvent(new Event('resize'));
+  f.flushResize();
+  assert.equal(f.dock.snapping.value, false);
+  assert.equal(f.dock.style.value.left, '12px');
+  assert.equal(f.dock.style.value.top, '296px');
+});
+
+test('transient zero viewport dimensions and overscroll offsets keep finite visible coordinates', () => {
+  const f = fixture();
+  Object.assign(f.win.visualViewport, {
+    width: 0,
+    height: 0,
+    offsetLeft: -40,
+    offsetTop: -60,
+  });
+  f.win.visualViewport.dispatchEvent(new Event('resize'));
+  f.flushResize();
+  assert.equal(f.dock.style.value.left, '302px');
+  assert.equal(f.dock.style.value.top, '750px');
+});
