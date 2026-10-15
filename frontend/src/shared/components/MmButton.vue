@@ -64,11 +64,11 @@ withDefaults(
 .mm-button--ghost {
   background-color: var(--mm-white);
   color: var(--mm-ink);
-  border-color: #c9cec5;
+  border-color: var(--mm-border);
 }
 .mm-button--ghost:hover:not(:disabled) {
-  background-color: var(--mm-canvas);
-  border-color: #929d8d;
+  background-color: var(--mm-accent-soft);
+  border-color: var(--mm-primary);
 }
 
 .mm-button--danger {

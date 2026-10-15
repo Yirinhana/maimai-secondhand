@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { nextTick, onMounted, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import MmButton from '../../shared/components/MmButton.vue';
+import { useDismissiblePanel } from '../../shared/useDismissiblePanel';
 import { get, post, patch, del } from '../../shared/api';
 import { useAuthStore } from '../../shared/stores/auth';
 import { askConfirmation } from '../../shared/confirm';
@@ -25,6 +28,18 @@ const auth = useAuthStore(),
   busy = ref(false),
   expanded = ref(false),
   notice = ref('');
+const root = ref<HTMLElement | null>(null),
+  trigger = ref<HTMLButtonElement | null>(null);
+const route = useRoute();
+function close(restoreFocus = false) {
+  expanded.value = false;
+  if (restoreFocus) trigger.value?.focus({ preventScroll: true });
+}
+useDismissiblePanel(root, () => expanded.value && !busy.value, close);
+watch(
+  () => route.fullPath,
+  () => close(),
+);
 async function load() {
   if (!auth.me) return;
   try {
@@ -34,6 +49,7 @@ async function load() {
   }
 }
 async function save() {
+  if (busy.value) return;
   busy.value = true;
   error.value = '';
   try {
@@ -51,6 +67,9 @@ async function save() {
     });
     name.value = '';
     notice.value = '找货条件已保存，新的匹配商品会通过站内通知提醒你。';
+    close();
+    await nextTick();
+    trigger.value?.focus({ preventScroll: true });
   } catch (e) {
     error.value = (e as Error).message;
   } finally {
@@ -58,10 +77,15 @@ async function save() {
   }
 }
 async function toggle(item: Saved) {
+  if (busy.value) return;
   busy.value = true;
+  error.value = '';
   try {
     await patch(`/me/searches/${item.id}`, { enabled: !item.enabled });
     item.enabled = !item.enabled;
+    notice.value = item.enabled
+      ? '已开启这条找货提醒。'
+      : '已暂停这条找货提醒。';
   } catch (e) {
     error.value = (e as Error).message;
   } finally {
@@ -69,11 +93,14 @@ async function toggle(item: Saved) {
   }
 }
 async function remove(item: Saved) {
+  if (busy.value) return;
   if (!(await askConfirmation(`移除「${item.name}」及其找货提醒？`))) return;
   busy.value = true;
+  error.value = '';
   try {
     await del(`/me/searches/${item.id}`);
     await load();
+    notice.value = '已移除这条找货提醒。';
   } catch (e) {
     error.value = (e as Error).message;
   } finally {
@@ -94,19 +121,22 @@ function query(s: Saved) {
 onMounted(load);
 </script>
 <template>
-  <section class="saved-searches">
+  <section ref="root" class="saved-searches">
     <button
+      ref="trigger"
+      type="button"
       class="saved-toggle"
       :aria-expanded="expanded"
       @click="expanded = !expanded"
     >
-      ♡ 帮我留意好物
+      {{ expanded ? '收起找货提醒' : '♡ 帮我留意好物' }}
       <span>{{
         items.length
           ? `已保存 ${items.length} 个条件`
           : '保存条件，有新货时提醒'
       }}</span>
     </button>
+    <p v-if="notice" class="mm-success-feedback" role="status">{{ notice }}</p>
     <div v-if="expanded" class="mm-panel mm-stack">
       <p class="mm-muted">
         只提醒保存之后上架或更新的有货商品，每小时最多3条站内提醒。可以随时暂停或移除；不保存附近定位坐标。
@@ -122,17 +152,20 @@ onMounted(load);
               :placeholder="
                 criteria.keyword || '例如：预算500元的书桌'
               " /></label
-          ><button type="submit" :disabled="busy">保存当前条件</button>
+          ><MmButton type="submit" :loading="busy">保存当前条件</MmButton>
         </form>
-        <p v-if="notice" role="status">{{ notice }}</p>
         <p v-if="!items.length" class="mm-muted">还没有保存过找货条件。</p>
         <article v-for="item in items" :key="item.id">
-          <RouterLink :to="{ path: '/search', query: query(item) }"
+          <RouterLink
+            :to="{ path: '/search', query: query(item) }"
+            @click="close()"
             >{{ item.name }} →</RouterLink
           ><span>{{ item.enabled ? '提醒开启' : '提醒已暂停' }}</span
-          ><button :disabled="busy" @click="toggle(item)">
-            {{ item.enabled ? '暂停' : '开启' }}</button
-          ><button :disabled="busy" @click="remove(item)">移除</button>
+          ><MmButton variant="ghost" :disabled="busy" @click="toggle(item)">
+            {{ item.enabled ? '暂停' : '开启' }}</MmButton
+          ><MmButton variant="ghost" :disabled="busy" @click="remove(item)"
+            >移除</MmButton
+          >
         </article></template
       >
       <p v-if="error" class="mm-error" role="alert">{{ error }}</p>
@@ -195,6 +228,6 @@ onMounted(load);
   color: var(--mm-muted);
 }
 .saved-searches button {
-  min-height: 40px;
+  min-height: 44px;
 }
 </style>

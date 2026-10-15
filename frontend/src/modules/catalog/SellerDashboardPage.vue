@@ -64,8 +64,10 @@ onMounted(load);
       >
     </header>
     <div v-if="!auth.isSeller" class="mm-panel mm-stack">
-      <h2>开一家自己的闲置小店</h2>
-      <p>先在个人中心填写卖家资料，审核通过后即可管理商品。</p>
+      <h2>把自己的闲置分享出去</h2>
+      <p>
+        出售个人闲置也可以申请卖家权限，无需稳定货源。先在个人中心填写资料，平台审核通过后即可管理商品，同一个账号仍然可以购买。
+      </p>
       <RouterLink to="/me?tab=seller" class="mm-text-link"
         >查看申请与审核进度 →</RouterLink
       >

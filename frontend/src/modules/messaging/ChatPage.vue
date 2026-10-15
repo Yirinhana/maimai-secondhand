@@ -20,7 +20,7 @@
           <strong>{{ otherUser.otherNickname }}</strong>
           <p>与对方的交易沟通</p>
         </div>
-        <details class="mm-chat__management">
+        <details ref="managementRoot" class="mm-chat__management">
           <summary><MmIcon name="shield" />会话管理</summary>
           <div class="mm-chat__management-body">
             <p>屏蔽限制双方的新消息，历史记录保留。</p>
@@ -28,10 +28,9 @@
               variant="ghost"
               :disabled="blockBusy || !blockState"
               @click="toggleBlock"
-              >{{
-                blockState?.blockedByMe ? '取消屏蔽' : '屏蔽对方'
-              }}</MmButton
-            ><RouterLink :to="reportLink">举报并联系人工客服</RouterLink
+              >{{ blockState?.blockedByMe ? '取消屏蔽' : '屏蔽对方' }}</MmButton
+            ><RouterLink :to="reportLink" @click="closeManagement()"
+              >举报并联系人工客服</RouterLink
             ><MmButton
               variant="ghost"
               :disabled="blockBusy"
@@ -72,9 +71,7 @@
         class="mm-chat__product"
         ><MmIcon name="box" /><span
           ><small>首次咨询的商品</small
-          >{{
-            otherUser.productTitle || `商品 #${otherUser.productId}`
-          }}</span
+          >{{ otherUser.productTitle || `商品 #${otherUser.productId}` }}</span
         ><MmIcon name="arrow"
       /></RouterLink>
       <p v-if="blockState?.blockedEitherDirection" class="mm-notice">
@@ -93,9 +90,7 @@
       </p>
       <div v-if="error" class="mm-recovery" role="alert">
         <p>{{ error }}</p>
-        <MmButton variant="ghost" @click="loadInitial"
-          >重新加载消息</MmButton
-        >
+        <MmButton variant="ghost" @click="loadInitial">重新加载消息</MmButton>
       </div>
 
       <div
@@ -132,9 +127,7 @@
         >
           <div class="mm-chat__bubble">
             <span class="mm-chat__sender">{{
-              m.senderId === myId
-                ? '我'
-                : otherUser?.otherNickname || '对方'
+              m.senderId === myId ? '我' : otherUser?.otherNickname || '对方'
             }}</span>
             <img
               v-if="m.attachmentUrl"
@@ -149,19 +142,14 @@
               :to="`/products/${m.product.id}`"
               class="mm-chat__product-card"
             >
-              <ItemImage
-                :src="m.product.coverImage"
-                :alt="m.product.title"
-              />
+              <ItemImage :src="m.product.coverImage" :alt="m.product.title" />
               <span
                 ><small>商品详情 · 点击查看</small
                 ><strong>{{ m.product.title }}</strong
                 ><b>{{ formatPrice(m.product.priceCents) }}</b></span
               >
             </RouterLink>
-            <time class="mm-chat__time">{{
-              formatTime(m.createdAt)
-            }}</time>
+            <time class="mm-chat__time">{{ formatTime(m.createdAt) }}</time>
           </div>
         </div>
         <div
@@ -300,6 +288,7 @@ import type {
   ProductDetail,
 } from '../../shared/types';
 import { useMessageSocket } from './socket';
+import { useDismissiblePanel } from '../../shared/useDismissiblePanel';
 import {
   readConversationDraft,
   saveConversationDraft,
@@ -307,6 +296,17 @@ import {
 } from './conversationDraft';
 
 const MAX_BODY = 2000;
+const managementRoot = ref<HTMLDetailsElement | null>(null);
+function closeManagement(restoreFocus = false) {
+  if (!managementRoot.value) return;
+  managementRoot.value.open = false;
+  if (restoreFocus) managementRoot.value.querySelector('summary')?.focus();
+}
+useDismissiblePanel(
+  managementRoot,
+  () => !!managementRoot.value?.open && !blockBusy.value,
+  closeManagement,
+);
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const IMAGE_TYPES = ['image/jpeg', 'image/png'];
 
@@ -441,7 +441,10 @@ async function toggleBlock() {
       `/messages/users/${otherUser.value.otherUserId}/block`,
       { blocked },
     );
-    if (run === epoch) blockState.value = result;
+    if (run === epoch) {
+      blockState.value = result;
+      closeManagement(true);
+    }
   } catch (e) {
     if (run === epoch) blockError.value = (e as ApiError).message;
   } finally {
@@ -551,10 +554,7 @@ async function markRead() {
     await post(`/messages/conversations/${conversationId.value}/read`, {
       throughId: maxId,
     });
-    if (
-      requestedId === conversationId.value &&
-      requestedUser === myId.value
-    )
+    if (requestedId === conversationId.value && requestedUser === myId.value)
       lastReadThroughId = Math.max(lastReadThroughId, maxId);
   } catch {
     // 已读上报失败静默，下一轮刷新再试
@@ -582,8 +582,7 @@ async function loadInitial() {
     scrollToBottom();
     void loadBlockState();
   } catch (e) {
-    if (run === epoch)
-      error.value = (e as ApiError).message || '消息加载失败';
+    if (run === epoch) error.value = (e as ApiError).message || '消息加载失败';
   } finally {
     if (run === epoch) loading.value = false;
   }
@@ -666,8 +665,12 @@ async function refreshLatest() {
     // Refresh only fills the recent gap; it must not reopen already exhausted history.
     await markRead();
     // A delayed read acknowledgement must not pull the reader back down after they scroll up.
-    if (run === epoch && atBottom && listEl.value
-      && Math.abs(listEl.value.scrollTop - previousScrollTop) < 1)
+    if (
+      run === epoch &&
+      atBottom &&
+      listEl.value &&
+      Math.abs(listEl.value.scrollTop - previousScrollTop) < 1
+    )
       scrollToBottom();
   } catch {
     // 刷新失败保留现有列表
@@ -679,8 +682,7 @@ function reconcilePending() {
     pendingText.value &&
     messages.value.some(
       (m) =>
-        m.senderId === myId.value &&
-        m.clientId === pendingText.value?.clientId,
+        m.senderId === myId.value && m.clientId === pendingText.value?.clientId,
     )
   ) {
     pendingText.value = null;
@@ -745,8 +747,7 @@ async function sendText() {
     if (run !== epoch) return;
     if (
       messages.value.some(
-        (m) =>
-          m.senderId === myId.value && m.clientId === pending.clientId,
+        (m) => m.senderId === myId.value && m.clientId === pending.clientId,
       )
     )
       return;

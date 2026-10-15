@@ -321,7 +321,9 @@
           两者均通过后才能发布可成交商品并收款。
         </p>
       </div>
-      <p v-else class="mm-account__meta">你还没有提交过卖家入驻申请。</p>
+      <p v-else class="mm-account__meta">
+        你还没有提交过卖家申请。个人闲置也可以出售，无需稳定货源；审核通过后增加卖家权限，仍然可以用这个账号购买商品。
+      </p>
 
       <form
         v-if="
@@ -337,7 +339,7 @@
           {{ sellerApp ? '重新提交申请' : '提交入驻申请' }}
         </h3>
         <label class="mm-account__field">
-          <span>自我介绍 / 经营说明</span>
+          <span>自我介绍 / 闲置来源</span>
           <textarea
             v-model="sellerForm.intro"
             :disabled="sellerForm.submitting"

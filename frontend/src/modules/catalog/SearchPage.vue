@@ -29,6 +29,7 @@
       <button type="button" @click="loadCategories">重新加载分类</button>
     </p>
     <form
+      ref="filtersRoot"
       class="mm-search__filters"
       aria-label="筛选条件"
       novalidate
@@ -49,6 +50,7 @@
         /></label>
         <MmButton type="submit">筛选</MmButton>
         <button
+          ref="filterTrigger"
           class="mm-search__toggle"
           type="button"
           :aria-expanded="advancedOpen"
@@ -170,6 +172,9 @@
           }}</span
           ><MmButton type="submit">应用筛选</MmButton
           ><MmButton variant="ghost" @click="resetFilters">重置</MmButton>
+          <MmButton variant="ghost" @click="closeAdvanced(true)"
+            >收起筛选</MmButton
+          >
         </div>
       </div>
       <p
@@ -283,6 +288,7 @@ import {
   type NearbyOrigin,
 } from './nearbySearch';
 import { get, type ApiError } from '../../shared/api';
+import { useDismissiblePanel } from '../../shared/useDismissiblePanel';
 import EmptyState from '../../shared/components/EmptyState.vue';
 import MmButton from '../../shared/components/MmButton.vue';
 import MmIcon from '../../shared/components/MmIcon.vue';
@@ -331,6 +337,19 @@ const auth = useAuthStore();
 const form = reactive(blankFilters());
 const applied = ref(blankFilters());
 const advancedOpen = ref(false);
+const filtersRoot = ref<HTMLElement | null>(null);
+const filterTrigger = ref<HTMLButtonElement | null>(null);
+function closeAdvanced(restoreFocus = false) {
+  advancedOpen.value = false;
+  if (restoreFocus) filterTrigger.value?.focus({ preventScroll: true });
+}
+useDismissiblePanel(filtersRoot, () => advancedOpen.value, closeAdvanced);
+async function revealResults() {
+  closeAdvanced();
+  await nextTick();
+  resultsHeading.value?.scrollIntoView({ block: 'start', behavior: 'auto' });
+  resultsHeading.value?.focus({ preventScroll: true });
+}
 const minPriceInput = ref<HTMLInputElement | null>(null);
 const dirtyFilters = computed(() =>
   Object.keys(form).some(
@@ -492,7 +511,7 @@ async function load() {
     if (sequence === requestSequence) loading.value = false;
   }
 }
-function navigate(filters: Filters, pageNo = 0) {
+async function navigate(filters: Filters, pageNo = 0) {
   const query: Record<string, string> = {};
   for (const key of Object.keys(filters) as FilterKey[])
     if (filters[key] && !(key === 'sort' && filters[key] === 'time_desc'))
@@ -501,8 +520,8 @@ function navigate(filters: Filters, pageNo = 0) {
   const target = { path: '/search', query };
   if (router.resolve(target).fullPath === route.fullPath) {
     syncFromQuery();
-    void load();
-  } else void router.push(target);
+    await load();
+  } else await router.push(target);
 }
 async function applyFilters() {
   const filters = Object.fromEntries(
@@ -515,13 +534,15 @@ async function applyFilters() {
     minPriceInput.value?.focus();
     return;
   }
-  navigate(filters);
+  await navigate(filters);
+  await revealResults();
 }
-function resetFilters() {
+async function resetFilters() {
   nearbyOrigin.value = null;
   saveNearbyOrigin(auth.me?.id ?? 0, null);
   validationError.value = '';
-  navigate(blankFilters());
+  await navigate(blankFilters());
+  await revealResults();
 }
 function removeFilter(key: FilterKey) {
   if (key === 'sort') {

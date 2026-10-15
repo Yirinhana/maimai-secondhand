@@ -34,6 +34,7 @@ const opened = ref(false),
   query = ref(''),
   places = ref<Place[]>([]),
   chosen = ref<SelectedAddress | null>(null),
+  selectedLabel = ref(''),
   container = ref<HTMLElement | null>(null);
 let sdk: AMapSdk | null = null,
   map: MapInstance | null = null,
@@ -43,11 +44,12 @@ async function open() {
   opened.value = true;
   busy.value = true;
   error.value = '';
+  precision.value = '';
   try {
     sdk = await loadAmap();
     await loadMapPlugins(sdk);
     await nextTick();
-    if (disposed || !container.value) return;
+    if (disposed || !opened.value || !container.value) return;
     map?.destroy();
     map = new sdk.Map(container.value, {
       ...(Number.isFinite(props.initialLongitude) &&
@@ -151,8 +153,8 @@ function locate() {
     maximumAge: 0,
   });
   geolocation.getCurrentPosition((status, result) => {
-    busy.value = false;
     if (disposed || request !== pointRequest) return;
+    busy.value = false;
     if (status === 'complete' && result.position) {
       const problem = locationProblem(result);
       if (problem) {
@@ -172,7 +174,20 @@ function choose() {
   if (chosen.value) {
     emit('select', chosen.value);
     confirmed.value = true;
+    selectedLabel.value = chosen.value.fullAddress;
+    close();
   }
+}
+function close() {
+  opened.value = false;
+  busy.value = false;
+  pointRequest++;
+  searchRequest++;
+  map?.destroy();
+  map = null;
+  marker = null;
+  places.value = [];
+  chosen.value = null;
 }
 onBeforeUnmount(() => {
   disposed = true;
@@ -182,12 +197,17 @@ onBeforeUnmount(() => {
 </script>
 <template>
   <section class="mm-stack">
-    <MmButton v-if="!opened" variant="ghost" @click="open"
-      >使用地图辅助选址</MmButton
+    <p v-if="selectedLabel" class="mm-success-feedback" role="status">
+      已使用：{{ selectedLabel }}
+    </p>
+    <MmButton v-if="!opened" variant="ghost" @click="open">{{
+      selectedLabel ? '重新选择地址' : '使用地图辅助选址'
+    }}</MmButton
     ><template v-else
       ><p class="mm-muted">
         地图由高德提供。点击定位才会请求位置权限；地址仍需核对门牌号，地图距离不用于计算快递运费。
       </p>
+      <MmButton variant="ghost" @click="close">收起地图</MmButton>
       <div class="mm-actions">
         <input
           v-model="query"

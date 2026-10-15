@@ -1,6 +1,6 @@
 <template>
   <div class="mm-admin">
-    <aside class="mm-admin__navigation">
+    <aside ref="navRoot" class="mm-admin__navigation">
       <div class="mm-admin__heading">
         <span><MmIcon name="grid" />工作导航</span
         ><small>{{
@@ -8,6 +8,8 @@
         }}</small>
       </div>
       <button
+        ref="navTrigger"
+        type="button"
         class="mm-admin__toggle"
         :aria-expanded="navOpen"
         aria-controls="admin-menu"
@@ -47,11 +49,25 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import { useDismissiblePanel } from '../../shared/useDismissiblePanel';
 import { useAuthStore } from '../../shared/stores/auth';
 import MmIcon from '../../shared/components/MmIcon.vue';
 const auth = useAuthStore();
 const navOpen = ref(false);
+const navRoot = ref<HTMLElement | null>(null),
+  navTrigger = ref<HTMLButtonElement | null>(null);
+function closeNavigation(restoreFocus = false) {
+  navOpen.value = false;
+  if (restoreFocus) navTrigger.value?.focus({ preventScroll: true });
+}
+useDismissiblePanel(navRoot, () => navOpen.value, closeNavigation);
+const route = useRoute();
+watch(
+  () => route.fullPath,
+  () => closeNavigation(),
+);
 const navItems = computed(() =>
   [
     { to: '/admin', label: '总览' },
@@ -83,9 +99,12 @@ const navItems = computed(() =>
     if (item.to === '/admin/finance') return false;
     if (item.to === '/admin/community') return roles.includes('OPERATOR');
     if (
-      ['/admin/support', '/admin/aftersales', '/admin/trade-todos', '/admin/orders'].includes(
-        item.to,
-      )
+      [
+        '/admin/support',
+        '/admin/aftersales',
+        '/admin/trade-todos',
+        '/admin/orders',
+      ].includes(item.to)
     )
       return roles.includes('SUPPORT');
     return true;
@@ -111,7 +130,10 @@ const navGroups = computed(() =>
         '/admin/finance',
       ],
     },
-    { label: '内容与社区', paths: ['/admin/governance', '/admin/official', '/admin/community'] },
+    {
+      label: '内容与社区',
+      paths: ['/admin/governance', '/admin/official', '/admin/community'],
+    },
   ]
     .map((group) => ({
       label: group.label,

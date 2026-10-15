@@ -73,6 +73,7 @@
               class="mm-user__panel"
               role="menu"
               @keydown="menuKeydown"
+              @click="closeMenuOnLink"
             >
               <div class="mm-user__identity">
                 <UserAvatar
@@ -155,6 +156,7 @@
           class="mm-header__nav"
           :class="{ 'is-open': menuOpen }"
           aria-label="主导航"
+          @click="closeMenuOnLink"
         >
           <RouterLink
             v-for="item in primaryNav"
@@ -327,6 +329,12 @@ async function openUser() {
 function toggleUser() {
   if (userOpen.value) userOpen.value = false;
   else void openUser();
+}
+function closeMenuOnLink(event: MouseEvent) {
+  if ((event.target as HTMLElement).closest('a[href]')) {
+    userOpen.value = false;
+    menuOpen.value = false;
+  }
 }
 function outside(event: PointerEvent) {
   if (userRoot.value && !userRoot.value.contains(event.target as Node))

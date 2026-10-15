@@ -28,7 +28,7 @@
         title="从选一件闲置开始，麦仔陪你整理"
       />
       <div v-if="!auth.isSeller" class="mm-notice" role="status">
-        可以先填写并保留草稿。正式提交商品前，需要完成卖家资料审核。
+        个人闲置也可以出售，无需稳定货源。可以先填写并保留草稿，通过卖家资料审核后再正式提交商品；同一个账号仍然可以买东西。
         <RouterLink to="/me?tab=seller">查看卖家申请与进度 →</RouterLink>
       </div>
       <JourneyGuide

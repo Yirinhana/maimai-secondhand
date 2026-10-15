@@ -1,0 +1,142 @@
+/* Shared controls retain native form semantics, keyboard handling and mobile pickers. */
+.mm-app :where(button, input, select, textarea, summary) {
+  font: inherit;
+}
+.mm-app :where(input, textarea, select) {
+  font-weight: 400;
+}
+.mm-app :where(button:not([class])) {
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid var(--mm-border);
+  border-radius: 10px;
+  background-color: var(--mm-white);
+  color: var(--mm-ink);
+  line-height: 1.45;
+}
+.mm-app :where(button:not([class])):hover:not(:disabled) {
+  border-color: var(--mm-primary);
+  background-color: var(--mm-accent-soft);
+}
+.mm-app
+  :where(
+    input:not([type='checkbox']):not([type='radio']):not([type='range']),
+    textarea
+  ) {
+  border: 1px solid var(--mm-border);
+  border-radius: 10px;
+  background-color: var(--mm-white);
+  min-width: 0;
+  max-width: 100%;
+}
+.mm-app select:not([multiple]):not([size]) {
+  appearance: none;
+  min-height: 44px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 10px 38px 10px 12px;
+  border: 1px solid var(--mm-border);
+  border-radius: 10px;
+  background-color: var(--mm-white);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='m4 6 4 4 4-4' fill='none' stroke='%235d625c' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  color: var(--mm-ink);
+  line-height: 1.4;
+  cursor: pointer;
+}
+.mm-app select:not(:disabled):hover {
+  border-color: var(--mm-primary);
+}
+.mm-app :where(input[type='checkbox'], input[type='radio']) {
+  accent-color: var(--mm-primary);
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.mm-app :where(button, input, textarea, select):disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.mm-app :where(input, textarea, select)[aria-invalid='true'] {
+  border-color: var(--mm-danger);
+}
+.mm-app :where(button, input, textarea, select, summary):focus-visible {
+  outline: 2px solid var(--mm-primary);
+  outline-offset: 3px;
+}
+.mm-app :where(summary) {
+  padding-block: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--mm-ink);
+}
+.mm-app :where(summary)::marker {
+  color: var(--mm-primary);
+}
+/* Supporting browsers style the native popup; others keep their OS picker. */
+@supports (appearance: base-select) {
+  .mm-app select:not([multiple]):not([size]),
+  .mm-app select:not([multiple]):not([size])::picker(select) {
+    appearance: base-select;
+  }
+  .mm-app select:not([multiple]):not([size]) {
+    background-image: none;
+    padding-inline-end: 12px;
+    gap: 16px;
+  }
+  .mm-app select::picker-icon {
+    color: var(--mm-muted);
+    transition: rotate 0.16s ease;
+  }
+  .mm-app select:open::picker-icon {
+    rotate: 180deg;
+  }
+  .mm-app select::picker(select) {
+    margin-block: 6px;
+    padding: 6px;
+    border: 1px solid var(--mm-border);
+    border-radius: 12px;
+    background: var(--mm-white);
+    color: var(--mm-ink);
+    box-shadow: 0 12px 36px #24252224;
+    max-block-size: min(340px, 60dvh);
+    max-inline-size: calc(100vw - 24px);
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+  .mm-app select option {
+    min-height: 42px;
+    padding: 9px 12px;
+    gap: 12px;
+    border-radius: 7px;
+    font: inherit;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .mm-app select option:checked {
+    background: var(--mm-accent-soft);
+    color: var(--mm-primary);
+    font-weight: 600;
+  }
+  .mm-app select option:is(:hover, :focus-visible) {
+    background: var(--mm-accent-soft);
+    outline: 2px solid var(--mm-primary);
+    outline-offset: -2px;
+  }
+  .mm-app select option:disabled {
+    color: var(--mm-muted);
+    opacity: 0.6;
+  }
+}
+@media (max-width: 900px), (pointer: coarse) {
+  .mm-app :where(button, summary),
+  .mm-main--admin .mm-button {
+    min-height: 44px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mm-app select::picker-icon {
+    transition: none;
+  }
+}

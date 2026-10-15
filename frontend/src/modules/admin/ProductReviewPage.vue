@@ -34,9 +34,17 @@
           <p>{{ PRODUCT_STATUS_TEXT[item.status] }}</p>
         </div>
       </div>
-      <MmButton variant="ghost" :disabled="busy" @click="inspect(item.id)"
-        >查看完整审核材料</MmButton
-      ><template v-if="selected?.id === item.id"
+      <MmButton
+        variant="ghost"
+        :disabled="busy"
+        @click="inspect(item.id)"
+        :aria-expanded="selected?.id === item.id && detailOpen"
+        >{{
+          selected?.id === item.id && detailOpen
+            ? '收起审核材料'
+            : '查看完整审核材料'
+        }}</MmButton
+      ><template v-if="selected?.id === item.id && detailOpen"
         ><div class="mm-actions">
           <ItemImage
             v-for="image in selected.images"
@@ -111,6 +119,7 @@ const route = useRoute(),
   busy = ref(false),
   error = ref(''),
   selected = ref<ProductDetail | null>(null),
+  detailOpen = ref(false),
   reason = ref('');
 const canReview = computed(() =>
   auth.me?.roles.some((r) => ['SUPER_ADMIN', 'OPERATOR'].includes(r)),
@@ -133,10 +142,15 @@ async function load() {
   }
 }
 async function inspect(id: number) {
+  if (selected.value?.id === id) {
+    detailOpen.value = !detailOpen.value;
+    return;
+  }
   busy.value = true;
   error.value = '';
   try {
     selected.value = await get<ProductDetail>(`/admin/products/${id}`);
+    detailOpen.value = true;
     reason.value = '';
   } catch (e) {
     error.value = (e as ApiError).message;
