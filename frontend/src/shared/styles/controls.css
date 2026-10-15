@@ -43,6 +43,9 @@
   background-position: right 12px center;
   color: var(--mm-ink);
   line-height: 1.4;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
   cursor: pointer;
 }
 .mm-app select:not(:disabled):hover {
@@ -83,7 +86,7 @@
   .mm-app select:not([multiple]):not([size]) {
     background-image: none;
     padding-inline-end: 12px;
-    gap: 16px;
+    gap: 8px;
   }
   .mm-app select::picker-icon {
     color: var(--mm-muted);
