@@ -1,14 +1,15 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
-import { askConfirmation } from '../../shared/confirm';
-import SupportHandoff from './SupportHandoff.vue';
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { useRoute } from "vue-router";
+import { askConfirmation } from "../../shared/confirm";
+import SupportHandoff from "./SupportHandoff.vue";
+import SupportResources from "./SupportResources.vue";
 const handoffOpen = ref(false);
-import { useTinaChat } from './useTinaChat';
-import { plainReply } from './plainText';
-import MaizaiMascot from '../../shared/components/MaizaiMascot.vue';
-import { useMascotMotion } from '../../shared/useMascotMotion';
-import { useEdgeDock } from './useEdgeDock';
+import { useTinaChat } from "./useTinaChat";
+import { plainReply } from "./plainText";
+import MaizaiMascot from "../../shared/components/MaizaiMascot.vue";
+import { useMascotMotion } from "../../shared/useMascotMotion";
+import { useEdgeDock } from "./useEdgeDock";
 const route = useRoute();
 const {
   auth,
@@ -30,7 +31,7 @@ const dialog = ref<HTMLDialogElement | null>(null),
 const transcript = ref<HTMLElement | null>(null),
   input = ref<HTMLTextAreaElement | null>(null);
 const opened = ref(false),
-  tab = ref<'chat' | 'faq'>('chat'),
+  tab = ref<"chat" | "faq">("chat"),
   unread = ref(false);
 const { animated, greeting, point, reset, greet } = useMascotMotion(
   launcher,
@@ -59,18 +60,18 @@ function fitKeyboardViewport() {
   }
   keyboardViewport.value = {
     top: `${viewport.offsetTop + 12}px`,
-    bottom: 'auto',
+    bottom: "auto",
     height: `${Math.max(0, viewport.height - 24)}px`,
   };
   compactKeyboard.value = viewport.height < 480;
 }
 onMounted(() => {
-  window.visualViewport?.addEventListener('resize', fitKeyboardViewport);
-  window.visualViewport?.addEventListener('scroll', fitKeyboardViewport);
+  window.visualViewport?.addEventListener("resize", fitKeyboardViewport);
+  window.visualViewport?.addEventListener("scroll", fitKeyboardViewport);
 });
 onBeforeUnmount(() => {
-  window.visualViewport?.removeEventListener('resize', fitKeyboardViewport);
-  window.visualViewport?.removeEventListener('scroll', fitKeyboardViewport);
+  window.visualViewport?.removeEventListener("resize", fitKeyboardViewport);
+  window.visualViewport?.removeEventListener("scroll", fitKeyboardViewport);
 });
 function moveLauncher(event: PointerEvent) {
   dock.move(event);
@@ -102,17 +103,22 @@ async function submit() {
   await nextTick();
   if (opened.value) input.value?.focus();
 }
+function prepareQuestion(question: string) {
+  tab.value = "chat";
+  draft.value = question;
+  void nextTick(() => input.value?.focus());
+}
 function navigateTab(event: KeyboardEvent) {
-  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+  if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
   event.preventDefault();
   tab.value =
-    event.key === 'Home'
-      ? 'chat'
-      : event.key === 'End'
-        ? 'faq'
-        : tab.value === 'chat'
-          ? 'faq'
-          : 'chat';
+    event.key === "Home"
+      ? "chat"
+      : event.key === "End"
+        ? "faq"
+        : tab.value === "chat"
+          ? "faq"
+          : "chat";
   void nextTick(() =>
     document.getElementById(`tina-${tab.value}-tab`)?.focus(),
   );
@@ -120,7 +126,7 @@ function navigateTab(event: KeyboardEvent) {
 async function clearHistory() {
   if (sending.value || !turns.value.length) return;
   const owner = auth.me?.id;
-  if (await askConfirmation('清空你与麦仔的全部对话记录？人工工单不受影响。')) {
+  if (await askConfirmation("清空你与麦仔的全部对话记录？人工工单不受影响。")) {
     if (owner && owner === auth.me?.id) await clear();
   }
 }
@@ -134,10 +140,10 @@ watch(
       !opened.value &&
       value.some(
         (turn) =>
-          turn.status === 'COMPLETE' &&
+          turn.status === "COMPLETE" &&
           !old?.some(
             (previous) =>
-              previous.id === turn.id && previous.status === 'COMPLETE',
+              previous.id === turn.id && previous.status === "COMPLETE",
           ),
       )
     )
@@ -262,6 +268,14 @@ onBeforeUnmount(() => dialog.value?.close());
           刷新
         </button>
       </div>
+      <nav class="tina-shortcuts" aria-label="客服快捷入口">
+        <RouterLink to="/search" @click="close">找商品</RouterLink>
+        <RouterLink to="/policies" @click="close">用户协议</RouterLink>
+        <RouterLink to="/orders" @click="close">我的订单</RouterLink>
+        <RouterLink to="/official/buying-and-selling-guide" @click="close"
+          >买卖指南</RouterLink
+        >
+      </nav>
       <SupportHandoff
         v-if="handoffOpen"
         :turns="turns"
@@ -300,8 +314,22 @@ onBeforeUnmount(() => dialog.value?.close());
           <span class="tina-eyebrow">你好，我是麦仔</span>
           <h3>关于麦麦，有什么想问的？</h3>
           <p>
-            我可以解释交易规则、指引页面操作。涉及具体订单的处理，可以转人工工单。
+            告诉我想找的物品和预算，我会查找站内商品，也能带你查看用户条款、订单和售后入口。
           </p>
+          <div v-if="auth.me" class="tina-question-examples">
+            <button
+              type="button"
+              @click="prepareQuestion('推荐外套，预算200元以内')"
+            >
+              找一件外套
+            </button>
+            <button type="button" @click="prepareQuestion('查看用户协议')">
+              查看用户协议
+            </button>
+            <button type="button" @click="prepareQuestion('怎样申请售后？')">
+              怎样申请售后
+            </button>
+          </div>
         </div>
         <div v-if="!auth.me" class="tina-state">
           <strong>登录后与麦仔对话</strong>
@@ -331,8 +359,18 @@ onBeforeUnmount(() => dialog.value?.close());
               v-if="turn.status === 'COMPLETE'"
               class="tina-message tina-message--assistant"
             >
-              <span class="tina-author">麦仔 · AI</span>
+              <span class="tina-author"
+                >麦仔 · {{ turn.source === "SITE" ? "站内查询" : "AI" }}</span
+              >
               <p>{{ plainReply(turn.answer) }}</p>
+              <SupportResources
+                v-if="turn.resources?.length"
+                :resources="turn.resources"
+                @navigate="close"
+              />
+              <small v-if="turn.source === 'SITE'" class="tina-source-note"
+                >来自站内商品与平台规则 · 未调用模型</small
+              >
             </div>
             <div v-else-if="turn.status === 'FAILED'" class="tina-failure">
               <p>这条问题暂时没能得到回复，你可以重试或转人工。</p>
@@ -347,7 +385,7 @@ onBeforeUnmount(() => dialog.value?.close());
             <div v-else class="tina-thinking" role="status">
               <MaizaiMascot class="tina-face" :active="animated" />
               <div>
-                <span>麦仔正在思考</span
+                <span>麦仔正在整理</span
                 ><span class="tina-dots" aria-hidden="true"
                   ><i></i><i></i><i></i
                 ></span>
@@ -373,7 +411,9 @@ onBeforeUnmount(() => dialog.value?.close());
           rows="2"
           maxlength="1000"
           :disabled="!enabled"
-          :placeholder="enabled ? '说说你遇到的问题…' : 'AI 接通后即可提问'"
+          :placeholder="
+            enabled ? '找什么好物，或想了解哪项规则？' : '正在读取客服状态…'
+          "
           @keydown.enter.exact="
             if (!$event.isComposing) {
               $event.preventDefault();
@@ -389,7 +429,7 @@ onBeforeUnmount(() => dialog.value?.close());
             type="submit"
             :disabled="!enabled || sending || pending || !draft.trim()"
           >
-            {{ sending ? '回复中…' : '发送' }}
+            {{ sending ? "回复中…" : "发送" }}
           </button>
         </div>
       </form>
@@ -399,7 +439,7 @@ onBeforeUnmount(() => dialog.value?.close());
           type="button"
           @click="handoffOpen = !handoffOpen"
         >
-          {{ handoffOpen ? '返回对话' : '带着对话转人工' }}
+          {{ handoffOpen ? "返回对话" : "带着对话转人工" }}
         </button>
         <RouterLink to="/support" @click="handoff">帮助与人工工单 ↗</RouterLink
         ><button
@@ -413,7 +453,7 @@ onBeforeUnmount(() => dialog.value?.close());
         <p>
           {{
             assistant?.notice ||
-            'AI 回复仅供参考，订单处理以平台流程和人工结果为准。'
+            "AI 回复仅供参考，订单处理以平台流程和人工结果为准。"
           }}
         </p>
       </footer>
@@ -422,6 +462,47 @@ onBeforeUnmount(() => dialog.value?.close());
 </template>
 
 <style scoped>
+.tina-shortcuts {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--mm-border);
+  background: #fffdf9;
+  flex: none;
+}
+.tina-shortcuts a,
+.tina-question-examples button {
+  font-size: 13px;
+  padding: 9px 10px;
+  border-radius: 20px;
+  background: var(--mm-warm);
+  color: var(--mm-ink);
+  border: 1px solid transparent;
+  text-decoration: none;
+  line-height: 1.5;
+}
+.tina-shortcuts a:focus-visible,
+.tina-question-examples button:focus-visible {
+  outline: 2px solid var(--mm-primary);
+  outline-offset: 2px;
+}
+.tina-question-examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+.tina-source-note {
+  display: block;
+  margin-top: 12px;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--mm-muted);
+}
+.tina-dialog--compact .tina-shortcuts {
+  display: none;
+}
 .tina-launcher {
   --dock-safe-top: env(safe-area-inset-top, 0px);
   --dock-safe-right: env(safe-area-inset-right, 0px);
@@ -585,7 +666,7 @@ onBeforeUnmount(() => dialog.value?.close());
   font-size: 13px;
   cursor: pointer;
 }
-.tina-tabs button[aria-selected='true'] {
+.tina-tabs button[aria-selected="true"] {
   border-color: var(--mm-primary);
   color: var(--mm-primary);
   font-weight: 700;

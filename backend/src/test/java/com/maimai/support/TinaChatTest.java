@@ -25,6 +25,7 @@ import static org.assertj.core.api.Assertions.*;
 class TinaChatTest {
     @Autowired TinaChatStore store;
     @Autowired JdbcTemplate db;
+    @Autowired SupportNavigation navigation;
     long owner,other;
     @BeforeEach void setup() { owner=user();other=user();login(owner); }
     @AfterEach void cleanup() {
@@ -79,14 +80,16 @@ class TinaChatTest {
                 calls.incrementAndGet();return "平台费不含运费。";
             }
         };
-        var service=new TinaChatService(store,gateway,new SimpleRateLimiter());var request=key();
+        var service=new TinaChatService(store,gateway,new SimpleRateLimiter(),navigation);var request=key();
         assertThat(service.assistant().name()).isEqualTo("麦仔");
         assertThat(service.assistant().enabled()).isTrue();
         assertThat(service.send(request,"费用规则").answer()).isEqualTo("平台费不含运费。");
         service.send(request,"费用规则");assertThat(calls).hasValue(1);
         SupportAiGateway offline=topic->{throw new AssertionError("must not call offline gateway");};
-        code("AI_NOT_CONFIGURED",()->new TinaChatService(store,offline,new SimpleRateLimiter()).send(key(),"新的问题"));
-        assertThat(store.history()).hasSize(1);
+        var fallback=new TinaChatService(store,offline,new SimpleRateLimiter(),navigation).send(key(),"新的问题");
+        assertThat(fallback.source()).isEqualTo("SITE");
+        assertThat(fallback.answer()).contains("自由问答暂未接通");
+        assertThat(store.history()).hasSize(2);
     }
     @Test void sameRequestConcurrentCallsReserveOnlyOneTurn() throws Exception {
         String request=key();

@@ -12,10 +12,12 @@ import java.util.*;
 
 @Service
 public class TinaChatStore {
-    public record Turn(long id, String requestId, String question, String answer, String status, String errorCode, Instant createdAt) { }
+    public record Turn(long id, String requestId, String question, String answer, String status, String errorCode, Instant createdAt,
+                       String source,List<SupportNavigation.Resource> resources) { }
     public record Attempt(Turn turn, String attemptId, boolean invoke) { }
     private static final RowMapper<Turn> ROW=(r,n)->new Turn(r.getLong("id"),r.getString("request_id"),r.getString("question"),
-            r.getString("answer"),r.getString("status"),r.getString("error_code"),r.getTimestamp("created_at").toInstant());
+            r.getString("answer"),r.getString("status"),r.getString("error_code"),r.getTimestamp("created_at").toInstant(),
+            r.getString("answer_source"),SupportNavigation.decode(r.getString("resources_json")));
     private final JdbcTemplate jdbc;
     public TinaChatStore(JdbcTemplate jdbc) { this.jdbc=jdbc; }
 
@@ -72,10 +74,19 @@ public class TinaChatStore {
 
     @Transactional
     public Turn finish(Attempt attempt,String answer,String errorCode) {
+        return finish(attempt,answer,errorCode,"MODEL",List.of());
+    }
+
+    @Transactional
+    public Turn finishNavigation(Attempt attempt,SupportNavigation.Reply reply) {
+        return finish(attempt,reply.answer(),null,"SITE",reply.resources());
+    }
+
+    private Turn finish(Attempt attempt,String answer,String errorCode,String source,List<SupportNavigation.Resource> resources) {
         long owner=lockOwner();
         if(answer!=null&&(answer.isBlank()||answer.length()>1800)) throw BizException.badRequest("AI_RESPONSE_INVALID","回复内容无效");
-        if(jdbc.update("UPDATE support_ai_turns SET answer=?,status=?,error_code=?,updated_at=NOW(6) WHERE id=? AND owner_id=? AND status='PENDING' AND attempt_id=?",
-                answer,answer==null?"FAILED":"COMPLETE",errorCode,attempt.turn().id(),owner,attempt.attemptId())!=1)
+        if(jdbc.update("UPDATE support_ai_turns SET answer=?,status=?,error_code=?,answer_source=?,resources_json=?,updated_at=NOW(6) WHERE id=? AND owner_id=? AND status='PENDING' AND attempt_id=?",
+                answer,answer==null?"FAILED":"COMPLETE",errorCode,source,SupportNavigation.encode(resources),attempt.turn().id(),owner,attempt.attemptId())!=1)
             throw BizException.conflict("AI_CHAT_CHANGED","对话已发生变化，请刷新查看");
         return owned(attempt.turn().id(),owner);
     }

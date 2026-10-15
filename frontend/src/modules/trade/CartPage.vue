@@ -15,7 +15,7 @@
     <div v-if="error" class="mm-cart__error" role="alert">
       <div>
         <strong>{{
-          items.length ? '刚才的操作未完成' : '暂时无法读取购物车'
+          items.length ? "刚才的操作未完成" : "暂时无法读取购物车"
         }}</strong>
         <p>{{ error }}</p>
       </div>
@@ -28,6 +28,9 @@
     </div>
     <p v-if="feedback" class="mm-cart__feedback" role="status">
       {{ feedback }}
+    </p>
+    <p v-if="selectionRestored" class="mm-cart__feedback" role="status">
+      已恢复你上次勾选的商品，并按最新库存重新核对。勾选仅在当前标签页保留一天。
     </p>
     <MmSkeleton
       v-if="loading && !items.length"
@@ -66,7 +69,14 @@
             <span class="mm-cart__seller-icon" aria-hidden="true">{{
               group.sellerNickname.slice(0, 1)
             }}</span>
-            <h2><small>卖家</small>{{ group.sellerNickname }}</h2>
+            <h2>
+              <small>卖家</small
+              ><RouterLink
+                v-if="group.sellerKey !== 'deleted'"
+                :to="'/sellers/' + group.sellerKey"
+                >{{ group.sellerNickname }}</RouterLink
+              ><span v-else>{{ group.sellerNickname }}</span>
+            </h2>
             <span>{{ group.items.length }} 种商品</span>
           </header>
           <ul class="mm-cart__items">
@@ -102,7 +112,7 @@
                 <RouterLink
                   :to="'/products/' + item.productId"
                   class="mm-cart__title"
-                  >{{ item.title ?? '商品已删除' }}</RouterLink
+                  >{{ item.title ?? "商品已删除" }}</RouterLink
                 >
                 <div class="mm-cart__meta">
                   <MmTag
@@ -149,7 +159,7 @@
                     class="mm-cart__stock"
                     role="status"
                     >{{
-                      busyAction === 'remove' ? '正在移除…' : '正在更新数量…'
+                      busyAction === "remove" ? "正在移除…" : "正在更新数量…"
                     }}</span
                   >
                   <span
@@ -168,7 +178,23 @@
                   </button>
                 </div>
                 <p v-if="item.invalid" class="mm-cart__invalid-hint">
-                  暂不可结算，可调整数量或移除后重新选购。
+                  {{
+                    item.productStatus === "ON_SALE" && item.stockAvailable
+                      ? "所选数量超过当前库存。"
+                      : "暂不可结算，可以移除后重新选购。"
+                  }}
+                  <button
+                    v-if="
+                      item.productStatus === 'ON_SALE' &&
+                      item.stockAvailable &&
+                      item.quantity > item.stockAvailable
+                    "
+                    type="button"
+                    :disabled="busyId !== null || loading"
+                    @click="changeQuantity(item, item.stockAvailable)"
+                  >
+                    改为可购的 {{ item.stockAvailable }} 件
+                  </button>
                 </p>
               </div>
               <div class="mm-cart__subtotal">
@@ -244,19 +270,25 @@
 </template>
 
 <script setup lang="ts">
-import ItemImage from '../../shared/components/ItemImage.vue';
-import { computed, onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { del, get, put, type ApiError } from '../../shared/api';
+import ItemImage from "../../shared/components/ItemImage.vue";
+import { computed, onScopeDispose, ref, watch } from "vue";
+import { useRouter } from "vue-router";
+import { del, get, put, type ApiError } from "../../shared/api";
 import {
   DELIVERY_METHOD_TEXT,
   PRODUCT_STATUS_TEXT,
   type CartItem,
-} from '../../shared/types';
-import MmButton from '../../shared/components/MmButton.vue';
-import MmTag from '../../shared/components/MmTag.vue';
-import MmSkeleton from '../../shared/components/MmSkeleton.vue';
-import PriceText from '../../shared/components/PriceText.vue';
+} from "../../shared/types";
+import MmButton from "../../shared/components/MmButton.vue";
+import MmTag from "../../shared/components/MmTag.vue";
+import MmSkeleton from "../../shared/components/MmSkeleton.vue";
+import PriceText from "../../shared/components/PriceText.vue";
+import { useAuthStore } from "../../shared/stores/auth";
+import {
+  cartStorage,
+  readCartSelection,
+  saveCartSelection,
+} from "./cartSelection";
 
 interface SellerGroup {
   sellerKey: string;
@@ -265,23 +297,27 @@ interface SellerGroup {
 }
 
 const router = useRouter();
+const auth = useAuthStore();
+const selectionRestored = ref(false);
+let initialized = false,
+  generation = 0;
 const items = ref<CartItem[]>([]);
 const loading = ref(true);
-const error = ref('');
+const error = ref("");
 const busyId = ref<number | null>(null);
-const busyAction = ref<'quantity' | 'remove'>('quantity');
-const feedback = ref('');
+const busyAction = ref<"quantity" | "remove">("quantity");
+const feedback = ref("");
 const selected = ref<Set<number>>(new Set());
 
 const groups = computed<SellerGroup[]>(() => {
   const map = new Map<string, SellerGroup>();
   for (const item of items.value) {
-    const key = item.sellerId === null ? 'deleted' : String(item.sellerId);
+    const key = item.sellerId === null ? "deleted" : String(item.sellerId);
     let group = map.get(key);
     if (!group) {
       group = {
         sellerKey: key,
-        sellerNickname: item.sellerNickname ?? '商品已删除',
+        sellerNickname: item.sellerNickname ?? "商品已删除",
         items: [],
       };
       map.set(key, group);
@@ -311,11 +347,11 @@ const allValidSelected = computed(
 );
 
 function invalidReason(item: CartItem): string {
-  if (item.title === null || item.productStatus === null) return '商品已删除';
-  if (item.productStatus !== 'ON_SALE') {
-    return PRODUCT_STATUS_TEXT[item.productStatus] ?? '商品不可售';
+  if (item.title === null || item.productStatus === null) return "商品已删除";
+  if (item.productStatus !== "ON_SALE") {
+    return PRODUCT_STATUS_TEXT[item.productStatus] ?? "商品不可售";
   }
-  return '库存不足';
+  return "库存不足";
 }
 
 function atMax(item: CartItem): boolean {
@@ -343,28 +379,40 @@ function toggleAll() {
 async function load() {
   if (loading.value && items.value.length) return;
   loading.value = true;
-  error.value = '';
+  error.value = "";
+  const account = generation;
   try {
-    items.value = await get<CartItem[]>('/cart');
+    const result = await get<CartItem[]>("/cart");
+    if (account !== generation) return;
+    items.value = result;
     const alive = new Set(
       items.value.filter((i) => !i.invalid).map((i) => i.id),
     );
-    selected.value = new Set([...selected.value].filter((id) => alive.has(id)));
+    const previous =
+      !initialized && auth.me
+        ? readCartSelection(cartStorage(), auth.me.id)
+        : [...selected.value];
+    selectionRestored.value =
+      !initialized && previous.some((id) => alive.has(id));
+    initialized = true;
+    selected.value = new Set(previous.filter((id) => alive.has(id)));
   } catch (e) {
-    error.value = (e as ApiError).message;
+    if (account === generation) error.value = (e as ApiError).message;
   } finally {
-    loading.value = false;
+    if (account === generation) loading.value = false;
   }
 }
 
 async function changeQuantity(item: CartItem, quantity: number) {
   if (quantity < 1 || busyId.value !== null) return;
   busyId.value = item.id;
-  busyAction.value = 'quantity';
-  error.value = '';
-  feedback.value = '';
+  busyAction.value = "quantity";
+  error.value = "";
+  feedback.value = "";
+  const account = generation;
   try {
     const updated = await put<CartItem>(`/cart/${item.id}`, { quantity });
+    if (account !== generation) return;
     Object.assign(item, updated);
     if (updated.invalid) {
       const next = new Set(selected.value);
@@ -372,33 +420,36 @@ async function changeQuantity(item: CartItem, quantity: number) {
       selected.value = next;
     }
     feedback.value =
-      '已更新数量：' + (item.title ?? '商品') + '，' + item.quantity + ' 件';
+      "已更新数量：" + (item.title ?? "商品") + "，" + item.quantity + " 件";
   } catch (e) {
-    const message = (e as ApiError).message || '数量更新失败，请重试';
+    if (account !== generation) return;
+    const message = (e as ApiError).message || "数量更新失败，请重试";
     await load();
-    error.value = message;
+    if (account === generation) error.value = message;
   } finally {
-    busyId.value = null;
+    if (account === generation) busyId.value = null;
   }
 }
 
 async function remove(item: CartItem) {
   if (busyId.value !== null) return;
   busyId.value = item.id;
-  busyAction.value = 'remove';
-  error.value = '';
-  feedback.value = '';
+  busyAction.value = "remove";
+  error.value = "";
+  feedback.value = "";
+  const account = generation;
   try {
     await del(`/cart/${item.id}`);
+    if (account !== generation) return;
     items.value = items.value.filter((i) => i.id !== item.id);
     const next = new Set(selected.value);
     next.delete(item.id);
     selected.value = next;
-    feedback.value = '已从购物车移除：' + (item.title ?? '失效商品');
+    feedback.value = "已从购物车移除：" + (item.title ?? "失效商品");
   } catch (e) {
-    error.value = (e as ApiError).message;
+    if (account === generation) error.value = (e as ApiError).message;
   } finally {
-    busyId.value = null;
+    if (account === generation) busyId.value = null;
   }
 }
 
@@ -406,13 +457,54 @@ function goCheckout() {
   if (busyId.value !== null || loading.value || !selectedItems.value.length)
     return;
   const ids = selectedItems.value.map((i) => i.id);
-  router.push({ name: 'checkout', query: { cartItemIds: ids.join(',') } });
+  router.push({ name: "checkout", query: { cartItemIds: ids.join(",") } });
 }
 
-onMounted(load);
+watch(
+  selected,
+  (value) => {
+    if (initialized && auth.me)
+      saveCartSelection(cartStorage(), auth.me.id, [...value]);
+  },
+  { flush: "sync" },
+);
+watch(
+  () => auth.me?.id,
+  () => {
+    generation++;
+    initialized = false;
+    items.value = [];
+    selected.value = new Set();
+    selectionRestored.value = false;
+    feedback.value = "";
+    error.value = "";
+    busyId.value = null;
+    loading.value = false;
+    if (auth.me) void load();
+  },
+  { immediate: true, flush: "sync" },
+);
+onScopeDispose(() => {
+  generation++;
+});
 </script>
 
 <style scoped>
+.mm-cart__invalid-hint button {
+  margin: 6px 0 0;
+  padding: 9px 12px;
+  display: block;
+  border: 1px solid var(--mm-border);
+  border-radius: 8px;
+  background: var(--mm-white);
+  color: var(--mm-primary);
+  font: inherit;
+}
+.mm-cart__seller h2 a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
 .mm-cart {
   max-width: 1160px;
   margin: 0 auto;
@@ -557,7 +649,7 @@ onMounted(load);
   place-items: center;
   min-height: 40px;
 }
-.mm-cart input[type='checkbox'] {
+.mm-cart input[type="checkbox"] {
   width: 18px;
   height: 18px;
   accent-color: var(--mm-primary);

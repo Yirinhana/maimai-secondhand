@@ -1,22 +1,26 @@
-import { computed, onBeforeUnmount, ref, watch } from 'vue';
-import { del, get, post, type ApiError } from '../../shared/api';
-import { useAuthStore } from '../../shared/stores/auth';
-import type { Faq } from './types';
+import { computed, onBeforeUnmount, ref, watch } from "vue";
+import { del, get, post, type ApiError } from "../../shared/api";
+import { useAuthStore } from "../../shared/stores/auth";
+import type { Faq } from "./types";
+import type { SupportResource } from "./navigationResources";
 
 export interface TinaTurn {
   id: number;
   requestId: string;
   question: string;
   answer: string | null;
-  status: 'PENDING' | 'COMPLETE' | 'FAILED';
+  status: "PENDING" | "COMPLETE" | "FAILED";
   errorCode: string | null;
   createdAt: string;
+  source?: "MODEL" | "SITE";
+  resources?: SupportResource[];
 }
 interface Assistant {
   name: string;
   enabled: boolean;
   maxMessageChars: number;
   notice: string;
+  modelEnabled?: boolean;
 }
 export function useTinaChat() {
   const auth = useAuthStore();
@@ -25,8 +29,8 @@ export function useTinaChat() {
     turns = ref<TinaTurn[]>([]);
   const loading = ref(false),
     sending = ref(false),
-    error = ref(''),
-    draft = ref('');
+    error = ref(""),
+    draft = ref("");
   const pendingRequest = ref<{ requestId: string; message: string } | null>(
     null,
   );
@@ -36,30 +40,30 @@ export function useTinaChat() {
     () => !!assistant.value?.enabled && !!auth.me && !loading.value,
   );
   const pending = computed(() =>
-    turns.value.some((turn) => turn.status === 'PENDING'),
+    turns.value.some((turn) => turn.status === "PENDING"),
   );
   async function load() {
     if (sending.value) return;
     const run = ++loadGeneration,
       account = generation;
     loading.value = true;
-    error.value = '';
+    error.value = "";
     const owner = auth.me?.id;
     const results = await Promise.allSettled([
-      get<Assistant>('/support/assistant'),
-      get<Faq[]>('/support/faq'),
+      get<Assistant>("/support/assistant"),
+      get<Faq[]>("/support/faq"),
       owner
-        ? get<TinaTurn[]>('/support/chat')
+        ? get<TinaTurn[]>("/support/chat")
         : Promise.resolve([] as TinaTurn[]),
     ]);
     if (run !== loadGeneration || account !== generation) return;
-    if (results[0].status === 'fulfilled') assistant.value = results[0].value;
+    if (results[0].status === "fulfilled") assistant.value = results[0].value;
     else {
       assistant.value = null;
-      error.value = '客服状态暂时读取失败，请重试。';
+      error.value = "客服状态暂时读取失败，请重试。";
     }
-    if (results[1].status === 'fulfilled') faqs.value = results[1].value;
-    if (results[2].status === 'fulfilled') {
+    if (results[1].status === "fulfilled") faqs.value = results[1].value;
+    if (results[2].status === "fulfilled") {
       const remote = results[2].value;
       const unsent = turns.value.filter(
         (turn) =>
@@ -67,14 +71,14 @@ export function useTinaChat() {
           !remote.some((item) => item.requestId === turn.requestId),
       );
       turns.value = [...remote, ...unsent].slice(-20);
-    } else error.value = '对话记录暂时读取失败，请重试。';
+    } else error.value = "对话记录暂时读取失败，请重试。";
     loading.value = false;
   }
   async function send(retry?: TinaTurn) {
     if (sending.value || !enabled.value || pending.value) return;
     const message = retry?.question ?? draft.value.trim();
     if (!message || message.length > 1000) {
-      error.value = '请输入1到1000字的问题。';
+      error.value = "请输入1到1000字的问题。";
       return;
     }
     const request = retry
@@ -85,13 +89,13 @@ export function useTinaChat() {
     pendingRequest.value = request;
     const account = generation;
     sending.value = true;
-    error.value = '';
+    error.value = "";
     const optimistic: TinaTurn = {
       id: retry?.id ?? -Date.now(),
       requestId: request.requestId,
       question: message,
       answer: null,
-      status: 'PENDING',
+      status: "PENDING",
       errorCode: null,
       createdAt: retry?.createdAt ?? new Date().toISOString(),
     };
@@ -103,9 +107,9 @@ export function useTinaChat() {
       turns.value = turns.value.map((item, index) =>
         index === existing ? optimistic : item,
       );
-    if (!retry) draft.value = '';
+    if (!retry) draft.value = "";
     try {
-      const turn = await post<TinaTurn>('/support/chat', request);
+      const turn = await post<TinaTurn>("/support/chat", request);
       if (account !== generation) return;
       const index = turns.value.findIndex(
         (item) => item.requestId === turn.requestId,
@@ -118,14 +122,14 @@ export function useTinaChat() {
       pendingRequest.value = null;
     } catch (cause) {
       if (account !== generation) return;
-      error.value = (cause as ApiError).message || '消息发送失败，可以重试。';
+      error.value = (cause as ApiError).message || "消息发送失败，可以重试。";
       const failed = turns.value.findIndex(
         (item) => item.requestId === request.requestId,
       );
       if (failed >= 0)
         turns.value = turns.value.map((item, i) =>
           i === failed
-            ? { ...item, status: 'FAILED', errorCode: 'SEND_UNCONFIRMED' }
+            ? { ...item, status: "FAILED", errorCode: "SEND_UNCONFIRMED" }
             : item,
         );
       // A timed-out request may have reached the server. Retrying keeps its ID.
@@ -137,16 +141,16 @@ export function useTinaChat() {
     const account = generation;
     if (sending.value || loading.value) return;
     sending.value = true;
-    error.value = '';
+    error.value = "";
     try {
-      await del('/support/chat');
+      await del("/support/chat");
       if (account !== generation) return;
       turns.value = [];
-      draft.value = '';
+      draft.value = "";
       pendingRequest.value = null;
     } catch (cause) {
       if (account === generation)
-        error.value = (cause as ApiError).message || '暂时无法清空对话。';
+        error.value = (cause as ApiError).message || "暂时无法清空对话。";
     } finally {
       if (account === generation) sending.value = false;
     }
@@ -157,13 +161,13 @@ export function useTinaChat() {
       generation++;
       loadGeneration++;
       turns.value = [];
-      draft.value = '';
-      error.value = '';
+      draft.value = "";
+      error.value = "";
       loading.value = false;
       sending.value = false;
       pendingRequest.value = null;
     },
-    { flush: 'sync' },
+    { flush: "sync" },
   );
   onBeforeUnmount(() => {
     generation++;
