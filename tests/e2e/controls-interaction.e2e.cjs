@@ -160,6 +160,130 @@ test('mobile navigation closes when its current-page link is chosen', async ({
   ).toHaveAttribute('aria-expanded', 'false');
 });
 
+for (const viewport of [
+  { width: 320, height: 740 },
+  { width: 844, height: 390 },
+]) {
+  test(`compact controls remain tappable without overflowing at ${viewport.width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(viewport);
+    await page.route('**/api/v1/cart', (route) =>
+      route.fulfill({
+        json: [
+          {
+            id: 1,
+            productId: 2,
+            sellerId: 3,
+            sellerNickname: '测试卖家',
+            title: '带完整配件和收纳包的二手相机',
+            priceCents: 10000,
+            quantity: 2,
+            stockAvailable: 5,
+            invalid: false,
+            deliveryMethod: 'EXPRESS',
+            productStatus: 'ON_SALE',
+          },
+        ],
+      }),
+    );
+    await page.route('**/api/v1/community/demands*', (route) =>
+      route.fulfill({
+        json: {
+          items: [
+            {
+              id: 1,
+              authorId: 2,
+              authorNickname: '测试买家',
+              title: '寻找一台适合日常记录的相机',
+              description: '希望配件齐全，功能正常。',
+              budgetMinCents: 10000,
+              budgetMaxCents: 50000,
+              region: '上海',
+              status: 'PUBLISHED',
+              isClosed: false,
+              createdAt: '2026-01-01T10:00:00',
+            },
+          ],
+          total: 1,
+          totalPages: 1,
+          page: 0,
+          size: 20,
+        },
+      }),
+    );
+    for (const route of ['/search', '/cart', '/community/demands', '/login']) {
+      await page.goto(route);
+      await page.waitForLoadState('networkidle');
+      if (route === '/cart')
+        await expect(page.getByLabel('增加数量')).toBeVisible();
+      if (route === '/community/demands')
+        await expect(
+          page.getByRole('button', { name: '查看回复' }),
+        ).toBeVisible();
+      const layout = await page.evaluate(() => ({
+        overflow: document.documentElement.scrollWidth > innerWidth,
+        small: [...document.querySelectorAll('.mm-app button, .mm-app summary')]
+          .filter(
+            (e) =>
+              e.getClientRects().length &&
+              getComputedStyle(e).visibility !== 'hidden',
+          )
+          .filter((e) => {
+            const r = e.getBoundingClientRect();
+            return r.width < 43.9 || r.height < 43.9;
+          })
+          .map((e) => e.getAttribute('aria-label') || e.textContent.trim()),
+      }));
+      expect(layout, route).toEqual({ overflow: false, small: [] });
+    }
+  });
+}
+
+test('landscape support keeps its composer and footer inside the dialog', async ({
+  page,
+}) => {
+  await page.route('**/api/v1/support/assistant', (r) =>
+    r.fulfill({ json: { name: '麦仔', enabled: true, maxMessageChars: 1000 } }),
+  );
+  await page.route('**/api/v1/support/chat', (r) =>
+    r.fulfill({
+      json: [
+        {
+          id: 1,
+          requestId: 'fixture',
+          question: '如何买东西？',
+          answer: '先查看商品说明和交付方式。',
+          status: 'COMPLETE',
+          source: 'SITE',
+          createdAt: '2026-01-01T10:00:00',
+        },
+      ],
+    }),
+  );
+  await page.setViewportSize({ width: 844, height: 390 });
+  await page.getByRole('button', { name: '打开麦仔客服', exact: true }).click();
+  await expect(page.getByLabel('给麦仔的问题')).toBeEnabled();
+  const dialog = page.locator('#tina-dialog');
+  const bounds = await dialog.boundingBox();
+  for (const locator of [
+    page.getByLabel('给麦仔的问题'),
+    dialog.getByRole('button', { name: '发送', exact: true }),
+    dialog.getByRole('button', { name: '清空对话', exact: true }),
+    dialog.getByRole('link', { name: '帮助与人工工单 ↗' }),
+  ]) {
+    const box = await locator.boundingBox();
+    expect(box).toBeTruthy();
+    expect(box.y + box.height).toBeLessThanOrEqual(bounds.y + bounds.height);
+    expect(box.x + box.width).toBeLessThanOrEqual(bounds.x + bounds.width);
+  }
+  expect(
+    (await dialog.locator('.tina-body').boundingBox()).height,
+  ).toBeGreaterThan(60);
+  await page.getByRole('button', { name: '关闭麦仔客服', exact: true }).click();
+  await expect(dialog).toBeHidden();
+});
+
 test('map confirmation closes the picker and keeps an address receipt without external calls', async ({
   page,
 }) => {

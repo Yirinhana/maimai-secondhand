@@ -24,6 +24,7 @@ export function useEdgeDock(launcher: Ref<HTMLButtonElement | null>) {
   } | null = null;
   let suppressClick = false;
   let observer: ResizeObserver | undefined;
+  let contentObserver: MutationObserver | undefined;
   let resizeFrame = 0;
   const style = computed(() =>
     coordinates.value
@@ -80,27 +81,51 @@ export function useEdgeDock(launcher: Ref<HTMLButtonElement | null>) {
       return;
     }
     const left = position.value.edge === 'left' ? area.minX : area.maxX;
-    let top = area.minY + (area.maxY - area.minY) * position.value.ratio;
-    // Do not cover the independent back-to-top control when it appears after scrolling.
-    const obstacle = document
-      .querySelector('.mm-back-top')
-      ?.getBoundingClientRect();
-    if (
-      obstacle &&
-      left < obstacle.right + 4 &&
-      left + area.width > obstacle.left - 4 &&
-      top < obstacle.bottom + 4 &&
-      top + area.height > obstacle.top - 4
-    ) {
-      const above = obstacle.top - area.height - 4;
-      const below = obstacle.bottom + 4;
-      top =
-        below <= area.maxY &&
-        (above < area.minY || Math.abs(below - top) < Math.abs(above - top))
-          ? below
-          : above;
-    }
-    coordinates.value = { left, top: clamp(top, area.minY, area.maxY) };
+    const preferred =
+      area.minY + (area.maxY - area.minY) * position.value.ratio;
+    // Keep the user's saved edge, but make room for visible page actions. This
+    // temporary adjustment is never persisted over the user's drag preference.
+    const obstacles = [
+      ...document.querySelectorAll<HTMLElement>(
+        'main button, main a, main input:not([type="hidden"]), main select, main textarea, main summary, .mm-back-top',
+      ),
+    ]
+      .filter(
+        (e) =>
+          e.getClientRects().length &&
+          getComputedStyle(e).visibility !== 'hidden',
+      )
+      .map((e) => e.getBoundingClientRect())
+      .filter(
+        (r) =>
+          r.bottom > area.minY &&
+          r.top < area.maxY + area.height &&
+          left < r.right + 4 &&
+          left + area.width > r.left - 4,
+      );
+    const overlap = (top: number) =>
+      obstacles.reduce(
+        (sum, r) =>
+          sum +
+          Math.max(
+            0,
+            Math.min(top + area.height, r.bottom + 4) -
+              Math.max(top, r.top - 4),
+          ),
+        0,
+      );
+    const candidates = [
+      preferred,
+      area.minY,
+      area.maxY,
+      ...obstacles.flatMap((r) => [r.top - area.height - 4, r.bottom + 4]),
+    ].map((top) => clamp(top, area.minY, area.maxY));
+    candidates.sort(
+      (a, b) =>
+        overlap(a) - overlap(b) ||
+        Math.abs(a - preferred) - Math.abs(b - preferred),
+    );
+    coordinates.value = { left, top: candidates[0] ?? preferred };
   }
   function persist() {
     try {
@@ -268,6 +293,12 @@ export function useEdgeDock(launcher: Ref<HTMLButtonElement | null>) {
     place();
     observer = new ResizeObserver(schedulePlace);
     if (launcher.value) observer.observe(launcher.value);
+    const main = document.querySelector('main');
+    if (main) {
+      observer.observe(main);
+      contentObserver = new MutationObserver(schedulePlace);
+      contentObserver.observe(main, { childList: true, subtree: true });
+    }
     window.addEventListener('resize', schedulePlace);
     window.addEventListener('scroll', schedulePlace, { passive: true });
     window.addEventListener('blur', cancel);
@@ -279,6 +310,7 @@ export function useEdgeDock(launcher: Ref<HTMLButtonElement | null>) {
     cancel();
     stopSnap();
     observer?.disconnect();
+    contentObserver?.disconnect();
     if (resizeFrame) cancelAnimationFrame(resizeFrame);
     window.removeEventListener('resize', schedulePlace);
     window.removeEventListener('scroll', schedulePlace);

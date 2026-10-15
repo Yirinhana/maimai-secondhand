@@ -898,6 +898,7 @@ onBeforeUnmount(() => dialog.value?.close());
 }
 .tina-compose div {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
@@ -915,6 +916,7 @@ onBeforeUnmount(() => dialog.value?.close());
   border: 0;
   border-radius: 7px;
   font-size: 12px;
+  white-space: nowrap;
   cursor: pointer;
 }
 .tina-footer {
@@ -1007,11 +1009,23 @@ onBeforeUnmount(() => dialog.value?.close());
 }
 .tina-dialog--compact .tina-compose textarea {
   min-height: 44px;
+  height: 44px;
+}
+.tina-dialog--compact .tina-compose {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+.tina-dialog--compact .tina-compose small {
+  display: none;
 }
 .tina-dialog--compact .tina-footer {
   padding: 4px 14px;
 }
 @media (max-height: 480px) {
+  .tina-shortcuts {
+    display: none;
+  }
   .tina-header {
     padding: 8px 14px;
   }
@@ -1021,6 +1035,15 @@ onBeforeUnmount(() => dialog.value?.close());
   }
   .tina-compose textarea {
     min-height: 44px;
+    height: 44px;
+  }
+  .tina-compose {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+  }
+  .tina-compose small {
+    display: none;
   }
   .tina-footer {
     padding: 4px 14px;

@@ -133,9 +133,12 @@
   }
 }
 @media (max-width: 900px), (pointer: coarse) {
-  .mm-app :where(button, summary),
-  .mm-main--admin .mm-button {
-    min-height: 44px;
+  /* Touch targets must survive compact, scoped page styles. Keep visual spacing
+     local to each component; only the minimum hit area is enforced here. */
+  .mm-app button,
+  .mm-app summary {
+    min-width: 44px !important;
+    min-height: 44px !important;
   }
 }
 @media (prefers-reduced-motion: reduce) {

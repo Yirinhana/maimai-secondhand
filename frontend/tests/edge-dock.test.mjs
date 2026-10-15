@@ -59,6 +59,7 @@ function fixture({ width = 390, height = 844, saved = new Map() } = {}) {
     document: {
       documentElement: { clientWidth: width },
       querySelector: () => null,
+      querySelectorAll: () => [],
     },
     getComputedStyle: () => ({ getPropertyValue: () => '0px' }),
     localStorage: {
@@ -272,4 +273,34 @@ test('unavailable local storage does not interrupt dragging', () => {
   f.dock.move(f.point(100, 300));
   assert.doesNotThrow(() => f.dock.up(f.point(100, 300)));
   assert.equal(f.dock.style.value.left, '12px');
+});
+
+test('page actions stay clear of the launcher without overwriting the saved preference', () => {
+  const f = fixture();
+  globalThis.document.querySelectorAll = () => [
+    {
+      getClientRects: () => [{}],
+      getBoundingClientRect: () => ({
+        left: 300,
+        right: 370,
+        top: 760,
+        bottom: 804,
+      }),
+    },
+  ];
+  f.win.dispatchEvent(new Event('scroll'));
+  f.flushResize();
+  const top = Number.parseFloat(f.dock.style.value.top);
+  assert.ok(top + 82 <= 756, 'launcher stays above the visible page action');
+  assert.equal(f.dock.position.value.edge, 'right');
+  assert.equal(f.dock.position.value.ratio, 1);
+  assert.equal(
+    f.saved.size,
+    0,
+    'automatic placement must not save a new user preference',
+  );
+  globalThis.document.querySelectorAll = () => [];
+  f.win.dispatchEvent(new Event('scroll'));
+  f.flushResize();
+  assert.equal(f.dock.style.value.top, '750px');
 });
