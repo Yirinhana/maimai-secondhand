@@ -6,28 +6,30 @@
         <h1>发现好物</h1>
         <p>给闲置一次新的出发，也找到你需要的那一件。</p>
       </div>
+      <SavedSearches
+        :criteria="{
+          ...applied,
+          minPriceCents: applied.minPrice
+            ? Math.round(Number(applied.minPrice) * 100)
+            : undefined,
+          maxPriceCents: applied.maxPrice
+            ? Math.round(Number(applied.maxPrice) * 100)
+            : undefined,
+        }"
+      />
     </header>
 
-    <SavedSearches
-      :criteria="{
-        ...applied,
-        minPriceCents: applied.minPrice
-          ? Math.round(Number(applied.minPrice) * 100)
-          : undefined,
-        maxPriceCents: applied.maxPrice
-          ? Math.round(Number(applied.maxPrice) * 100)
-          : undefined,
-      }"
-    />
-    <CategoryBrowser
-      :categories="categoryTree"
-      :selected="applied.categoryId"
-      @select="navigate({ ...applied, categoryId: $event })"
-    />
-    <p v-if="categoryError" role="status" class="mm-muted">
-      {{ categoryError }}
-      <button type="button" @click="loadCategories">重新加载分类</button>
-    </p>
+    <aside class="mm-search__categories">
+      <CategoryBrowser
+        :categories="categoryTree"
+        :selected="applied.categoryId"
+        @select="navigate({ ...applied, categoryId: $event })"
+      />
+      <p v-if="categoryError" role="status" class="mm-muted">
+        {{ categoryError }}
+        <button type="button" @click="loadCategories">重新加载分类</button>
+      </p>
+    </aside>
     <form
       ref="filtersRoot"
       class="mm-search__filters"
@@ -35,10 +37,6 @@
       novalidate
       @submit.prevent="applyFilters"
     >
-      <div class="mm-search__filter-heading">
-        <strong><MmIcon name="search" />找到合适的闲置</strong
-        ><span>关键词、成色、价格，都由你来选。</span>
-      </div>
       <div class="mm-search__quick">
         <label class="mm-search__field mm-search__keyword"
           ><span>关键词</span
@@ -291,7 +289,6 @@ import { get, type ApiError } from '../../shared/api';
 import { useDismissiblePanel } from '../../shared/useDismissiblePanel';
 import EmptyState from '../../shared/components/EmptyState.vue';
 import MmButton from '../../shared/components/MmButton.vue';
-import MmIcon from '../../shared/components/MmIcon.vue';
 import MmPagination from '../../shared/components/MmPagination.vue';
 import MmSkeleton from '../../shared/components/MmSkeleton.vue';
 import ProductCard from '../../shared/components/ProductCard.vue';
@@ -625,42 +622,42 @@ onScopeDispose(() => {
 
 <style scoped>
 .mm-search {
-  max-width: 1280px;
+  max-width: 1320px;
   margin: 0 auto;
-  padding: 20px 24px 64px;
+  padding: 28px 24px 64px;
+  display: grid;
+  grid-template-columns: 216px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
 }
 .mm-search > .mm-page-heading {
-  margin-bottom: 26px;
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 0 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+.mm-search__categories {
+  grid-column: 1;
+  grid-row: 2 / span 2;
+  min-width: 0;
+  position: sticky;
+  top: 20px;
+}
+.mm-search__results {
+  grid-column: 2;
+  min-width: 0;
 }
 .mm-search__filters {
+  grid-column: 2;
+  min-width: 0;
   background: #f7f1e7;
   border: 1px solid #e4d6c4;
   border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 30px;
-}
-.mm-search__filter-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 18px;
-}
-.mm-search__filter-heading strong {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: #665137;
-}
-.mm-search__filter-heading .mm-icon {
-  width: 18px;
-  height: 18px;
-}
-.mm-search__filter-heading > span {
-  color: #776853;
-  font-size: 12px;
+  padding: 18px;
+  margin-bottom: 0;
 }
 .mm-search__quick {
   display: grid;
@@ -860,16 +857,33 @@ onScopeDispose(() => {
   flex-wrap: wrap;
   gap: 10px;
 }
+@media (max-width: 960px) {
+  .mm-search {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .mm-search > * {
+    width: 100%;
+  }
+  .mm-search__categories {
+    position: static;
+  }
+  .mm-search > .mm-page-heading {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+}
 @media (max-width: 700px) {
   .mm-search {
     padding: 12px 16px 40px;
   }
   .mm-search > .mm-page-heading {
-    margin-bottom: 20px;
+    margin-bottom: 0;
   }
   .mm-search__filters {
     padding: 14px;
-    margin-bottom: 24px;
+    margin-bottom: 0;
   }
   .mm-search__quick {
     grid-template-columns: minmax(0, 1fr) auto;

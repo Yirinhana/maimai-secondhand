@@ -1,6 +1,29 @@
 <template>
   <div class="mm-edit">
-    <h1 class="mm-edit__heading">{{ isEdit ? '编辑商品' : '发布闲置' }}</h1>
+    <header class="mm-edit__page-header">
+      <div>
+        <h1 class="mm-edit__heading">{{ isEdit ? '编辑商品' : '发布闲置' }}</h1>
+        <p class="mm-muted">写清物品情况，让合适的买家更快找到你。</p>
+      </div>
+      <div v-if="!pageLoading && !pageError" class="mm-edit__save-group">
+        <MmButton
+          :loading="savingDraft"
+          :disabled="savingSubmit"
+          :aria-describedby="
+            saveError || saveMessage ? 'publish-save-feedback' : undefined
+          "
+          @click="save(false)"
+          >{{ isEdit ? '保存修改' : '保存草稿' }}</MmButton
+        >
+        <p
+          v-if="saveError || saveMessage"
+          id="publish-save-feedback"
+          :class="saveError ? 'mm-edit__field-error' : 'mm-edit__ok'"
+        >
+          {{ saveError || saveMessage }}
+        </p>
+      </div>
+    </header>
 
     <p v-if="pageLoading" class="mm-edit__loading">加载中……</p>
     <div v-else-if="pageError" role="alert">
@@ -21,35 +44,10 @@
         <p>{{ stateNotice }}</p>
         <RouterLink to="/seller/products">查看商品与审核记录 →</RouterLink>
       </section>
-      <WorkflowAssistant
-        stage="LISTING"
-        :resource-id="productId ?? undefined"
-        :draft="[form.title, form.description].filter(Boolean).join('；')"
-        title="从选一件闲置开始，麦仔陪你整理"
-      />
       <div v-if="!auth.isSeller" class="mm-notice" role="status">
         个人闲置也可以出售，无需稳定货源。可以先填写并保留草稿，通过卖家资料审核后再正式提交商品；同一个账号仍然可以买东西。
         <RouterLink to="/me?tab=seller">查看卖家申请与进度 →</RouterLink>
       </div>
-      <JourneyGuide
-        title="内容不用一次填完，按这三步就好"
-        :steps="[
-          {
-            title: '整理真实信息',
-            body: '先写物品和实际使用情况。未填写的型号、品牌不用猜；描述和价格可以继续修改。',
-          },
-          {
-            title: '保存草稿与实拍',
-            body: '填写内容会自动保留。保存成商品后，可检查照片、库存、交付方式与运费，草稿对其他买家不可见。',
-          },
-          {
-            title: '主动提交审核',
-            body: '核对完成后点击提交审核，通过后才会上架。审核意见会保留在商品管理中。',
-            to: '/seller/products',
-            action: '查看我的商品',
-          },
-        ]"
-      />
       <p
         v-if="
           isEdit &&
@@ -62,491 +60,530 @@
         关键信息（标题/描述/分类/图片/成色/缺陷/价格/交付/运费）修改后将重新审核，审核期间暂停新成交；仅调整库存不会触发重新审核。
       </p>
 
-      <div class="mm-edit__draft-strip">
-        <div>
-          <strong>未完成内容自动保留</strong>
-          <p>
-            文字先保留在本机，并自动同步到当前账号。云端同步成功后，换设备也可以接着填写。
-          </p>
-          <p
-            v-if="draftNotice"
-            :class="{ 'mm-edit__field-error': draftFailure }"
-            role="status"
-          >
-            {{ draftNotice }}
-          </p>
-        </div>
-        <MmButton
-          v-if="!isEdit"
-          variant="ghost"
-          :disabled="savingDraft || savingSubmit"
-          @click="clearForm"
-          >一键清空</MmButton
+      <div class="mm-edit__layout">
+        <form
+          ref="formElement"
+          class="mm-edit__form"
+          novalidate
+          @submit.prevent
         >
-      </div>
-      <section class="mm-panel mm-stack" aria-label="云端草稿状态">
-        <p role="status">{{ cloud.status.value }}</p>
-        <div v-if="cloud.conflict.value" class="mm-stack">
-          <p>
-            云端更新时间：{{
-              cloud.conflict.value.updatedAt
-                ? new Date(cloud.conflict.value.updatedAt).toLocaleString()
-                : '暂无'
-            }}
-          </p>
-          <details>
-            <summary>预览云端内容</summary>
-            <p>{{ cloudPreview?.form?.title || '未填标题' }}</p>
-            <p>{{ cloudPreview?.form?.description || '未填描述' }}</p>
-          </details>
-          <MmButton variant="ghost" @click="cloud.choose(true)"
-            >采用云端版本</MmButton
-          >
-          <MmButton @click="cloud.choose(false)">用本机内容更新云端</MmButton>
-        </div>
-        <MmButton
-          v-else
-          variant="ghost"
-          :disabled="cloud.busy.value"
-          @click="
-            cloud.ready.value
-              ? cloud.flush()
-              : cloud.initialize(hasLocalDraft())
-          "
-          >立即同步 / 重试</MmButton
-        >
-        <p v-if="createdProductId" class="mm-muted">
-          商品草稿已建立；如图片保存失败，重试会继续保存到同一商品。
-        </p>
-      </section>
-      <form ref="formElement" class="mm-edit__form" novalidate @submit.prevent>
-        <MmCard title="基本信息" class="mm-edit__section">
-          <div class="mm-edit__fields">
-            <MmInput
-              id="product-title"
-              v-model="form.title"
-              @update:model-value="fieldErrors.title = ''"
-              label="标题"
-              :maxlength="120"
-              placeholder="一句话说明这件闲置"
-              :error="fieldErrors.title"
-            />
-            <label class="mm-edit__field">
-              <span class="mm-edit__label">分类</span>
-              <select
-                v-model="form.categoryId"
-                aria-label="分类"
-                @input="fieldErrors.categoryId = ''"
-                :aria-invalid="!!fieldErrors.categoryId"
-                :aria-describedby="
-                  fieldErrors.categoryId
-                    ? 'product-categoryId-error'
-                    : undefined
-                "
-              >
-                <option value="" disabled>请选择分类</option>
-                <option
-                  v-for="opt in categoryOptions"
-                  :key="opt.id"
-                  :value="String(opt.id)"
-                >
-                  {{ opt.name }}
-                </option>
-              </select>
-
-              <span
-                v-if="fieldErrors.categoryId"
-                id="product-categoryId-error"
-                class="mm-edit__field-error"
-                role="alert"
-                >{{ fieldErrors.categoryId }}</span
-              >
-            </label>
-            <label class="mm-edit__field">
-              <span class="mm-edit__label">商品描述</span>
-              <textarea
-                v-model="form.description"
-                rows="5"
-                placeholder="品牌、入手渠道、使用情况、出手原因……"
-              ></textarea>
-            </label>
-            <label class="mm-edit__field">
-              <span class="mm-edit__label">成色</span>
-              <select v-model="form.condition">
-                <option
-                  v-for="(text, value) in CONDITION_TEXT"
-                  :key="value"
-                  :value="value"
-                >
-                  {{ text }}
-                </option>
-              </select>
-            </label>
-            <label class="mm-edit__field">
-              <span class="mm-edit__label"
-                >缺陷说明（会向买家显著展示，请如实填写）</span
-              >
-              <textarea
-                v-model="form.defects"
-                rows="3"
-                maxlength="500"
-                placeholder="划痕、磕碰、功能异常等；无缺陷可留空"
-              ></textarea>
-            </label>
-          </div>
-        </MmCard>
-
-        <MmCard title="商品参数" class="mm-edit__section">
-          <ProductSpecifications
-            v-model="form.specifications"
-            :category-id="form.categoryId"
-            editable
-          />
-          <p v-if="!form.categoryId" class="mm-muted">
-            选择分类后，会显示适合这类商品的参数。
-          </p>
-        </MmCard>
-        <MmCard title="价格与库存" class="mm-edit__section">
-          <div class="mm-edit__fields mm-edit__fields--row">
-            <label class="mm-edit__field">
-              <span class="mm-edit__label">价格（元）</span>
-              <input
-                v-model="form.priceYuan"
-                @input="fieldErrors.priceYuan = ''"
-                :aria-invalid="!!fieldErrors.priceYuan"
-                :aria-describedby="
-                  fieldErrors.priceYuan ? 'product-priceYuan-error' : undefined
-                "
-                type="text"
-                inputmode="decimal"
-                min="0.01"
-                step="0.01"
-                placeholder="如 25.00"
+          <MmCard title="基本信息" class="mm-edit__section">
+            <div class="mm-edit__fields">
+              <MmInput
+                id="product-title"
+                v-model="form.title"
+                @update:model-value="fieldErrors.title = ''"
+                label="标题"
+                :maxlength="120"
+                placeholder="一句话说明这件闲置"
+                :error="fieldErrors.title"
               />
-              <span
-                v-if="fieldErrors.priceYuan"
-                id="product-priceYuan-error"
-                class="mm-edit__field-error"
-                role="alert"
-                >{{ fieldErrors.priceYuan }}</span
-              >
-            </label>
-            <label v-if="!isEdit" class="mm-edit__field">
-              <span class="mm-edit__label">库存</span>
-              <input
-                v-model="form.stock"
-                @input="fieldErrors.stock = ''"
-                :aria-invalid="!!fieldErrors.stock"
-                :aria-describedby="
-                  fieldErrors.stock ? 'product-stock-error' : undefined
-                "
-                type="text"
-                inputmode="decimal"
-                min="0"
-                step="1"
-              />
-              <span
-                v-if="fieldErrors.stock"
-                id="product-stock-error"
-                class="mm-edit__field-error"
-                role="alert"
-                >{{ fieldErrors.stock }}</span
-              >
-            </label>
-            <label class="mm-edit__field">
-              <span class="mm-edit__label">所在地区</span>
-              <input
-                v-model="form.region"
-                @input="fieldErrors.region = ''"
-                :aria-invalid="!!fieldErrors.region"
-                :aria-describedby="
-                  fieldErrors.region ? 'product-region-error' : undefined
-                "
-                type="text"
-                maxlength="100"
-                placeholder="如：成都市 武侯区"
-              />
-              <span
-                v-if="fieldErrors.region"
-                id="product-region-error"
-                class="mm-edit__field-error"
-                role="alert"
-                >{{ fieldErrors.region }}</span
-              >
-            </label>
-          </div>
-        </MmCard>
-
-        <MmCard title="交付与售后" class="mm-edit__section">
-          <div class="mm-edit__fields">
-            <div class="mm-stack">
-              <strong>公开交接区域（选填）</strong>
-              <p class="mm-edit__hint">
-                用于附近商品排序。请选择公共场所，不要标记私人住址；地图距离不用于计算快递运费。
-              </p>
-              <MapPicker
-                :key="mapResetKey"
-                :initial-latitude="form.latitude"
-                :initial-longitude="form.longitude"
-                @select="setPublicLocation"
-              />
-              <p
-                v-if="form.latitude !== null && form.longitude !== null"
-                class="mm-edit__hint"
-              >
-                已选择公开位置（GCJ-02）：{{ form.latitude.toFixed(5) }}，{{
-                  form.longitude.toFixed(5)
-                }}
-                <button
-                  type="button"
-                  @click="
-                    form.latitude = null;
-                    form.longitude = null;
+              <label class="mm-edit__field">
+                <span class="mm-edit__label">分类</span>
+                <select
+                  v-model="form.categoryId"
+                  aria-label="分类"
+                  @input="fieldErrors.categoryId = ''"
+                  :aria-invalid="!!fieldErrors.categoryId"
+                  :aria-describedby="
+                    fieldErrors.categoryId
+                      ? 'product-categoryId-error'
+                      : undefined
                   "
                 >
-                  清除位置
-                </button>
-              </p>
-            </div>
-            <fieldset class="mm-edit__fieldset">
-              <legend class="mm-edit__label">交付方式（可多选）</legend>
-              <label class="mm-edit__checkbox">
-                <input
-                  v-model="form.deliveryMethods"
-                  :aria-invalid="!!fieldErrors.deliveryMethods"
-                  aria-describedby="product-delivery-error"
-                  type="checkbox"
-                  value="EXPRESS"
-                />
-                快递
-              </label>
-              <label class="mm-edit__checkbox">
-                <input
-                  v-model="form.deliveryMethods"
-                  :aria-invalid="!!fieldErrors.deliveryMethods"
-                  aria-describedby="product-delivery-error"
-                  type="checkbox"
-                  value="MEETUP"
-                />
-                面交
-              </label>
-              <span
-                v-if="fieldErrors.deliveryMethods"
-                id="product-delivery-error"
-                class="mm-edit__field-error"
-                role="alert"
-                >{{ fieldErrors.deliveryMethods }}</span
-              >
-            </fieldset>
-            <label class="mm-edit__field">
-              <span class="mm-edit__label"
-                >快递运费（元，买家下单时一并结算；填 0 为免运费）</span
-              >
-              <input
-                v-model="form.freightYuan"
-                @input="fieldErrors.freightYuan = ''"
-                :aria-invalid="!!fieldErrors.freightYuan"
-                :aria-describedby="
-                  fieldErrors.freightYuan
-                    ? 'product-freightYuan-error'
-                    : undefined
-                "
-                type="text"
-                inputmode="decimal"
-                min="0"
-                step="0.01"
-                placeholder="如 8.00"
-              />
-              <span
-                v-if="fieldErrors.freightYuan"
-                id="product-freightYuan-error"
-                class="mm-edit__field-error"
-                role="alert"
-                >{{ fieldErrors.freightYuan }}</span
-              >
-            </label>
-            <fieldset class="mm-edit__fieldset">
-              <legend class="mm-edit__label">快递配送地区</legend>
-              <label class="mm-edit__checkbox"
-                ><input
-                  v-model="limitShipping"
-                  :aria-invalid="!!fieldErrors.shippingProvinces"
-                  aria-describedby="product-shipping-error"
-                  type="checkbox"
-                />仅配送到选定省份（不勾选表示全国）</label
-              >
-              <div v-if="limitShipping" class="mm-edit__province-list">
-                <label
-                  v-for="province in provinceOptions"
-                  :key="province"
-                  class="mm-edit__checkbox"
-                  ><input
-                    v-model="form.shippingProvinces"
-                    type="checkbox"
-                    :value="province"
-                  />{{ province }}</label
-                >
-              </div>
-              <p v-if="provinceError" class="mm-edit__field-error">
-                {{ provinceError }}
-              </p>
-              <p
-                v-if="fieldErrors.shippingProvinces"
-                id="product-shipping-error"
-                class="mm-edit__field-error"
-              >
-                {{ fieldErrors.shippingProvinces }}
-              </p>
-              <p v-if="limitShipping" class="mm-edit__hint">
-                请至少选一项。收货地区须填写省级名称，系统将在下单时核对是否支持配送。
-              </p>
-            </fieldset>
-            <label class="mm-edit__field">
-              <span class="mm-edit__label">退货承诺（选填）</span>
-              <textarea
-                v-model="form.returnPromise"
-                rows="2"
-                maxlength="200"
-                placeholder="如：签收后 48 小时内与描述不符可退货"
-              ></textarea>
-            </label>
-          </div>
-        </MmCard>
+                  <option value="" disabled>请选择分类</option>
+                  <option
+                    v-for="opt in categoryOptions"
+                    :key="opt.id"
+                    :value="String(opt.id)"
+                  >
+                    {{ opt.name }}
+                  </option>
+                </select>
 
-        <!-- New-listing photos remain private until the draft becomes a product. -->
-        <MmCard title="商品图片" class="mm-edit__section">
-          <template v-if="isEdit">
-            <p class="mm-edit__hint">
-              合计 1~9 张，单张 ≤5MB，仅支持 JPG / PNG，首图将作为封面；图片最多
-              1600 万像素，服务端会压缩最长边。
-            </p>
-            <ul v-if="product?.images.length" class="mm-edit__images">
-              <li
-                v-for="(img, i) in product.images"
-                :key="img.id"
-                class="mm-edit__image"
-              >
-                <ItemImage
-                  :src="img.path"
-                  :alt="`${form.title || '商品'} 图片 ${i + 1}`"
-                  loading="lazy"
-                />
-                <button
-                  type="button"
-                  class="mm-edit__image-delete"
-                  :disabled="imageLoading"
-                  @click="deleteImage(img.id)"
+                <span
+                  v-if="fieldErrors.categoryId"
+                  id="product-categoryId-error"
+                  class="mm-edit__field-error"
+                  role="alert"
+                  >{{ fieldErrors.categoryId }}</span
                 >
-                  删除
-                </button>
-              </li>
-            </ul>
-            <div class="mm-edit__upload">
-              <input
-                ref="fileInput"
-                type="file"
-                accept="image/jpeg,image/png"
-                multiple
-                @change="onFilesSelected"
-              />
+              </label>
+              <label class="mm-edit__field">
+                <span class="mm-edit__label">商品描述</span>
+                <textarea
+                  v-model="form.description"
+                  rows="5"
+                  placeholder="品牌、入手渠道、使用情况、出手原因……"
+                ></textarea>
+              </label>
+              <label class="mm-edit__field">
+                <span class="mm-edit__label">成色</span>
+                <select v-model="form.condition">
+                  <option
+                    v-for="(text, value) in CONDITION_TEXT"
+                    :key="value"
+                    :value="value"
+                  >
+                    {{ text }}
+                  </option>
+                </select>
+              </label>
+              <label class="mm-edit__field">
+                <span class="mm-edit__label"
+                  >缺陷说明（会向买家显著展示，请如实填写）</span
+                >
+                <textarea
+                  v-model="form.defects"
+                  rows="3"
+                  maxlength="500"
+                  placeholder="划痕、磕碰、功能异常等；无缺陷可留空"
+                ></textarea>
+              </label>
+            </div>
+          </MmCard>
+
+          <MmCard title="商品参数" class="mm-edit__section">
+            <ProductSpecifications
+              v-model="form.specifications"
+              :category-id="form.categoryId"
+              editable
+            />
+            <p v-if="!form.categoryId" class="mm-muted">
+              选择分类后，会显示适合这类商品的参数。
+            </p>
+          </MmCard>
+          <MmCard title="价格与库存" class="mm-edit__section">
+            <div class="mm-edit__fields mm-edit__fields--row">
+              <label class="mm-edit__field">
+                <span class="mm-edit__label">价格（元）</span>
+                <input
+                  v-model="form.priceYuan"
+                  @input="fieldErrors.priceYuan = ''"
+                  :aria-invalid="!!fieldErrors.priceYuan"
+                  :aria-describedby="
+                    fieldErrors.priceYuan
+                      ? 'product-priceYuan-error'
+                      : undefined
+                  "
+                  type="text"
+                  inputmode="decimal"
+                  min="0.01"
+                  step="0.01"
+                  placeholder="如 25.00"
+                />
+                <span
+                  v-if="fieldErrors.priceYuan"
+                  id="product-priceYuan-error"
+                  class="mm-edit__field-error"
+                  role="alert"
+                  >{{ fieldErrors.priceYuan }}</span
+                >
+              </label>
+              <label v-if="!isEdit" class="mm-edit__field">
+                <span class="mm-edit__label">库存</span>
+                <input
+                  v-model="form.stock"
+                  @input="fieldErrors.stock = ''"
+                  :aria-invalid="!!fieldErrors.stock"
+                  :aria-describedby="
+                    fieldErrors.stock ? 'product-stock-error' : undefined
+                  "
+                  type="text"
+                  inputmode="decimal"
+                  min="0"
+                  step="1"
+                />
+                <span
+                  v-if="fieldErrors.stock"
+                  id="product-stock-error"
+                  class="mm-edit__field-error"
+                  role="alert"
+                  >{{ fieldErrors.stock }}</span
+                >
+              </label>
+              <label class="mm-edit__field">
+                <span class="mm-edit__label">所在地区</span>
+                <input
+                  v-model="form.region"
+                  @input="fieldErrors.region = ''"
+                  :aria-invalid="!!fieldErrors.region"
+                  :aria-describedby="
+                    fieldErrors.region ? 'product-region-error' : undefined
+                  "
+                  type="text"
+                  maxlength="100"
+                  placeholder="如：成都市 武侯区"
+                />
+                <span
+                  v-if="fieldErrors.region"
+                  id="product-region-error"
+                  class="mm-edit__field-error"
+                  role="alert"
+                  >{{ fieldErrors.region }}</span
+                >
+              </label>
+            </div>
+          </MmCard>
+
+          <MmCard title="交付与售后" class="mm-edit__section">
+            <div class="mm-edit__fields">
+              <div class="mm-stack">
+                <strong>公开交接区域（选填）</strong>
+                <p class="mm-edit__hint">
+                  用于附近商品排序。请选择公共场所，不要标记私人住址；地图距离不用于计算快递运费。
+                </p>
+                <MapPicker
+                  :key="mapResetKey"
+                  :initial-latitude="form.latitude"
+                  :initial-longitude="form.longitude"
+                  @select="setPublicLocation"
+                />
+                <p
+                  v-if="form.latitude !== null && form.longitude !== null"
+                  class="mm-edit__hint"
+                >
+                  已选择公开位置（GCJ-02）：{{ form.latitude.toFixed(5) }}，{{
+                    form.longitude.toFixed(5)
+                  }}
+                  <button
+                    type="button"
+                    @click="
+                      form.latitude = null;
+                      form.longitude = null;
+                    "
+                  >
+                    清除位置
+                  </button>
+                </p>
+              </div>
+              <fieldset class="mm-edit__fieldset">
+                <legend class="mm-edit__label">交付方式（可多选）</legend>
+                <label class="mm-edit__checkbox">
+                  <input
+                    v-model="form.deliveryMethods"
+                    :aria-invalid="!!fieldErrors.deliveryMethods"
+                    aria-describedby="product-delivery-error"
+                    type="checkbox"
+                    value="EXPRESS"
+                  />
+                  快递
+                </label>
+                <label class="mm-edit__checkbox">
+                  <input
+                    v-model="form.deliveryMethods"
+                    :aria-invalid="!!fieldErrors.deliveryMethods"
+                    aria-describedby="product-delivery-error"
+                    type="checkbox"
+                    value="MEETUP"
+                  />
+                  面交
+                </label>
+                <span
+                  v-if="fieldErrors.deliveryMethods"
+                  id="product-delivery-error"
+                  class="mm-edit__field-error"
+                  role="alert"
+                  >{{ fieldErrors.deliveryMethods }}</span
+                >
+              </fieldset>
+              <label class="mm-edit__field">
+                <span class="mm-edit__label"
+                  >快递运费（元，买家下单时一并结算；填 0 为免运费）</span
+                >
+                <input
+                  v-model="form.freightYuan"
+                  @input="fieldErrors.freightYuan = ''"
+                  :aria-invalid="!!fieldErrors.freightYuan"
+                  :aria-describedby="
+                    fieldErrors.freightYuan
+                      ? 'product-freightYuan-error'
+                      : undefined
+                  "
+                  type="text"
+                  inputmode="decimal"
+                  min="0"
+                  step="0.01"
+                  placeholder="如 8.00"
+                />
+                <span
+                  v-if="fieldErrors.freightYuan"
+                  id="product-freightYuan-error"
+                  class="mm-edit__field-error"
+                  role="alert"
+                  >{{ fieldErrors.freightYuan }}</span
+                >
+              </label>
+              <fieldset class="mm-edit__fieldset">
+                <legend class="mm-edit__label">快递配送地区</legend>
+                <label class="mm-edit__checkbox"
+                  ><input
+                    v-model="limitShipping"
+                    :aria-invalid="!!fieldErrors.shippingProvinces"
+                    aria-describedby="product-shipping-error"
+                    type="checkbox"
+                  />仅配送到选定省份（不勾选表示全国）</label
+                >
+                <div v-if="limitShipping" class="mm-edit__province-list">
+                  <label
+                    v-for="province in provinceOptions"
+                    :key="province"
+                    class="mm-edit__checkbox"
+                    ><input
+                      v-model="form.shippingProvinces"
+                      type="checkbox"
+                      :value="province"
+                    />{{ province }}</label
+                  >
+                </div>
+                <p v-if="provinceError" class="mm-edit__field-error">
+                  {{ provinceError }}
+                </p>
+                <p
+                  v-if="fieldErrors.shippingProvinces"
+                  id="product-shipping-error"
+                  class="mm-edit__field-error"
+                >
+                  {{ fieldErrors.shippingProvinces }}
+                </p>
+                <p v-if="limitShipping" class="mm-edit__hint">
+                  请至少选一项。收货地区须填写省级名称，系统将在下单时核对是否支持配送。
+                </p>
+              </fieldset>
+              <label class="mm-edit__field">
+                <span class="mm-edit__label">退货承诺（选填）</span>
+                <textarea
+                  v-model="form.returnPromise"
+                  rows="2"
+                  maxlength="200"
+                  placeholder="如：签收后 48 小时内与描述不符可退货"
+                ></textarea>
+              </label>
+            </div>
+          </MmCard>
+
+          <!-- New-listing photos remain private until the draft becomes a product. -->
+          <MmCard title="商品图片" class="mm-edit__section">
+            <template v-if="isEdit">
+              <p class="mm-edit__hint">
+                合计 1~9 张，单张 ≤5MB，仅支持 JPG /
+                PNG，首图将作为封面；图片最多 1600 万像素，服务端会压缩最长边。
+              </p>
+              <ul v-if="product?.images.length" class="mm-edit__images">
+                <li
+                  v-for="(img, i) in product.images"
+                  :key="img.id"
+                  class="mm-edit__image"
+                >
+                  <ItemImage
+                    :src="img.path"
+                    :alt="`${form.title || '商品'} 图片 ${i + 1}`"
+                    loading="lazy"
+                  />
+                  <button
+                    type="button"
+                    class="mm-edit__image-delete"
+                    :disabled="imageLoading"
+                    @click="deleteImage(img.id)"
+                  >
+                    删除
+                  </button>
+                </li>
+              </ul>
+              <div class="mm-edit__upload">
+                <input
+                  ref="fileInput"
+                  type="file"
+                  accept="image/jpeg,image/png"
+                  multiple
+                  @change="onFilesSelected"
+                />
+                <MmButton
+                  variant="ghost"
+                  :loading="imageLoading"
+                  :disabled="!pendingFiles.length"
+                  @click="uploadImages"
+                >
+                  上传所选图片
+                </MmButton>
+              </div>
+              <p v-if="imageError" class="mm-edit__field-error" role="alert">
+                {{ imageError }}
+              </p>
+            </template>
+            <DraftPhotos
+              v-else
+              v-model="draftImageIds"
+              @busy="draftPhotoUploading = $event"
+            />
+          </MmCard>
+
+          <!-- 库存调整：编辑模式独立入口 -->
+          <MmCard
+            v-if="isEdit && product"
+            title="库存调整"
+            class="mm-edit__section"
+          >
+            <p class="mm-edit__hint">
+              当前可售
+              {{ product.stockAvailable }} 件。增减库存不会触发重新审核。
+            </p>
+            <div class="mm-edit__stock-row">
+              <label class="mm-edit__field">
+                <span class="mm-edit__label"
+                  >调整量（正数增加 / 负数减少）</span
+                >
+                <input
+                  v-model.number="stockDelta"
+                  type="number"
+                  step="1"
+                  placeholder="如 2 或 -1"
+                />
+              </label>
               <MmButton
                 variant="ghost"
-                :loading="imageLoading"
-                :disabled="!pendingFiles.length"
-                @click="uploadImages"
+                :loading="stockLoading"
+                @click="adjustStock"
+                >调整库存</MmButton
               >
-                上传所选图片
-              </MmButton>
             </div>
-            <p v-if="imageError" class="mm-edit__field-error" role="alert">
-              {{ imageError }}
+            <p v-if="stockMessage" class="mm-edit__ok" role="status">
+              {{ stockMessage }}
             </p>
-          </template>
-          <DraftPhotos
-            v-else
-            v-model="draftImageIds"
-            @busy="draftPhotoUploading = $event"
-          />
-        </MmCard>
+            <p v-if="stockError" class="mm-edit__field-error" role="alert">
+              {{ stockError }}
+            </p>
+          </MmCard>
 
-        <!-- 库存调整：编辑模式独立入口 -->
-        <MmCard
-          v-if="isEdit && product"
-          title="库存调整"
-          class="mm-edit__section"
-        >
-          <p class="mm-edit__hint">
-            当前可售 {{ product.stockAvailable }} 件。增减库存不会触发重新审核。
+          <p v-if="saveError" class="mm-edit__field-error" role="alert">
+            {{ saveError }}
           </p>
-          <div class="mm-edit__stock-row">
-            <label class="mm-edit__field">
-              <span class="mm-edit__label">调整量（正数增加 / 负数减少）</span>
-              <input
-                v-model.number="stockDelta"
-                type="number"
-                step="1"
-                placeholder="如 2 或 -1"
-              />
-            </label>
+          <p v-if="saveMessage" class="mm-edit__ok" role="status">
+            {{ saveMessage }}
+          </p>
+          <div class="mm-edit__actions">
+            <template v-if="!isEdit">
+              <MmButton
+                variant="ghost"
+                :loading="savingDraft"
+                @click="save(false)"
+                >保存草稿</MmButton
+              >
+              <p class="mm-edit__hint">
+                保存草稿并上传实拍图片后，即可提交审核。
+              </p>
+            </template>
+            <template v-else>
+              <MmButton
+                variant="ghost"
+                :loading="savingDraft"
+                @click="save(false)"
+                >保存修改</MmButton
+              >
+              <MmButton
+                v-if="
+                  product &&
+                  (product.status === 'DRAFT' || product.status === 'REJECTED')
+                "
+                :loading="savingSubmit"
+                @click="saveAndSubmit"
+              >
+                保存并提交审核
+              </MmButton>
+            </template>
             <MmButton
               variant="ghost"
-              :loading="stockLoading"
-              @click="adjustStock"
-              >调整库存</MmButton
+              @click="router.push(previousListPath('/seller/products'))"
+              >返回我的商品</MmButton
             >
           </div>
-          <p v-if="stockMessage" class="mm-edit__ok" role="status">
-            {{ stockMessage }}
-          </p>
-          <p v-if="stockError" class="mm-edit__field-error" role="alert">
-            {{ stockError }}
-          </p>
-        </MmCard>
-
-        <p v-if="saveError" class="mm-edit__field-error" role="alert">
-          {{ saveError }}
-        </p>
-        <p v-if="saveMessage" class="mm-edit__ok" role="status">
-          {{ saveMessage }}
-        </p>
-        <div class="mm-edit__actions">
-          <template v-if="!isEdit">
+          <GovernanceNotice />
+        </form>
+        <aside class="mm-edit__aside" aria-label="发布帮助与草稿状态">
+          <div class="mm-edit__draft-strip">
+            <div>
+              <strong>未完成内容自动保留</strong>
+              <p>本机自动保留，云端同步后可换设备继续填写。</p>
+              <p
+                v-if="draftNotice"
+                :class="{ 'mm-edit__field-error': draftFailure }"
+                role="status"
+              >
+                {{ draftNotice }}
+              </p>
+            </div>
             <MmButton
+              v-if="!isEdit"
               variant="ghost"
-              :loading="savingDraft"
-              @click="save(false)"
-              >保存草稿</MmButton
+              :disabled="savingDraft || savingSubmit"
+              @click="clearForm"
+              >一键清空</MmButton
             >
-            <p class="mm-edit__hint">
-              保存草稿并上传实拍图片后，即可提交审核。
-            </p>
-          </template>
-          <template v-else>
+          </div>
+          <section class="mm-panel mm-stack" aria-label="云端草稿状态">
+            <p role="status">{{ cloud.status.value }}</p>
+            <div v-if="cloud.conflict.value" class="mm-stack">
+              <p>
+                云端更新时间：{{
+                  cloud.conflict.value.updatedAt
+                    ? new Date(cloud.conflict.value.updatedAt).toLocaleString()
+                    : '暂无'
+                }}
+              </p>
+              <details>
+                <summary>预览云端内容</summary>
+                <p>{{ cloudPreview?.form?.title || '未填标题' }}</p>
+                <p>{{ cloudPreview?.form?.description || '未填描述' }}</p>
+              </details>
+              <MmButton variant="ghost" @click="cloud.choose(true)"
+                >采用云端版本</MmButton
+              >
+              <MmButton @click="cloud.choose(false)"
+                >用本机内容更新云端</MmButton
+              >
+            </div>
             <MmButton
+              v-else
               variant="ghost"
-              :loading="savingDraft"
-              @click="save(false)"
-              >保存修改</MmButton
-            >
-            <MmButton
-              v-if="
-                product &&
-                (product.status === 'DRAFT' || product.status === 'REJECTED')
+              :disabled="cloud.busy.value"
+              @click="
+                cloud.ready.value
+                  ? cloud.flush()
+                  : cloud.initialize(hasLocalDraft())
               "
-              :loading="savingSubmit"
-              @click="saveAndSubmit"
+              >立即同步 / 重试</MmButton
             >
-              保存并提交审核
-            </MmButton>
-          </template>
-          <MmButton
-            variant="ghost"
-            @click="router.push(previousListPath('/seller/products'))"
-            >返回我的商品</MmButton
-          >
-        </div>
-        <GovernanceNotice />
-      </form>
+            <p v-if="createdProductId" class="mm-muted">
+              商品草稿已建立；如图片保存失败，重试会继续保存到同一商品。
+            </p>
+          </section>
+          <WorkflowAssistant
+            stage="LISTING"
+            :resource-id="productId ?? undefined"
+            :draft="[form.title, form.description].filter(Boolean).join('；')"
+            title="从选一件闲置开始，麦仔陪你整理"
+          />
+          <JourneyGuide
+            title="内容不用一次填完，按这三步就好"
+            :steps="[
+              {
+                title: '整理真实信息',
+                body: '先写物品和实际使用情况。未填写的型号、品牌不用猜；描述和价格可以继续修改。',
+              },
+              {
+                title: '保存草稿与实拍',
+                body: '填写内容会自动保留。保存成商品后，可检查照片、库存、交付方式与运费，草稿对其他买家不可见。',
+              },
+              {
+                title: '主动提交审核',
+                body: '核对完成后点击提交审核，通过后才会上架。审核意见会保留在商品管理中。',
+                to: '/seller/products',
+                action: '查看我的商品',
+              },
+            ]"
+          />
+        </aside>
+      </div>
       <ProductRevisions
         v-if="productId"
         :key="productId"
@@ -1324,11 +1361,58 @@ watch(
   border-radius: 10px;
 }
 .mm-edit {
-  max-width: 760px;
+  max-width: 1240px;
   margin: 0 auto;
   padding: var(--mm-space-4) var(--mm-space-4) var(--mm-space-6);
 }
 
+.mm-edit__page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 12px 0 24px;
+}
+.mm-edit__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 296px;
+  gap: 24px;
+  align-items: start;
+}
+.mm-edit__save-group {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+  max-width: min(100%, 360px);
+}
+.mm-edit__save-group p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.mm-edit__form {
+  min-width: 0;
+}
+.mm-edit__aside {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.mm-edit__aside .mm-edit__draft-strip {
+  flex-direction: column;
+  align-items: stretch;
+  padding: 18px;
+}
+.mm-edit__aside .mm-panel {
+  padding: 18px;
+}
+@media (max-width: 960px) {
+  .mm-edit__layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 .mm-edit__heading {
   font-size: var(--mm-font-xl);
   margin-bottom: var(--mm-space-4);

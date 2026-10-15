@@ -58,6 +58,24 @@
                 : '暂时无货'
             }}</span>
           </div>
+          <section class="mm-detail__contact" aria-label="卖家与商品沟通">
+            <div class="mm-detail__contact-heading">
+              <RouterLink :to="`/sellers/${product.seller.id}`">
+                <UserAvatar
+                  :src="product.seller.avatarUrl"
+                  :nickname="product.seller.nickname"
+                  :size="32"
+                />
+                <span>{{ product.seller.nickname }}</span>
+              </RouterLink>
+              <span>{{ isOwner ? '你的商品' : '购买前，先确认物品细节' }}</span>
+            </div>
+            <ProductSocialActions
+              :key="product.id"
+              :product-id="product.id"
+              :seller-id="product.seller.id"
+            />
+          </section>
           <div v-if="product.supplyNote" class="mm-detail__supply">
             <h2>货源与库存</h2>
             <p>{{ product.supplyNote }}</p>
@@ -255,13 +273,6 @@
             :to="`/sellers/${product.seller.id}`"
             >查看卖家主页</RouterLink
           >
-          <div class="mm-seller__social">
-            <ProductSocialActions
-              :key="product.id"
-              :product-id="product.id"
-              :seller-id="product.seller.id"
-            />
-          </div>
         </aside>
       </div>
       <WorkflowAssistant
@@ -561,6 +572,63 @@ async function submitBargain() {
 </script>
 
 <style scoped>
+.mm-detail__contact {
+  margin: 18px 0;
+  padding: 16px;
+  border: 1px solid var(--mm-zone-border);
+  background: var(--mm-canvas);
+  border-radius: 12px;
+}
+.mm-detail__contact-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.mm-detail__contact-heading a {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--mm-ink);
+}
+.mm-detail__contact-heading > span {
+  font-size: 12px;
+  color: var(--mm-muted);
+}
+.mm-detail__contact :deep(.mm-actions) {
+  gap: 9px;
+}
+.mm-detail__contact :deep(.mm-actions > .mm-button) {
+  min-height: 44px;
+  font-size: 14px;
+}
+.mm-detail__contact :deep(.product-contact-button) {
+  color: var(--mm-primary);
+  border-color: var(--mm-primary);
+  background: white;
+}
+.mm-detail__contact :deep(.mm-actions > div) {
+  margin-left: auto;
+}
+.mm-detail__contact :deep(.mm-actions > div:has(form)) {
+  flex-basis: 100%;
+}
+.mm-detail__contact :deep(.mm-actions > div > .mm-button) {
+  background: transparent;
+  border-color: transparent;
+  color: var(--mm-muted);
+  font-size: 14px;
+  font-weight: 500;
+}
+.mm-detail__contact :deep(form) {
+  width: 100%;
+  max-width: none;
+  margin-top: 12px;
+}
 .mm-detail__supply {
   padding: 16px 18px;
   border: 1px solid var(--mm-border);
@@ -887,14 +955,6 @@ async function submitBargain() {
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 4px;
-}
-.mm-seller__social {
-  border-top: 1px solid var(--mm-border);
-  margin-top: 20px;
-  padding-top: 12px;
-}
-.mm-seller__social :deep(.social-actions) {
-  margin-top: 0;
 }
 .mm-detail__recovery {
   display: flex;

@@ -51,17 +51,19 @@ onMounted(load);
         :nickname="auth.me?.nickname ?? ''"
         :size="60"
       />
-      <div>
+      <div class="seller-home__intro">
         <p class="mm-eyebrow">我的闲置小店</p>
         <h1>{{ auth.me?.nickname }}的工作台</h1>
         <p class="mm-muted">商品、交易和售后，在这里有序处理。</p>
       </div>
-      <RouterLink
-        v-if="auth.isSeller"
-        :to="`/sellers/${auth.me?.id}`"
-        class="mm-text-link"
-        >查看我的店铺 →</RouterLink
-      >
+      <div v-if="auth.isSeller" class="seller-home__actions">
+        <RouterLink :to="`/sellers/${auth.me?.id}`" class="seller-home__store"
+          >查看店铺</RouterLink
+        >
+        <RouterLink to="/publish" class="seller-home__publish"
+          >＋ 发布闲置</RouterLink
+        >
+      </div>
     </header>
     <div v-if="!auth.isSeller" class="mm-panel mm-stack">
       <h2>把自己的闲置分享出去</h2>
@@ -95,9 +97,53 @@ onMounted(load);
           ><small>查看商品 →</small></RouterLink
         >
       </div>
-      <SellerTaskList />
+      <div class="seller-home__columns">
+        <section class="mm-panel mm-stack seller-home__catalog">
+          <header class="seller-home__section-heading">
+            <div>
+              <p class="mm-eyebrow">我的商品</p>
+              <h2>最近发布</h2>
+            </div>
+            <RouterLink to="/seller/products" class="seller-home__manage"
+              >管理全部商品 →</RouterLink
+            >
+          </header>
+          <p v-if="!loading && !error && !recent.length" class="mm-muted">
+            还没有商品，整理一下闲置，开始发布吧。
+          </p>
+          <RouterLink
+            v-if="!loading && !error && !recent.length"
+            to="/publish"
+            class="seller-home__publish"
+            >发布第一件闲置</RouterLink
+          >
+          <RouterLink
+            v-for="p in recent"
+            :key="p.id"
+            :to="`/publish/${p.id}`"
+            class="seller-home__product"
+            ><ItemImage :src="p.coverImage" :alt="p.title" size="thumb" /><span
+              ><strong>{{ p.title }}</strong
+              ><small
+                >{{ PRODUCT_STATUS_TEXT[p.status] }} · 可售
+                {{ p.stockAvailable }} 件</small
+              ></span
+            ><span>编辑 →</span></RouterLink
+          >
+        </section>
+        <aside class="seller-home__service">
+          <SellerTaskList />
+          <section class="seller-home__reminder">
+            <h2>发布前检查一下</h2>
+            <p>成色、瑕疵和配件写清楚，库存数量与手头物品保持一致。</p>
+            <p class="mm-muted">
+              体验商品的供给和成交记录保留来源说明，支付资格以渠道实际开通情况为准。
+            </p>
+          </section>
+        </aside>
+      </div>
       <JourneyGuide
-        title="从第一件闲置到完成交付"
+        title="卖家使用指南：从发布到完成交付"
         :steps="[
           {
             title: '先保存，再上架',
@@ -119,38 +165,6 @@ onMounted(load);
           },
         ]"
       />
-      <div class="seller-home__columns">
-        <section class="mm-panel mm-stack">
-          <h2>最近发布</h2>
-          <p v-if="!loading && !error && !recent.length" class="mm-muted">
-            还没有商品，整理一下闲置，开始发布吧。
-          </p>
-          <RouterLink
-            v-for="p in recent"
-            :key="p.id"
-            :to="`/publish/${p.id}`"
-            class="seller-home__product"
-            ><ItemImage :src="p.coverImage" :alt="p.title" size="thumb" /><span
-              ><strong>{{ p.title }}</strong
-              ><small
-                >{{ PRODUCT_STATUS_TEXT[p.status] }} · 可售
-                {{ p.stockAvailable }} 件</small
-              ></span
-            ><span>编辑 →</span></RouterLink
-          >
-        </section>
-        <aside class="mm-panel mm-stack">
-          <h2>经营提醒</h2>
-          <p>发布前检查成色、瑕疵和配件，商品数量请与手头库存保持一致。</p>
-          <RouterLink to="/seller/orders">查看订单与交付 →</RouterLink
-          ><RouterLink to="/seller/aftersales">查看售后申请 →</RouterLink
-          ><RouterLink to="/messages">回复买家私信 →</RouterLink>
-          <hr />
-          <p class="mm-muted">
-            体验商品的供给和成交记录会标注来源；支付渠道资格以实际开通情况为准。
-          </p>
-        </aside>
-      </div>
     </template>
   </section>
 </template>
@@ -164,15 +178,48 @@ onMounted(load);
   align-items: center;
   gap: 16px;
 }
-.seller-home__heading > div {
+.seller-home__intro {
   flex: 1;
   min-width: 0;
 }
 .seller-home__heading h1 {
   overflow-wrap: anywhere;
 }
-.seller-home__heading > a {
-  margin-left: auto;
+.seller-home__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.seller-home__publish,
+.seller-home__store {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 46px;
+  padding: 10px 17px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 650;
+  text-decoration: none;
+}
+.seller-home__publish {
+  background: var(--mm-primary);
+  color: white;
+  border: 1px solid var(--mm-primary);
+}
+.seller-home__publish:hover {
+  background: var(--mm-primary-hover);
+  border-color: var(--mm-primary-hover);
+}
+.seller-home__store {
+  background: white;
+  border: 1px solid var(--mm-zone-border);
+  color: var(--mm-ink);
+}
+.seller-home__store:hover {
+  border-color: var(--mm-primary);
+  background: var(--mm-zone-soft);
 }
 h1 {
   font-size: 26px;
@@ -205,8 +252,65 @@ h2 {
 }
 .seller-home__columns {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(240px, 1fr);
+  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 1fr);
   gap: 22px;
+  align-items: start;
+}
+.seller-home__section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--mm-border);
+}
+.seller-home__section-heading h2 {
+  margin-top: 5px;
+}
+.seller-home__manage {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mm-primary);
+}
+.seller-home__catalog > .seller-home__publish {
+  align-self: flex-start;
+}
+.seller-home__service {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+.seller-home__service :deep(.task-counts) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 10px 0;
+  gap: 8px;
+}
+.seller-home__service :deep(.task-counts a) {
+  padding: 12px;
+  border: 1px solid var(--mm-border);
+}
+.seller-home__service :deep(.seller-tasks header) {
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.seller-home__service :deep(.seller-tasks header > div) {
+  flex: 1 1 160px;
+}
+.seller-home__reminder {
+  display: grid;
+  gap: 10px;
+  padding: 20px;
+  border: 1px solid var(--mm-zone-border);
+  border-radius: 12px;
+  background: var(--mm-zone-soft);
+}
+.seller-home__reminder p {
+  font-size: 13px;
+  line-height: 1.8;
 }
 .seller-home__product {
   display: flex;
@@ -236,15 +340,32 @@ h2 {
   font-size: 12px;
   color: var(--mm-primary);
 }
+@media (max-width: 980px) {
+  .seller-home__columns {
+    grid-template-columns: 1fr;
+  }
+  .seller-home__heading {
+    flex-wrap: wrap;
+  }
+  .seller-home__actions {
+    margin-left: 76px;
+  }
+  .seller-home__service :deep(.task-counts) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
 @media (max-width: 760px) {
   .seller-home__heading {
     display: grid;
     grid-template-columns: 60px minmax(0, 1fr);
     align-items: start;
   }
-  .seller-home__heading > a {
-    grid-column: 2;
+  .seller-home__actions {
+    grid-column: 1/-1;
     margin-left: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
   }
   .seller-home__columns {
     grid-template-columns: minmax(0, 1fr);
@@ -258,6 +379,30 @@ h2 {
   }
   h1 {
     font-size: 21px;
+  }
+}
+@media (max-width: 550px) {
+  .seller-home__service :deep(.task-counts) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .seller-home__stats {
+    grid-template-columns: 1fr;
+  }
+  .seller-home__stats > a {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 2px 12px;
+    padding: 12px 16px;
+    border-top-width: 1px;
+    border-left: 3px solid var(--mm-primary);
+  }
+  .seller-home__stats strong {
+    grid-column: 2;
+    grid-row: 1/3;
+    font-size: 27px;
+    align-self: center;
+  }
+  .seller-home__stats small {
+    grid-column: 1;
   }
 }
 </style>

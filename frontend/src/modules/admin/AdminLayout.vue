@@ -157,12 +157,16 @@ const navGroups = computed(() =>
 .mm-admin__navigation {
   position: sticky;
   top: 24px;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - 48px);
   border: 1px solid var(--mm-zone-border);
   background: white;
   border-radius: 10px;
   overflow: hidden;
 }
 .mm-admin__heading {
+  flex-shrink: 0;
   display: grid;
   gap: 10px;
   padding: 20px;
@@ -185,8 +189,12 @@ const navGroups = computed(() =>
 }
 .mm-admin__nav {
   display: grid;
-  gap: 18px;
-  padding: 20px 12px;
+  gap: 12px;
+  padding: 16px 12px;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
 }
 .mm-admin__group > p {
   font-size: 11px;
@@ -199,6 +207,7 @@ const navGroups = computed(() =>
 }
 .mm-admin__link {
   display: block;
+  min-height: 44px;
   font-size: 13px;
   padding: 10px 12px;
   border-radius: 5px;
@@ -212,6 +221,7 @@ const navGroups = computed(() =>
   background: #354b60;
   color: white;
   font-weight: 700;
+  box-shadow: inset 3px 0 0 #b8cbdc;
 }
 .mm-admin__main {
   min-width: 0;
@@ -231,6 +241,7 @@ const navGroups = computed(() =>
   }
   .mm-admin__navigation {
     position: static;
+    max-height: none;
   }
   .mm-admin__heading {
     display: flex;
@@ -252,6 +263,7 @@ const navGroups = computed(() =>
   .mm-admin__nav.is-open {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-height: 60dvh;
   }
 }
 </style>

@@ -30,10 +30,15 @@ async function load() {
       { page: page.value, size: 15 },
     );
     items.value = r.items;
-    const target=String(route.query.replyId ?? '');
-    if (/^\d+$/.test(target) && !r.items.some(item=>item.id===Number(target))) {
-      const linked=await get<DemandReply>(`/community/demands/${props.demandId}/replies/${target}`);
-      items.value=[linked,...r.items];
+    const target = String(route.query.replyId ?? '');
+    if (
+      /^\d+$/.test(target) &&
+      !r.items.some((item) => item.id === Number(target))
+    ) {
+      const linked = await get<DemandReply>(
+        `/community/demands/${props.demandId}/replies/${target}`,
+      );
+      items.value = [linked, ...r.items];
     }
     pages.value = r.totalPages;
     if (auth.me) {
@@ -47,7 +52,12 @@ async function load() {
           !items.value.some((p) => p.id === i.id),
       );
     }
-    if (target) { await nextTick(); document.getElementById(`demand-reply-${target}`)?.scrollIntoView({block:'center'}); }
+    if (target) {
+      await nextTick();
+      document
+        .getElementById(`demand-reply-${target}`)
+        ?.scrollIntoView({ block: 'center' });
+    }
   } catch (e) {
     error.value = (e as ApiError).message;
   }
@@ -93,10 +103,18 @@ async function remove(id: number) {
 onMounted(load);
 </script>
 <template>
-  <section class="mm-stack">
-    <h3>回复</h3>
+  <section class="mm-stack demand-replies">
+    <header class="demand-replies__heading">
+      <h3>交流与回复</h3>
+      <p>补充物品情况，或向发布者确认具体要求。</p>
+    </header>
     <p v-if="error" class="mm-error" role="alert">{{ error }}</p>
-    <article v-for="r in [...items, ...mine]" :key="r.id" :id="`demand-reply-${r.id}`" class="mm-panel">
+    <article
+      v-for="r in [...items, ...mine]"
+      :key="r.id"
+      :id="`demand-reply-${r.id}`"
+      class="demand-replies__item"
+    >
       <div class="demand-reply-author">
         <UserAvatar
           :src="r.authorAvatarUrl"
@@ -128,7 +146,12 @@ onMounted(load);
           >删除</MmButton
         >
       </div>
-      <ReportButton v-else resource-type="DEMAND_REPLY" :resource-id="r.id" />
+      <ReportButton
+        v-else
+        class="demand-replies__report"
+        resource-type="DEMAND_REPLY"
+        :resource-id="r.id"
+      />
     </article>
     <MmPagination
       :page="page"
@@ -138,7 +161,11 @@ onMounted(load);
         load();
       "
     />
-    <form v-if="auth.me && !closed" class="mm-form" @submit.prevent="submit">
+    <form
+      v-if="auth.me && !closed"
+      class="mm-form demand-replies__compose"
+      @submit.prevent="submit"
+    >
       <label
         >{{ editing ? '编辑回复' : '我能提供'
         }}<textarea
@@ -161,25 +188,79 @@ onMounted(load);
         >
       </div>
       <p v-if="hint" class="mm-muted" role="status">{{ hint }}</p>
-    <GovernanceNotice /></form>
+      <GovernanceNotice />
+    </form>
     <RouterLink v-else-if="!auth.me" to="/login">登录后回复</RouterLink>
   </section>
 </template>
 
 <style scoped>
+.demand-replies {
+  padding-top: 20px;
+  border-top: 1px solid var(--mm-border);
+  gap: 0;
+}
+.demand-replies__heading {
+  margin-bottom: 12px;
+}
+.demand-replies__heading h3 {
+  font-size: 17px;
+}
+.demand-replies__heading p {
+  margin-top: 4px;
+  color: var(--mm-muted);
+  font-size: 13px;
+}
+.demand-replies__item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--mm-border);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
 .demand-reply-author {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 12px;
   font-size: 14px;
   font-weight: 650;
 }
-article {
-  border-left: 3px solid var(--mm-border);
-  background: var(--mm-canvas);
-}
-article > p {
+.demand-replies__item > p {
   line-height: 1.85;
+  font-size: 14px;
+}
+.demand-replies__report {
+  align-self: stretch;
+}
+.demand-replies__report :deep(> .mm-button) {
+  border-color: transparent;
+  background: transparent;
+  color: var(--mm-muted);
+  font-weight: 500;
+  padding-inline: 8px;
+}
+.demand-replies__report :deep(form) {
+  max-width: none;
+  width: 100%;
+}
+.demand-replies__compose {
+  width: 100%;
+  max-width: none;
+  padding: 20px;
+  margin-top: 20px;
+  background: var(--mm-canvas);
+  border-radius: 12px;
+  border: 1px solid var(--mm-border);
+}
+.demand-replies__compose textarea {
+  min-height: 110px;
+}
+@media (max-width: 760px) {
+  .demand-replies__compose {
+    padding: 14px;
+  }
 }
 </style>

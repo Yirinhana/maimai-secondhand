@@ -40,18 +40,23 @@ const links = computed(() =>
 <style scoped>
 .mm-work-nav {
   border-bottom: 1px solid var(--mm-border);
-  background: #fffdf9;
+  background: var(--mm-surface-inset);
 }
 .mm-work-nav__inner {
   max-width: 1280px;
   margin: auto;
-  padding: 16px 28px 0;
+  padding: 12px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
 }
 .mm-work-nav__heading {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: 10px;
+  margin-bottom: 0;
+  flex-shrink: 0;
 }
 .mm-work-nav__heading > span {
   display: flex;
@@ -71,13 +76,14 @@ const links = computed(() =>
 }
 nav {
   display: flex;
-  gap: 22px;
+  gap: 6px;
   overflow-x: auto;
 }
 nav a {
   flex: none;
-  padding: 10px 2px 13px;
-  font-size: 13px;
+  padding: 10px 14px;
+  font-size: 14px;
+  border-radius: 8px;
   color: var(--mm-muted);
   border-bottom: 2px solid transparent;
 }
@@ -86,16 +92,21 @@ nav a:hover {
   text-decoration: none;
 }
 nav a.is-active {
-  color: var(--mm-primary);
-  border-color: var(--mm-primary);
+  color: white;
+  background: var(--mm-primary);
+  border-color: transparent;
   font-weight: 700;
 }
-@media (max-width: 760px) {
+@media (max-width: 1050px) {
   .mm-work-nav__inner {
-    padding: 12px 16px 0;
+    padding: 12px 16px;
+    display: grid;
+    gap: 8px;
+    min-width: 0;
   }
   nav {
-    gap: 18px;
+    gap: 6px;
+    min-width: 0;
   }
 }
 </style>

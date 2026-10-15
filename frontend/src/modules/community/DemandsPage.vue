@@ -75,7 +75,7 @@ async function load() {
     loading.value = false;
   }
 }
-function edit(item?: Demand) {
+async function edit(item?: Demand) {
   editId.value = item?.id ?? null;
   form.value = item
     ? {
@@ -94,6 +94,11 @@ function edit(item?: Demand) {
   });
   error.value = '';
   showForm.value = true;
+  await nextTick();
+  formElement.value?.scrollIntoView({ block: 'start' });
+  formElement.value
+    ?.querySelector<HTMLInputElement>('input')
+    ?.focus({ preventScroll: true });
 }
 async function submit() {
   if (busy.value) return;
@@ -197,19 +202,23 @@ onMounted(async () => {
 <template>
   <section class="mm-page mm-demand-board">
     <header class="mm-demand-board__intro">
-      <p class="mm-eyebrow">THE WANTED BOARD</p>
-      <h1>说说你在找什么。</h1>
-      <p>一张求购帖，让手中的闲置和心里的需要相遇。</p>
-      <span>求购广场</span>
+      <div>
+        <p class="mm-eyebrow">THE WANTED BOARD</p>
+        <h1>求购社区</h1>
+        <p>写下想找的物品、预算和要求，让合适的闲置找到你。</p>
+      </div>
+      <MmButton v-if="auth.me" @click="edit()">＋ 发布求购</MmButton>
+      <RouterLink v-else class="mm-demand-board__login" to="/login"
+        >登录后发布求购 →</RouterLink
+      >
     </header>
-    <nav class="mm-actions">
-      <MmButton :variant="!mine ? 'primary' : 'ghost'" @click="mine = false"
-        >大家在找</MmButton
-      ><MmButton :variant="mine ? 'primary' : 'ghost'" @click="mine = true"
-        >我的求购</MmButton
-      ><MmButton v-if="auth.me" variant="ghost" @click="edit()"
-        >发布求购</MmButton
-      ><RouterLink v-else to="/login">登录后发布</RouterLink>
+    <nav class="mm-demand-board__tabs" aria-label="求购范围">
+      <button type="button" :aria-pressed="!mine" @click="mine = false">
+        大家在找
+      </button>
+      <button type="button" :aria-pressed="mine" @click="mine = true">
+        我的求购
+      </button>
     </nav>
     <p class="mm-muted" style="font-size: 12px">
       部分求购与回复由体验账号发布，用于展示交流流程。
@@ -219,157 +228,198 @@ onMounted(async () => {
     <form
       v-if="showForm"
       ref="formElement"
-      class="mm-panel mm-form"
+      class="mm-panel mm-form mm-demand-form"
       novalidate
       @submit.prevent="submit"
     >
-      <h2>{{ editId ? '编辑求购' : '发布求购' }}</h2>
-      <label
-        >想要什么<input
-          v-model="form.title"
-          :aria-invalid="!!fieldErrors.title"
-          :aria-describedby="
-            fieldErrors.title ? 'demand-title-error' : undefined
-          "
-          @input="fieldErrors.title = ''"
-          required
-          maxlength="120"
-        /><span
-          v-if="fieldErrors.title"
-          id="demand-title-error"
-          class="mm-error"
-          role="alert"
-          >{{ fieldErrors.title }}</span
-        ></label
-      ><label
-        >具体需求<textarea
-          v-model="form.description"
-          :aria-invalid="!!fieldErrors.description"
-          :aria-describedby="
-            fieldErrors.description ? 'demand-description-error' : undefined
-          "
-          @input="fieldErrors.description = ''"
-          required
-          maxlength="800"
-        /><span
-          v-if="fieldErrors.description"
-          id="demand-description-error"
-          class="mm-error"
-          role="alert"
-          >{{ fieldErrors.description }}</span
-        >
-      </label>
-      <div class="mm-grid">
-        <label
-          >最低预算（元）<input
-            v-model="form.budgetMin"
-            :aria-invalid="!!fieldErrors.budgetMin"
-            :aria-describedby="
-              fieldErrors.budgetMin ? 'demand-budgetMin-error' : undefined
-            "
-            @input="fieldErrors.budgetMin = ''"
-            type="text"
-            inputmode="decimal"
-            min="0"
-            step="0.01"
-            required
-          /><span
-            v-if="fieldErrors.budgetMin"
-            id="demand-budgetMin-error"
-            class="mm-error"
-            role="alert"
-            >{{ fieldErrors.budgetMin }}</span
-          ></label
-        ><label
-          >最高预算（元）<input
-            v-model="form.budgetMax"
-            :aria-invalid="!!fieldErrors.budgetMax"
-            :aria-describedby="
-              fieldErrors.budgetMax ? 'demand-budgetMax-error' : undefined
-            "
-            @input="fieldErrors.budgetMax = ''"
-            type="text"
-            inputmode="decimal"
-            min="0"
-            step="0.01"
-            required
-          /><span
-            v-if="fieldErrors.budgetMax"
-            id="demand-budgetMax-error"
-            class="mm-error"
-            role="alert"
-            >{{ fieldErrors.budgetMax }}</span
-          ></label
-        >
+      <header class="mm-demand-form__heading">
+        <div>
+          <h2>{{ editId ? '编辑求购' : '发布求购' }}</h2>
+          <p>描述越具体，越容易收到合适的回复。提交后会先审核。</p>
+        </div>
+        <span>填写需求 · 预算 · 地区</span>
+      </header>
+      <div class="mm-demand-form__layout">
+        <div class="mm-demand-form__details">
+          <label
+            >想要什么<input
+              v-model="form.title"
+              :aria-invalid="!!fieldErrors.title"
+              :aria-describedby="
+                fieldErrors.title ? 'demand-title-error' : undefined
+              "
+              @input="fieldErrors.title = ''"
+              required
+              maxlength="120"
+            /><span
+              v-if="fieldErrors.title"
+              id="demand-title-error"
+              class="mm-error"
+              role="alert"
+              >{{ fieldErrors.title }}</span
+            ></label
+          ><label
+            >具体需求<textarea
+              v-model="form.description"
+              :aria-invalid="!!fieldErrors.description"
+              :aria-describedby="
+                fieldErrors.description ? 'demand-description-error' : undefined
+              "
+              @input="fieldErrors.description = ''"
+              required
+              maxlength="800"
+            /><span
+              v-if="fieldErrors.description"
+              id="demand-description-error"
+              class="mm-error"
+              role="alert"
+              >{{ fieldErrors.description }}</span
+            >
+          </label>
+        </div>
+        <div class="mm-demand-form__preferences">
+          <h3>预算与交付范围</h3>
+          <div class="mm-grid">
+            <label
+              >最低预算（元）<input
+                v-model="form.budgetMin"
+                :aria-invalid="!!fieldErrors.budgetMin"
+                :aria-describedby="
+                  fieldErrors.budgetMin ? 'demand-budgetMin-error' : undefined
+                "
+                @input="fieldErrors.budgetMin = ''"
+                type="text"
+                inputmode="decimal"
+                min="0"
+                step="0.01"
+                required
+              /><span
+                v-if="fieldErrors.budgetMin"
+                id="demand-budgetMin-error"
+                class="mm-error"
+                role="alert"
+                >{{ fieldErrors.budgetMin }}</span
+              ></label
+            ><label
+              >最高预算（元）<input
+                v-model="form.budgetMax"
+                :aria-invalid="!!fieldErrors.budgetMax"
+                :aria-describedby="
+                  fieldErrors.budgetMax ? 'demand-budgetMax-error' : undefined
+                "
+                @input="fieldErrors.budgetMax = ''"
+                type="text"
+                inputmode="decimal"
+                min="0"
+                step="0.01"
+                required
+              /><span
+                v-if="fieldErrors.budgetMax"
+                id="demand-budgetMax-error"
+                class="mm-error"
+                role="alert"
+                >{{ fieldErrors.budgetMax }}</span
+              ></label
+            >
+          </div>
+          <label
+            >地区<input
+              v-model="form.region"
+              maxlength="100"
+              placeholder="如：上海市，不限地区可留空"
+          /></label>
+          <p class="mm-muted">
+            可在需求中补充成色、配件和交付方式。不要公开手机号或详细住址。
+          </p>
+        </div>
       </div>
-      <label>地区<input v-model="form.region" maxlength="100" /></label>
-      <div class="mm-actions">
+      <div class="mm-actions mm-demand-form__actions">
         <MmButton type="submit" :loading="busy">提交审核</MmButton
         ><MmButton variant="ghost" @click="showForm = false">取消</MmButton>
       </div>
-    <GovernanceNotice /></form>
+      <GovernanceNotice />
+    </form>
     <p v-if="loading">加载中…</p>
-    <article v-for="d in items" :key="d.id" class="mm-panel mm-demand-post">
-      <div class="mm-actions">
-        <h2>{{ d.title }}</h2>
-        <span v-if="mine" class="mm-chip">{{
-          d.isClosed ? '已关闭' : moderationText[d.status] || d.status
-        }}</span>
-      </div>
-      <p style="white-space: pre-wrap">{{ d.description }}</p>
-      <p>
-        预算 <PriceText :cents="d.budgetMinCents" /> —
-        <PriceText :cents="d.budgetMaxCents" /> · {{ d.region || '不限地区' }}
-      </p>
-      <div class="mm-demand-author">
-        <UserAvatar
-          :src="d.authorAvatarUrl"
-          :nickname="d.authorNickname"
-          :size="32"
-        /><RouterLink :to="`/sellers/${d.authorId}`">{{
-          d.authorNickname
-        }}</RouterLink
-        ><time>{{ formatTime(d.createdAt) }}</time>
-      </div>
-      <p v-if="mine && d.reviewReason">审核说明：{{ d.reviewReason }}</p>
-      <div class="mm-actions">
-        <RouterLink
-          v-if="d.authorId === auth.me?.id && !d.isClosed"
-          :to="{
-            path: '/search',
-            query: {
-              categoryId: d.categoryId || undefined,
-              minPrice: d.budgetMinCents / 100,
-              maxPrice: d.budgetMaxCents / 100,
-              region: d.region || undefined,
-            },
-          }"
-          >按这份预算找货与设置提醒 →</RouterLink
-        >
-        <MmButton
-          variant="ghost"
-          @click="expanded = expanded === d.id ? null : d.id"
-          >{{ expanded === d.id ? '收起回复' : '查看回复' }}</MmButton
-        ><template v-if="d.authorId === auth.me?.id && !d.isClosed"
-          ><MmButton variant="ghost" @click="edit(d)">编辑</MmButton
-          ><MmButton variant="ghost" :disabled="busy" @click="close(d.id)"
-            >关闭求购</MmButton
-          ></template
-        ><template v-else-if="d.authorId !== auth.me?.id"
-          ><MmButton
+    <div class="mm-demand-board__posts">
+      <article
+        v-for="d in items"
+        :key="d.id"
+        class="mm-panel mm-demand-post"
+        :class="{ 'is-expanded': expanded === d.id }"
+      >
+        <div class="mm-demand-post__heading">
+          <h2>{{ d.title }}</h2>
+          <span v-if="mine" class="mm-chip">{{
+            d.isClosed ? '已关闭' : moderationText[d.status] || d.status
+          }}</span>
+        </div>
+        <div class="mm-demand-post__facts">
+          <div>
+            <span>求购预算</span
+            ><strong
+              ><PriceText :cents="d.budgetMinCents" /> —
+              <PriceText :cents="d.budgetMaxCents"
+            /></strong>
+          </div>
+          <span class="mm-demand-post__region">{{
+            d.region || '不限地区'
+          }}</span>
+        </div>
+        <p class="mm-demand-post__description">{{ d.description }}</p>
+        <div class="mm-demand-author">
+          <UserAvatar
+            :src="d.authorAvatarUrl"
+            :nickname="d.authorNickname"
+            :size="32"
+          /><RouterLink :to="`/sellers/${d.authorId}`">{{
+            d.authorNickname
+          }}</RouterLink
+          ><time>{{ formatTime(d.createdAt) }}</time>
+        </div>
+        <p v-if="mine && d.reviewReason">审核说明：{{ d.reviewReason }}</p>
+        <div class="mm-actions mm-demand-post__actions">
+          <RouterLink
+            v-if="d.authorId === auth.me?.id && !d.isClosed"
+            :to="{
+              path: '/search',
+              query: {
+                categoryId: d.categoryId || undefined,
+                minPrice: d.budgetMinCents / 100,
+                maxPrice: d.budgetMaxCents / 100,
+                region: d.region || undefined,
+              },
+            }"
+            >按这份预算找货与设置提醒 →</RouterLink
+          >
+          <MmButton
             variant="ghost"
-            :disabled="busy"
-            @click="contact(d.authorId)"
-            >联系发布者</MmButton
-          ><ReportButton resource-type="DEMAND_POST" :resource-id="d.id"
-        /></template>
-      </div>
-      <DemandReplies
-        v-if="expanded === d.id"
-        :demand-id="d.id"
-        :closed="d.isClosed"
-      />
-    </article>
+            @click="expanded = expanded === d.id ? null : d.id"
+            :aria-expanded="expanded === d.id"
+            >{{ expanded === d.id ? '收起回复' : '查看与回复' }}</MmButton
+          ><template v-if="d.authorId === auth.me?.id && !d.isClosed"
+            ><MmButton variant="ghost" @click="edit(d)">编辑</MmButton
+            ><MmButton variant="ghost" :disabled="busy" @click="close(d.id)"
+              >关闭求购</MmButton
+            ></template
+          ><template v-else-if="d.authorId !== auth.me?.id"
+            ><MmButton
+              variant="ghost"
+              :disabled="busy"
+              @click="contact(d.authorId)"
+              >联系发布者</MmButton
+            ><ReportButton
+              class="mm-demand-post__report"
+              resource-type="DEMAND_POST"
+              :resource-id="d.id"
+          /></template>
+        </div>
+        <DemandReplies
+          v-if="expanded === d.id"
+          :demand-id="d.id"
+          :closed="d.isClosed"
+        />
+      </article>
+    </div>
     <p v-if="!loading && !items.length" class="mm-panel mm-muted">
       暂无求购信息，试着发布你的需求吧。
     </p>
@@ -384,146 +434,276 @@ onMounted(async () => {
   </section>
 </template>
 <style scoped>
-.mm-form [aria-invalid='true'] {
+.mm-demand-board {
+  max-width: 1200px;
+  gap: 22px;
+  padding-top: 30px;
+}
+.mm-demand-board__intro {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding: 8px 0 24px;
+  border-bottom: 1px solid var(--mm-border);
+}
+.mm-demand-board__intro h1 {
+  font-size: 32px;
+  margin: 6px 0;
+  letter-spacing: -0.7px;
+}
+.mm-demand-board__intro p:not(.mm-eyebrow) {
+  font-size: 14px;
+  color: var(--mm-muted);
+}
+.mm-demand-board__intro > :last-child {
+  flex-shrink: 0;
+}
+.mm-demand-board__login {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 10px 18px;
+  background: var(--mm-primary);
+  color: white;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 650;
+}
+.mm-demand-board__tabs {
+  display: flex;
+  gap: 4px;
+  align-self: flex-start;
+  padding: 5px;
+  border: 1px solid var(--mm-border);
+  border-radius: 12px;
+  background: #eeede8;
+}
+.mm-demand-board__tabs button {
+  border: 0;
+  padding: 10px 24px;
+  min-height: 44px;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--mm-muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+.mm-demand-board__tabs button[aria-pressed='true'] {
+  background: white;
+  color: var(--mm-ink);
+  box-shadow: 0 2px 5px #2425220d;
+}
+.mm-demand-form {
+  width: 100%;
+  max-width: none;
+  border-top: 3px solid var(--mm-primary);
+  padding: 26px;
+  gap: 22px;
+}
+.mm-demand-form__heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 1px solid var(--mm-border);
+  padding-bottom: 18px;
+}
+.mm-demand-form__heading p,
+.mm-demand-form__heading > span {
+  font-size: 13px;
+  color: var(--mm-muted);
+  margin-top: 5px;
+}
+.mm-demand-form__heading > span {
+  white-space: nowrap;
+}
+.mm-demand-form__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 28px;
+}
+.mm-demand-form__details,
+.mm-demand-form__preferences {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.mm-demand-form__details textarea {
+  min-height: 168px;
+}
+.mm-demand-form__preferences {
+  background: var(--mm-canvas);
+  padding: 20px;
+  border-radius: 10px;
+}
+.mm-demand-form__preferences h3 {
+  font-size: 15px;
+}
+.mm-demand-form__preferences .mm-grid {
+  gap: 12px;
+}
+.mm-demand-form__actions {
+  padding-top: 18px;
+  border-top: 1px solid var(--mm-border);
+}
+.mm-demand-form [aria-invalid='true'] {
   border-color: var(--mm-danger);
 }
-.mm-form .mm-error {
+.mm-demand-form .mm-error {
   font-size: 13px;
   line-height: 1.6;
+}
+.mm-demand-board__posts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+.mm-demand-post {
+  min-width: 0;
+  height: 100%;
+  padding: 24px;
+  gap: 16px;
+  border: 1px solid var(--mm-border);
+  border-radius: 14px;
+  box-shadow: 0 3px 12px #24252204;
+}
+.mm-demand-post.is-expanded,
+.mm-demand-post:has(.mm-demand-post__report form) {
+  grid-column: 1 / -1;
+}
+.mm-demand-post__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.mm-demand-post h2 {
+  font-size: 19px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.mm-demand-post__facts {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: var(--mm-accent-soft);
+}
+.mm-demand-post__facts > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.mm-demand-post__facts > div > span {
+  font-size: 12px;
+  color: var(--mm-muted);
+}
+.mm-demand-post__facts strong {
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+.mm-demand-post__region {
+  font-size: 13px;
+  color: var(--mm-muted);
+}
+.mm-demand-post__description {
+  font-size: 14px;
+  line-height: 1.85;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 .mm-demand-author {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 12px;
+  flex-wrap: wrap;
+  gap: 9px;
+  font-size: 13px;
   color: var(--mm-muted);
-  margin: 18px 0;
-}
-.mm-demand-author strong {
-  color: var(--mm-ink);
-  font-weight: 500;
+  margin-top: auto;
 }
 .mm-demand-author time {
   margin-left: auto;
-  font-size: 11px;
+  font-size: 12px;
 }
-
-.mm-demand-board {
-  max-width: 1130px;
-  padding-top: 32px;
-  gap: 23px;
+.mm-demand-post__actions {
+  border-top: 1px solid var(--mm-border);
+  padding-top: 16px;
+  gap: 10px;
 }
-.mm-demand-board__intro {
-  position: relative;
-  background: var(--mm-accent-soft);
-  padding: 35px 36px;
-  border-radius: 3px;
-  border-bottom: 3px solid #879473;
-}
-.mm-demand-board__intro h1 {
-  font-size: 34px;
-  letter-spacing: -1px;
-  margin: 12px 0;
-}
-.mm-demand-board__intro > p:not(.mm-eyebrow) {
+.mm-demand-post__actions > a {
+  flex-basis: 100%;
   font-size: 13px;
-  color: var(--mm-muted);
-}
-.mm-demand-board__intro > span {
-  position: absolute;
-  right: 30px;
-  top: 30px;
-  border: 1px solid #a4b092;
-  border-radius: 50%;
-  width: 68px;
-  height: 68px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 12px;
-  color: var(--mm-primary);
-  transform: rotate(12deg);
-}
-.mm-demand-board > nav {
-  padding: 0 0 20px;
-  border-bottom: 1px solid var(--mm-border);
-}
-.mm-demand-board > nav .mm-button {
-  font-size: 12px;
   min-height: 36px;
-}
-.mm-demand-post {
-  position: relative;
-  padding: 23px 26px 23px 76px;
-  border: 0;
-  border-bottom: 1px solid var(--mm-border);
-  border-radius: 0;
-  background: #fff;
-}
-.mm-demand-post::before {
-  content: '求';
-  position: absolute;
-  left: 24px;
-  top: 25px;
-  color: var(--mm-primary);
-  border: 1px solid #d4dcc9;
-  background: var(--mm-canvas);
-  border-radius: 4px;
-  width: 32px;
-  height: 32px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  font-weight: 700;
 }
-.mm-demand-post h2 {
-  font-size: 20px;
+.mm-demand-post__actions :deep(.mm-button) {
+  font-size: 14px;
+  min-height: 44px;
 }
-.mm-demand-post > p {
-  font-size: 13px;
-  overflow-wrap: anywhere;
-  line-height: 1.85;
+.mm-demand-post__report {
+  margin-left: auto;
 }
-.mm-demand-post > .mm-actions:last-of-type {
-  gap: 17px;
-  margin-top: 6px;
+.mm-demand-post__report:has(form) {
+  flex-basis: 100%;
 }
-.mm-demand-post .mm-button {
-  font-size: 11px;
-  min-height: 31px;
-  padding: 0 10px;
+.mm-demand-post__report :deep(> .mm-button) {
+  border-color: transparent;
+  background: transparent;
+  color: var(--mm-muted);
+  font-weight: 500;
 }
-.mm-demand-post > .mm-muted {
-  font-size: 11px;
+.mm-demand-post__report :deep(form) {
+  width: 100%;
+  max-width: none;
+  margin-top: 10px;
+  padding: 16px;
+  background: var(--mm-canvas);
+  border-radius: 10px;
 }
 @media (max-width: 760px) {
+  .mm-demand-board {
+    padding-top: 22px;
+  }
   .mm-demand-board__intro {
-    padding: 25px 22px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 16px;
   }
   .mm-demand-board__intro h1 {
     font-size: 27px;
   }
-  .mm-demand-board__intro > span {
+  .mm-demand-board__posts,
+  .mm-demand-form__layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .mm-demand-form,
+  .mm-demand-post {
+    padding: 18px;
+  }
+  .mm-demand-form__heading > span {
     display: none;
   }
-  .mm-demand-post {
-    padding: 18px 18px 18px 59px;
+  .mm-demand-form__preferences {
+    padding: 16px;
   }
-  .mm-demand-post::before {
-    left: 15px;
-    top: 22px;
-    width: 29px;
-    height: 29px;
+  .mm-demand-form__preferences .mm-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .mm-demand-post h2 {
-    font-size: 17px;
+    font-size: 18px;
   }
-  .mm-demand-post > .mm-actions {
-    gap: 10px;
+  .mm-demand-author time {
+    flex-basis: 100%;
+    margin-left: 41px;
   }
-  .mm-demand-board > nav {
-    gap: 9px;
+  .mm-demand-post__actions {
+    gap: 8px;
   }
 }
 </style>

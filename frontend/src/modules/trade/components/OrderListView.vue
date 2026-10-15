@@ -42,7 +42,7 @@
           />
         </div>
         <div class="mm-order-list__peer">
-          {{ role === "buyer" ? `卖家：${order.sellerNickname}` : `买家订单` }}
+          {{ role === 'buyer' ? `卖家：${order.sellerNickname}` : `买家订单` }}
           · {{ DELIVERY_METHOD_TEXT[order.deliveryMethod] }} ·
           {{ formatTime(order.createdAt) }}
         </div>
@@ -88,10 +88,21 @@
         >
           请在 {{ formatTime(order.expiresAt) }} 前付款，逾期订单自动关闭
         </p>
-        <span class="mm-order-list__detail"
-          >{{ orderNextStep(order, role) }}
-          <span aria-hidden="true">→</span></span
-        >
+        <span class="mm-order-list__detail">
+          <span class="mm-order-list__next"
+            ><small>交易进度与下一步</small
+            >{{ orderNextStep(order, role) }}</span
+          >
+          <span
+            class="mm-order-list__action"
+            :class="{
+              'is-pending':
+                order.refundStatus !== 'FULL' &&
+                !['COMPLETED', 'CLOSED'].includes(order.fulfillmentStatus),
+            }"
+            >查看订单 <span aria-hidden="true">→</span></span
+          >
+        </span>
       </RouterLink>
       <MmPagination :page="page" :total-pages="totalPages" @change="onPage" />
     </template>
@@ -110,43 +121,43 @@
       ><MmButton v-if="activeStatus" variant="ghost" @click="switchTab('')"
         >查看全部订单</MmButton
       ><RouterLink :to="role === 'buyer' ? '/search' : '/seller/products'">{{
-        role === "buyer" ? "去逛逛闲置 →" : "查看我的商品 →"
+        role === 'buyer' ? '去逛逛闲置 →' : '查看我的商品 →'
       }}</RouterLink></EmptyState
     >
   </div>
 </template>
 
 <script setup lang="ts">
-import ItemImage from "../../../shared/components/ItemImage.vue";
-import { onScopeDispose, ref, watch } from "vue";
-import { useListQuery } from "../../../shared/useListQuery";
-import MmButton from "../../../shared/components/MmButton.vue";
-import MmSkeleton from "../../../shared/components/MmSkeleton.vue";
-import { get, type ApiError } from "../../../shared/api";
-import { formatTime } from "../../../shared/format";
+import ItemImage from '../../../shared/components/ItemImage.vue';
+import { onScopeDispose, ref, watch } from 'vue';
+import { useListQuery } from '../../../shared/useListQuery';
+import MmButton from '../../../shared/components/MmButton.vue';
+import MmSkeleton from '../../../shared/components/MmSkeleton.vue';
+import { get, type ApiError } from '../../../shared/api';
+import { formatTime } from '../../../shared/format';
 import {
   DELIVERY_METHOD_TEXT,
   FULFILLMENT_STATUS_TEXT,
   type FulfillmentStatus,
   type OrderDto,
   type Page,
-} from "../../../shared/types";
-import MmTag from "../../../shared/components/MmTag.vue";
-import MmPagination from "../../../shared/components/MmPagination.vue";
-import EmptyState from "../../../shared/components/EmptyState.vue";
-import PriceText from "../../../shared/components/PriceText.vue";
-import { orderNextStep } from "../orderNextStep";
+} from '../../../shared/types';
+import MmTag from '../../../shared/components/MmTag.vue';
+import MmPagination from '../../../shared/components/MmPagination.vue';
+import EmptyState from '../../../shared/components/EmptyState.vue';
+import PriceText from '../../../shared/components/PriceText.vue';
+import { orderNextStep } from '../orderNextStep';
 
-const props = defineProps<{ role: "buyer" | "seller" }>();
+const props = defineProps<{ role: 'buyer' | 'seller' }>();
 
-const tabs: { label: string; status: FulfillmentStatus | "" }[] = [
-  { label: "全部", status: "" },
-  { label: "待付款", status: "PENDING_PAYMENT" },
-  { label: "待发货", status: "PAID_PENDING_SHIP" },
-  { label: "待收货", status: "SHIPPED" },
-  { label: "待面交", status: "AWAITING_MEETUP" },
-  { label: "已完成", status: "COMPLETED" },
-  { label: "已关闭", status: "CLOSED" },
+const tabs: { label: string; status: FulfillmentStatus | '' }[] = [
+  { label: '全部', status: '' },
+  { label: '待付款', status: 'PENDING_PAYMENT' },
+  { label: '待发货', status: 'PAID_PENDING_SHIP' },
+  { label: '待收货', status: 'SHIPPED' },
+  { label: '待面交', status: 'AWAITING_MEETUP' },
+  { label: '已完成', status: 'COMPLETED' },
+  { label: '已关闭', status: 'CLOSED' },
 ];
 
 const {
@@ -158,34 +169,34 @@ const {
 const orders = ref<OrderDto[]>([]);
 const totalPages = ref(0);
 const loading = ref(true);
-const error = ref("");
+const error = ref('');
 let sequence = 0;
 
 function statusTone(
   status: FulfillmentStatus,
-): "primary" | "success" | "warning" | "danger" | "info" | "neutral" {
+): 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'neutral' {
   switch (status) {
-    case "PENDING_PAYMENT":
-      return "warning";
-    case "PAID_PENDING_SHIP":
-    case "SHIPPED":
-    case "AWAITING_MEETUP":
-      return "info";
-    case "COMPLETED":
-      return "success";
-    case "CLOSED":
-      return "neutral";
+    case 'PENDING_PAYMENT':
+      return 'warning';
+    case 'PAID_PENDING_SHIP':
+    case 'SHIPPED':
+    case 'AWAITING_MEETUP':
+      return 'info';
+    case 'COMPLETED':
+      return 'success';
+    case 'CLOSED':
+      return 'neutral';
     default:
-      return "primary";
+      return 'primary';
   }
 }
 
 async function load() {
   const run = ++sequence;
   loading.value = true;
-  error.value = "";
+  error.value = '';
   try {
-    const res = await get<Page<OrderDto>>("/orders", {
+    const res = await get<Page<OrderDto>>('/orders', {
       role: props.role,
       status: activeStatus.value || undefined,
       page: page.value,
@@ -201,7 +212,7 @@ async function load() {
   }
 }
 
-function switchTab(status: FulfillmentStatus | "") {
+function switchTab(status: FulfillmentStatus | '') {
   if (status === activeStatus.value) return;
   void setStatus(status);
 }
@@ -382,13 +393,46 @@ onScopeDispose(() => {
   grid-column: 1/-1;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-  padding-top: 12px;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 16px;
   border-top: 1px solid var(--mm-border);
-  color: var(--mm-zone-accent);
-  font-size: 13px;
-  font-weight: 650;
+  color: var(--mm-ink);
+  font-size: 14px;
+  font-weight: 600;
+}
+.mm-order-list__next {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.mm-order-list__next small {
+  display: block;
+  color: var(--mm-muted);
+  font-size: 12px;
+  font-weight: 400;
+  margin-bottom: 3px;
+}
+.mm-order-list__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 10px 18px;
+  border: 1px solid var(--mm-border);
+  border-radius: 10px;
+  background: var(--mm-canvas);
+  color: var(--mm-ink);
+  font-size: 14px;
+}
+.mm-order-list__action.is-pending {
+  background: var(--mm-primary);
+  color: white;
+  border-color: var(--mm-primary);
+}
+.mm-order-list__card:hover .mm-order-list__action.is-pending {
+  background: var(--mm-primary-hover);
 }
 .mm-order-list__deadline {
   grid-column: 1/-1;
@@ -399,7 +443,11 @@ onScopeDispose(() => {
 }
 @media (max-width: 760px) {
   .mm-order-list__detail {
-    justify-content: flex-start;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .mm-order-list__action {
+    margin-left: auto;
   }
   .mm-order-list__tabs {
     gap: 4px;

@@ -648,10 +648,17 @@ watch(
 }
 .mm-header__nav .mm-header__publish {
   margin-left: auto;
-  color: var(--mm-primary);
+  color: white;
+  background: var(--mm-primary);
+  min-height: 44px;
+  padding-inline: 18px;
   display: flex;
   align-items: center;
   gap: 5px;
+}
+.mm-header__nav .mm-header__publish:hover {
+  background: var(--mm-primary-hover);
+  color: white;
 }
 .mm-header__publish .mm-icon {
   width: 17px;

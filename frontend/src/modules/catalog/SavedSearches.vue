@@ -174,11 +174,24 @@ onMounted(load);
 </template>
 <style scoped>
 .saved-searches {
-  margin: 16px 0;
+  position: relative;
+  margin: 0;
+  flex-shrink: 0;
+  max-width: 100%;
+}
+.saved-searches > .mm-panel {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(520px, calc(100vw - 48px));
+  max-height: min(600px, 70dvh);
+  overflow: auto;
+  box-shadow: 0 16px 40px #24252220;
 }
 .saved-toggle {
-  padding: 14px 18px;
-  border: 1px solid var(--mm-border);
+  padding: 10px 14px;
+  border: 1px solid var(--mm-border-strong);
   border-radius: 12px;
   background: white;
   text-align: left;
@@ -189,8 +202,25 @@ onMounted(load);
 }
 .saved-toggle span {
   font-size: 12px;
-  margin-left: 12px;
+  display: block;
+  margin-top: 2px;
   color: var(--mm-muted);
+}
+@media (max-width: 600px) {
+  .saved-searches {
+    width: 100%;
+  }
+  .saved-toggle {
+    text-align: center;
+  }
+  .saved-toggle span {
+    display: none;
+  }
+  .saved-searches > .mm-panel {
+    left: 0;
+    right: auto;
+    width: 100%;
+  }
 }
 .saved-form {
   display: flex;

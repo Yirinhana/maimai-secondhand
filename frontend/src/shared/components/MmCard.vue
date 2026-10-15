@@ -29,14 +29,25 @@ defineProps<{ title?: string }>();
   padding: 17px var(--mm-space-5);
   gap: 12px;
   flex-wrap: wrap;
-  background: var(--mm-zone-soft, var(--mm-canvas));
+  background: var(--mm-surface-inset);
   border-bottom: 1px solid var(--mm-border);
   border-radius: var(--mm-radius-l) var(--mm-radius-l) 0 0;
 }
 
 .mm-card__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-size: var(--mm-font-l);
   font-weight: 700;
+}
+.mm-card__title::before {
+  content: '';
+  width: 4px;
+  height: 18px;
+  border-radius: 2px;
+  background: var(--mm-primary);
+  flex: none;
 }
 
 .mm-card__body {

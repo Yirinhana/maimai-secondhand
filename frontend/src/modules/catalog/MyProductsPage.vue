@@ -93,9 +93,7 @@
         <div class="mm-inventory__actions">
           <RouterLink :to="`/publish/${p.id}`" class="mm-inventory__edit"
             >编辑商品</RouterLink
-          ><RouterLink
-            v-if="p.status === 'ON_SALE'"
-            :to="`/products/${p.id}`"
+          ><RouterLink v-if="p.status === 'ON_SALE'" :to="`/products/${p.id}`"
             >查看商品</RouterLink
           ><MmButton
             v-if="['DRAFT', 'REJECTED', 'OFF_SHELF'].includes(p.status)"
@@ -121,11 +119,7 @@
           ? '试试切换到全部状态，查看你的其他闲置。'
           : '在个人中心完成卖家申请后，就可以发布你的第一件闲置。'
       "
-    /><MmPagination
-      :page="page"
-      :total-pages="totalPages"
-      @change="setPage"
-    />
+    /><MmPagination :page="page" :total-pages="totalPages" @change="setPage" />
   </section>
 </template>
 <script setup lang="ts">
@@ -212,14 +206,15 @@ onScopeDispose(() => {
   align-items: center;
   gap: 8px;
   background: var(--mm-zone-accent);
+  min-height: 44px;
   padding: 11px 18px;
   color: white;
   border-radius: 6px;
   font-size: 13px;
-  box-shadow: 0 3px 8px #234c4020;
+  box-shadow: var(--mm-shadow);
 }
 .mm-inventory__publish:hover {
-  background: #234c40;
+  background: var(--mm-primary-hover);
   text-decoration: none;
 }
 .mm-inventory__publish .mm-icon {
@@ -242,10 +237,10 @@ onScopeDispose(() => {
   align-items: center;
 }
 .mm-inventory__heading {
-  background: #e8efea;
+  background: var(--mm-zone-soft);
   padding: 13px 20px;
   font-size: 12px;
-  color: #41594a;
+  color: var(--mm-zone-accent);
   font-weight: 650;
 }
 .mm-inventory__row {
@@ -253,7 +248,7 @@ onScopeDispose(() => {
   border-top: 1px solid var(--mm-border);
 }
 .mm-inventory__row:hover {
-  background: #fcfdfb;
+  background: var(--mm-zone-canvas);
 }
 .mm-inventory__product {
   display: flex;
@@ -311,11 +306,11 @@ onScopeDispose(() => {
 }
 .mm-inventory__actions .mm-button {
   font-size: 12px;
-  min-height: 38px;
+  min-height: 44px;
   padding: 0 10px;
 }
 .mm-inventory__actions > a {
-  min-height: 38px;
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
   color: var(--mm-zone-accent);

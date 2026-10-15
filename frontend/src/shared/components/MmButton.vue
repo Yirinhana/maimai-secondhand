@@ -35,6 +35,8 @@ withDefaults(
   border: 1px solid transparent;
   font-size: var(--mm-font-base);
   font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
   transition:
     background-color 0.15s ease,
     border-color 0.15s ease,
@@ -62,13 +64,17 @@ withDefaults(
 }
 
 .mm-button--ghost {
-  background-color: var(--mm-white);
+  background-color: var(--mm-canvas);
   color: var(--mm-ink);
-  border-color: var(--mm-border);
+  border-color: var(--mm-border-strong);
 }
 .mm-button--ghost:hover:not(:disabled) {
   background-color: var(--mm-accent-soft);
   border-color: var(--mm-primary);
+}
+.mm-button__label {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .mm-button--danger {

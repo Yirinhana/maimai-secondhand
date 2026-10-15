@@ -50,6 +50,7 @@ onMounted(async () => {
         >收藏</MmButton
       ><MmButton
         v-if="auth.me?.id !== sellerId"
+        class="product-contact-button"
         variant="ghost"
         :disabled="busy"
         @click="act('message')"

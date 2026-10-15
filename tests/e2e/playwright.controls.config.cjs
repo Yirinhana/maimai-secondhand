@@ -2,7 +2,11 @@ const { defineConfig } = require('@playwright/test');
 const path = require('node:path');
 module.exports = defineConfig({
   testDir: '.',
-  testMatch: 'controls-interaction.e2e.cjs',
+  testMatch: [
+    'controls-interaction.e2e.cjs',
+    'layout-hierarchy.e2e.cjs',
+    'workspace-layout.e2e.cjs',
+  ],
   workers: 1,
   retries: 0,
   timeout: 30000,

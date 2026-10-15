@@ -47,14 +47,6 @@
       </button>
     </div>
 
-    <OperationsDashboard
-      v-if="auth.isAdmin && activeTab === 'profile'"
-      title="我的管理概览"
-    />
-    <ReputationCard
-      v-if="auth.me && !auth.isAdmin && activeTab === 'profile'"
-      :user-id="auth.me.id"
-    />
     <!-- 资料 -->
     <MmCard
       id="account-panel-profile"
@@ -152,6 +144,15 @@
         </section>
       </div>
     </MmCard>
+
+    <OperationsDashboard
+      v-if="auth.isAdmin && activeTab === 'profile'"
+      title="我的管理概览"
+    />
+    <ReputationCard
+      v-if="auth.me && !auth.isAdmin && activeTab === 'profile'"
+      :user-id="auth.me.id"
+    />
 
     <!-- 收货地址 -->
     <MmCard

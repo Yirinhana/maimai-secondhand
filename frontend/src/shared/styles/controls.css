@@ -2,6 +2,17 @@
 .mm-app :where(button, input, select, textarea, summary) {
   font: inherit;
 }
+.mm-app .mm-button {
+  min-height: 44px;
+  font-size: 14px;
+}
+.mm-app .mm-main--admin .mm-button {
+  min-height: 42px;
+  font-size: 14px;
+}
+.mm-app :where(input, textarea, select):focus-visible {
+  box-shadow: 0 0 0 3px var(--mm-accent-soft);
+}
 .mm-app :where(input, textarea, select) {
   font-weight: 400;
 }

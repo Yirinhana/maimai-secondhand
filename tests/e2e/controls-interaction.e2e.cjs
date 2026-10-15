@@ -219,7 +219,7 @@ for (const viewport of [
         await expect(page.getByLabel('增加数量')).toBeVisible();
       if (route === '/community/demands')
         await expect(
-          page.getByRole('button', { name: '查看回复' }),
+          page.getByRole('button', { name: '查看与回复' }),
         ).toBeVisible();
       const layout = await page.evaluate(() => ({
         overflow: document.documentElement.scrollWidth > innerWidth,

@@ -4,7 +4,7 @@
   --mm-primary: #b94e18;
   --mm-primary-hover: #9a3d10;
   --mm-primary-active: #7d300c;
-  --mm-canvas: #f7f6f2;
+  --mm-canvas: #f4f3ef;
   --mm-ink: #242522;
   --mm-muted: #656a61;
   --mm-white: #ffffff;
@@ -19,8 +19,10 @@
   --mm-info: #1f5fa8;
 
   /* 线条与阴影 */
-  --mm-border: #e4e4dd;
-  --mm-shadow: 0 2px 8px rgba(34, 36, 30, 0.035);
+  --mm-border: #dcdcd3;
+  --mm-border-strong: #b8bcb1;
+  --mm-surface-inset: #efeee7;
+  --mm-shadow: 0 3px 12px rgba(34, 36, 30, 0.045);
   --mm-radius-s: 6px;
   --mm-radius-m: 10px;
   --mm-radius-l: 12px;
