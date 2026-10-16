@@ -239,6 +239,7 @@ class AuthHttpIntegrationTest {
             var applied=seller.call("POST","/me/seller-application","{\"intro\":\"数码与家居闲置，支持快递与面交\"}",seller.csrf());
             assertThat(applied.statusCode()).withFailMessage(applied.body()).isEqualTo(200);
             long applicationId=json.readTree(applied.body()).path("id").asLong();
+            assertThat(json.readTree(applied.body()).path("canPublish").asBoolean()).isFalse();
             assertThat(admin.call("POST","/community/follows/"+sellerId,"{}",admin.csrf()).statusCode()).isEqualTo(403);
             var reviewed=admin.call("POST","/admin/seller-applications/"+applicationId+"/review","{\"action\":\"APPROVE\",\"reason\":\"平台卖家资料审核通过，收款渠道另行核实\",\"channelQualified\":false}",admin.csrf());
             assertThat(reviewed.statusCode()).withFailMessage(reviewed.body()).isEqualTo(200);
@@ -246,6 +247,11 @@ class AuthHttpIntegrationTest {
             var me=json.readTree(seller.call("GET","/auth/me",null,null).body());
             assertThat(me.path("sellerStatus").asString()).isEqualTo("APPROVED");
             assertThat(me.path("roles").toString()).contains("SELLER");
+            var publishing=json.readTree(seller.call("GET","/me/seller-application",null,null).body());
+            assertThat(publishing.path("publishingMode").asString()).isEqualTo("SIMULATED");
+            assertThat(publishing.path("canPublish").asBoolean()).isTrue();
+            assertThat(publishing.path("channelStatus").asString()).isEqualTo("PENDING");
+            assertThat(publishing.path("publishingMessage").asString()).contains("不发生真实扣款");
             assertThat(json.readTree(admin.call("GET","/sellers/"+sellerId,null,null).body()).path("sellerApproved").asBoolean()).isTrue();
             assertThat(admin.call("POST","/community/follows/"+sellerId,"{}",admin.csrf()).statusCode()).isEqualTo(201);
             assertThat(seller.call("GET","/seller/products",null,null).statusCode()).isEqualTo(200);

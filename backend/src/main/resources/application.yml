@@ -44,6 +44,8 @@ maimai:
       app-id: ${MAIMAI_WECHAT_APP_ID:}
       api-key: ${MAIMAI_WECHAT_API_KEY:}
       cert-path: ${MAIMAI_WECHAT_CERT_PATH:}
+  # Explicitly allow approved sellers to publish no-money simulation listings.
+  experience-listing-enabled: ${MAIMAI_EXPERIENCE_LISTING_ENABLED:false}
   frontend-origin: ${MAIMAI_FRONTEND_ORIGIN:http://localhost:5173}
 
 logging:

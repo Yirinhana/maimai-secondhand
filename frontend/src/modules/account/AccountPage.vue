@@ -308,7 +308,7 @@
           />
         </p>
         <p>
-          渠道资格：<MmTag
+          真实收款资格：<MmTag
             :text="CHANNEL_STATUS_TEXT[sellerApp.channelStatus]"
             :tone="channelStatusTone"
           />
@@ -317,10 +317,9 @@
           审核说明：{{ sellerApp.reason }}
         </p>
         <p class="mm-account__meta">
-          提交时间：{{ formatTime(sellerApp.createdAt) }} ·
-          人工审核与收款渠道资格分开记录，
-          两者均通过后才能发布可成交商品并收款。
+          提交时间：{{ formatTime(sellerApp.createdAt) }}
         </p>
+        <SellerPublishingNotice :owner-id="auth.me?.id ?? 0" :application="sellerApp" />
       </div>
       <p v-else class="mm-account__meta">
         你还没有提交过卖家申请。个人闲置也可以出售，无需稳定货源；审核通过后增加卖家权限，仍然可以用这个账号购买商品。
@@ -442,6 +441,7 @@
 
 <script setup lang="ts">
 import OperationsDashboard from '../admin/OperationsDashboard.vue';
+import SellerPublishingNotice from './SellerPublishingNotice.vue';
 import ReputationCard from '../community/ReputationCard.vue';
 import { askConfirmation } from '../../shared/confirm';
 import UserAvatar from '../../shared/components/UserAvatar.vue';

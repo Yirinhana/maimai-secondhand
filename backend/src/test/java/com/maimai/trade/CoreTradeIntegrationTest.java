@@ -57,6 +57,7 @@ class CoreTradeIntegrationTest {
         assertThat(db.queryForObject("SELECT DATABASE()", String.class)).isEqualTo("maimai_test");
         assertThat(db.queryForObject("SELECT TIMESTAMPDIFF(SECOND,UTC_TIMESTAMP(),NOW())", Long.class)).isZero();
         seller=user(); buyer=user(); otherBuyer=user();
+        db.update("INSERT INTO user_roles(user_id,role) VALUES(?,'SELLER')",seller);
         db.update("INSERT INTO seller_applications(user_id,status,channel_status,intro) VALUES(?,'APPROVED','QUALIFIED','本地测试')",seller);
         db.update("INSERT INTO products(seller_id,category_id,title,item_condition,price_cents,stock_available,region,delivery_methods,freight_cents,status) VALUES(?,1,'集成测试商品','GOOD',10000,3,'测试城市','EXPRESS,MEETUP',1200,'ON_SALE')",seller);
         product=db.queryForObject("SELECT id FROM products WHERE seller_id=?",Long.class,seller);
@@ -90,6 +91,7 @@ class CoreTradeIntegrationTest {
         db.update("DELETE FROM addresses WHERE user_id=?",buyer);
         for(long id:List.of(seller,buyer,otherBuyer)) {
             db.update("DELETE FROM notifications WHERE user_id=?",id);
+            db.update("DELETE FROM user_roles WHERE user_id=?",id);
             db.update("DELETE FROM users WHERE id=?",id);
         }
     }
@@ -216,6 +218,7 @@ class CoreTradeIntegrationTest {
     @Test void sellerSplitUsesHighestFreightAndEachOrdersOwnFee() {
         long second=createProduct(seller,5000,600);
         db.update("INSERT INTO seller_applications(user_id,status,channel_status) VALUES(?,'APPROVED','QUALIFIED')",otherBuyer);
+        db.update("INSERT INTO user_roles(user_id,role) VALUES(?,'SELLER')",otherBuyer);
         long third=createProduct(otherBuyer,1667,300);
         var request=new CheckoutRequest(UUID.randomUUID().toString(),List.of(
                 new CheckoutItem(product,1,"EXPRESS",null), new CheckoutItem(second,2,"EXPRESS",null),

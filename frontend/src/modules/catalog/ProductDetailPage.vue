@@ -76,11 +76,11 @@
               :seller-id="product.seller.id"
             />
           </section>
-          <div v-if="product.supplyNote" class="mm-detail__supply">
+          <div v-if="product.supplyNote || product.experienceSource" class="mm-detail__supply">
             <h2>货源与库存</h2>
-            <p>{{ product.supplyNote }}</p>
+            <p v-if="product.supplyNote">{{ product.supplyNote }}</p>
             <small v-if="product.experienceSource"
-              >体验账号供给资料 · 库存为模拟数量，图片为生成素材</small
+              >{{ experienceProductNotice(product.experienceSource) }}</small
             >
           </div>
           <div class="mm-detail__defects">
@@ -193,23 +193,26 @@
                 >
               </div>
               <p
-                v-if="product.experienceSource"
+                v-if="isExperienceProduct(product.experienceSource)"
                 class="mm-muted"
                 style="font-size: 12px"
               >
                 体验库存支持下单与扫码体验，不发生扣款或实际发货。
               </p>
+              <p v-else-if="product.experienceSource" class="mm-detail__unavailable">
+                该来源商品暂未开放结算，可联系卖家了解情况。
+              </p>
               <div class="mm-detail__buttons">
                 <MmButton
-                  :disabled="cartLoading || bargainLoading"
+                  :disabled="cartLoading || bargainLoading || unsupportedExperience"
                   @click="buyNow"
                   >{{
-                    product.experienceSource ? '体验下单' : '立即购买'
+                    isExperienceProduct(product.experienceSource) ? '体验下单' : '立即购买'
                   }}</MmButton
                 ><MmButton
                   variant="ghost"
                   :loading="cartLoading"
-                  :disabled="bargainLoading"
+                  :disabled="bargainLoading || unsupportedExperience"
                   @click="addToCart"
                   >加入购物车</MmButton
                 >
@@ -347,6 +350,7 @@ import ProductConversation from '../community/ProductConversation.vue';
 import ProductGallery from './components/ProductGallery.vue';
 import CatalogDialog from './components/CatalogDialog.vue';
 import { get, post, type ApiError } from '../../shared/api';
+import { isExperienceProduct, experienceProductNotice } from '../trade/experiencePayment';
 import EmptyState from '../../shared/components/EmptyState.vue';
 import MmButton from '../../shared/components/MmButton.vue';
 import MmSkeleton from '../../shared/components/MmSkeleton.vue';
@@ -385,6 +389,9 @@ let productGeneration = 0;
 let actionGeneration = 0;
 const isOwner = computed(
   () => !!product.value && auth.me?.id === product.value.seller.id,
+);
+const unsupportedExperience = computed(() =>
+  !!product.value?.experienceSource && !isExperienceProduct(product.value.experienceSource),
 );
 const loginTarget = computed(() => ({
   path: '/login',
@@ -439,6 +446,10 @@ onScopeDispose(() => {
   actionGeneration++;
 });
 function canTrade() {
+  if (unsupportedExperience.value) {
+    actionError.value = '该来源商品暂未开放结算，请联系卖家了解情况。';
+    return false;
+  }
   if (
     !product.value ||
     product.value.status !== 'ON_SALE' ||

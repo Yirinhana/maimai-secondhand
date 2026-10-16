@@ -96,12 +96,48 @@ class ImportTests(unittest.TestCase):
         self.assertEqual(21,plan["new"][0]["owner"]["seller"])
         self.assertTrue(all(q.startswith("SELECT ") for q in self.db.queries))
 
-    def test_inactive_unapproved_or_unqualified_seller_rejected(self):
-        for field,value in [("status","DISABLED"),("role",0),("approval","PENDING"),("channel","PENDING"),("source","other"),("matchedImages",2)]:
+    def test_inactive_unapproved_or_unknown_channel_seller_rejected(self):
+        for field,value in [("status","DISABLED"),("role",0),("approval","PENDING"),("channel","UNKNOWN"),("channel",None),("source","other"),("matchedImages",2)]:
             with self.subTest(field=field):
                 old=self.db.owner[field];self.db.owner[field]=value
                 with self.assertRaisesRegex(app.ImportErrorSafe,"NOT_ELIGIBLE"):self.plan()
                 self.db.owner[field]=old
+
+    def test_all_known_channels_allow_only_simulated_inventory_without_changing_qualification(self):
+        for channel in ("PENDING", "QUALIFIED", "UNQUALIFIED"):
+            with self.subTest(channel=channel):
+                self.db.owner["channel"]=channel
+                plan=self.plan();row=plan["new"][0]
+                self.assertEqual(channel,row["owner"]["channel"])
+                sql=app.build_sql(plan,19,approve=True)
+                self.assertIn(app.literal(app.BATCH),sql)
+                self.assertIn(app.guard_equal(row["anchorQuery"],row["owner"]),sql)
+                for forbidden in ("UPDATE seller_applications", "INSERT INTO seller_applications", "UPDATE user_roles", "INSERT INTO user_roles", "UPDATE users"):
+                    self.assertNotIn(forbidden,sql)
+                self.assertEqual(channel,self.db.owner["channel"])
+
+    def test_pending_channel_snapshot_remains_guarded_if_channel_changes_after_preview(self):
+        self.db.owner["channel"]="PENDING"
+        plan=self.plan();row=plan["new"][0];expected=app.guard_equal(row["anchorQuery"],deepcopy(row["owner"]))
+        self.db.owner["channel"]="QUALIFIED"
+        sql=app.build_sql(plan,19,approve=True)
+        self.assertEqual("PENDING",row["owner"]["channel"])
+        self.assertIn(expected,sql)
+        self.assertIn("SELECT id FROM seller_applications",sql)
+        self.assertIn("FOR UPDATE",sql)
+
+    def test_nonapproved_application_rejected_for_every_known_channel(self):
+        for approval in ("PENDING", "REJECTED", None):
+            for channel in ("PENDING", "QUALIFIED", "UNQUALIFIED"):
+                with self.subTest(approval=approval,channel=channel):
+                    self.db.owner.update(approval=approval,channel=channel)
+                    with self.assertRaisesRegex(app.ImportErrorSafe,"NOT_ELIGIBLE"):self.plan()
+
+    def test_simulated_inventory_policy_cannot_be_relabelled_as_another_batch(self):
+        for field in ("batch","source"):
+            data=deepcopy(self.data);data[field]="ordinary-listings"
+            with self.subTest(field=field),self.assertRaisesRegex(app.ImportErrorSafe,"BATCH"):
+                app.validate_manifest(data)
 
     def test_anchor_ambiguity_rejected(self):
         with patch.object(self.db,"rows",side_effect=[[],[self.db.owner,self.db.owner]]):

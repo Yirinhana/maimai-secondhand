@@ -26,6 +26,7 @@ OLD_MEDIA = ROOT / "backend/src/main/resources/demo/catalog-v2"
 BATCH = "maimai-experience-catalog-021"
 ANCHOR_SOURCE = "maimai-experience-045"
 ACTION = "CATALOG_EXPANSION_ITEM"
+KNOWN_CHANNEL_STATUSES = ("PENDING", "QUALIFIED", "UNQUALIFIED")
 MYSQL = Path("C:/Program Files/MySQL/MySQL Server 8.0/bin/mysql.exe")
 CLIENT = ROOT / ".local/private/mysql-client.ini"
 UPLOADS = ROOT / ".local/uploads/products"
@@ -302,7 +303,9 @@ def plan_import(db, items, images, anchors, allow_new_categories=False):
         if len(matches) != 1:
             fail("SELLER_ANCHOR_AMBIGUOUS:" + item["key"])
         owner = matches[0]
-        if owner["source"] != ANCHOR_SOURCE or owner["status"] != "ACTIVE" or owner["role"] != 1 or owner["approval"] != "APPROVED" or owner["channel"] != "QUALIFIED" or owner["images"] != 3 or owner["matchedImages"] != 3:
+        # This fixed batch only creates simulated inventory. Real payment qualification is separate.
+        # Keep the actual channel in the owner snapshot: guard_equal rechecks it inside the transaction.
+        if owner["source"] != ANCHOR_SOURCE or owner["status"] != "ACTIVE" or owner["role"] != 1 or owner["approval"] != "APPROVED" or owner["channel"] not in KNOWN_CHANNEL_STATUSES or owner["images"] != 3 or owner["matchedImages"] != 3:
             fail("SELLER_ANCHOR_NOT_ELIGIBLE:" + item["key"])
         region = text(owner["region"], 100)
         # Only inherit the seller's public region, never a private address or guessed location.

@@ -8,6 +8,7 @@ import {
   type SellerProductItem,
 } from '../../shared/types';
 import SellerTaskList from './SellerTaskList.vue';
+import SellerPublishingNotice from '../account/SellerPublishingNotice.vue';
 import UserAvatar from '../../shared/components/UserAvatar.vue';
 import ItemImage from '../../shared/components/ItemImage.vue';
 import JourneyGuide from '../../shared/components/JourneyGuide.vue';
@@ -78,6 +79,7 @@ onMounted(load);
       >
     </div>
     <template v-else>
+      <SellerPublishingNotice v-if="auth.me" :owner-id="auth.me.id" />
       <p v-if="loading" role="status">正在读取店铺数据…</p>
       <div v-else-if="error" class="mm-error" role="alert">
         {{ error }} <button @click="load">重新加载</button>
@@ -137,7 +139,7 @@ onMounted(load);
             <h2>发布前检查一下</h2>
             <p>成色、瑕疵和配件写清楚，库存数量与手头物品保持一致。</p>
             <p class="mm-muted">
-              体验商品的供给和成交记录保留来源说明，支付资格以渠道实际开通情况为准。
+              商品资料由卖家核实，模拟订单保留来源说明；真实收款资格另按渠道开通情况核验。
             </p>
           </section>
         </aside>

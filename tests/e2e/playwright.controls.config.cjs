@@ -9,6 +9,7 @@ module.exports = defineConfig({
     'admin-password.e2e.cjs',
     'dock-viewport.e2e.cjs',
     'listing-assistant.e2e.cjs',
+    'seller-simulation-publishing.e2e.cjs',
   ],
   workers: 1,
   retries: 0,

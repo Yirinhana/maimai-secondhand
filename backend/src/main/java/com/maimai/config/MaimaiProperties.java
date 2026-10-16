@@ -8,6 +8,7 @@ public class MaimaiProperties {
 
     private String uploadDir = ".local/uploads";
     private String frontendOrigin = "http://localhost:5173";
+    private boolean experienceListingEnabled = false;
     private final Mail mail = new Mail();
     private final Payment payment = new Payment();
 
@@ -15,6 +16,8 @@ public class MaimaiProperties {
     public void setUploadDir(String uploadDir) { this.uploadDir = uploadDir; }
     public String getFrontendOrigin() { return frontendOrigin; }
     public void setFrontendOrigin(String frontendOrigin) { this.frontendOrigin = frontendOrigin; }
+    public boolean isExperienceListingEnabled() { return experienceListingEnabled; }
+    public void setExperienceListingEnabled(boolean value) { experienceListingEnabled = value; }
     public Mail getMail() { return mail; }
     public Payment getPayment() { return payment; }
 

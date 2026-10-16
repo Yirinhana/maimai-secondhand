@@ -32,6 +32,8 @@
 
 站内比价不消耗模型额度。它筛选当前在售、有库存、卖家认证有效的商品，以折线展示最多12个样本的挂牌价，并显示最低价、中位价和最高价；点击样本可查看对应商品。横轴是不同商品样本，不是时间轴；该图不表示历史走势、成交价或全网行情。体验来源商品会单独说明，采用参考价仍需卖家点击确认。
 
+需要演示完整发布与交易流程时，可显式设置服务端 `MAIMAI_EXPERIENCE_LISTING_ENABLED=true`。平台审核通过的卖家可以发布带模拟来源的新商品，经商品审核后进入站内模拟收银台，无需真实收款渠道；该操作不把渠道状态改成已认证，也不发生真实扣款。默认关闭此开关，真实商品继续核验收款资格。本地 `local/test` 配合 `mock` 支付时也使用模拟发布，已经存在的正式交易资料不会自动改成模拟记录。
+
 ## 技术与结构
 
 前端使用 Vue 3、TypeScript、Vite、Pinia、Vue Router 和 Element Plus；后端使用 Java 21、Spring Boot、Spring Security、Spring Session JDBC 和 MySQL，数据库变更由 Flyway 管理。私信使用 WebSocket，部署样例采用 Nginx 与 systemd。

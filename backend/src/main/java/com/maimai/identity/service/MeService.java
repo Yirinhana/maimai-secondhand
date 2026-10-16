@@ -31,12 +31,14 @@ public class MeService {
     private final UserRepository userRepository;
     private final AddressRepository addressRepository;
     private final SellerApplicationRepository sellerApplicationRepository;
+    private final SellerPublishingPolicy publishingPolicy;
 
     public MeService(UserRepository userRepository, AddressRepository addressRepository,
-                     SellerApplicationRepository sellerApplicationRepository) {
+                     SellerApplicationRepository sellerApplicationRepository, SellerPublishingPolicy publishingPolicy) {
         this.userRepository = userRepository;
         this.addressRepository = addressRepository;
         this.sellerApplicationRepository = sellerApplicationRepository;
+        this.publishingPolicy = publishingPolicy;
     }
 
     /** 修改昵称，返回更新后的用户（控制器据此刷新会话主体）。 */
@@ -104,7 +106,7 @@ public class MeService {
         application.setStatus(Status.PENDING);
         application.setChannelStatus(ChannelStatus.PENDING);
         application.setIntro(request.intro());
-        SellerApplication saved = sellerApplicationRepository.save(application);
+        SellerApplication saved = sellerApplicationRepository.saveAndFlush(application);
         log.info("卖家申请已提交 userId={} applicationId={}", userId, saved.getId());
         return toView(saved);
     }
@@ -113,8 +115,12 @@ public class MeService {
     @Transactional(readOnly = true)
     public SellerApplicationView latestApplication(Long userId) {
         return sellerApplicationRepository.findTopByUserIdOrderByCreatedAtDescIdDesc(userId)
-                .map(MeService::toView)
-                .orElse(new SellerApplicationView(null, "NONE", null, null, null, null));
+                .map(this::toView)
+                .orElseGet(() -> {
+                    var capability = publishingPolicy.capability(userId);
+                    return new SellerApplicationView(null, "NONE", null, null, null, null,
+                            capability.mode(), capability.canPublish(), capability.message());
+                });
     }
 
     private void apply(Address address, AddressRequest request) {
@@ -146,9 +152,10 @@ public class MeService {
                 address.getRegion(), address.getDetail(), address.isDefault(), address.getCreatedAt());
     }
 
-    private static SellerApplicationView toView(SellerApplication application) {
+    private SellerApplicationView toView(SellerApplication application) {
+        var capability = publishingPolicy.capability(application.getUserId());
         return new SellerApplicationView(application.getId(), application.getStatus().name(),
                 application.getChannelStatus().name(), application.getIntro(), application.getReason(),
-                application.getCreatedAt());
+                application.getCreatedAt(), capability.mode(), capability.canPublish(), capability.message());
     }
 }

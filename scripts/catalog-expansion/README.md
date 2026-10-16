@@ -27,7 +27,7 @@ python scripts/catalog-expansion/import_catalog.py --limit 3
 
 `--ids` 使用清单键，不是数据库 ID；`--limit 3` 固定选择清单前 3 件，不表示“接下来未导入的 3 件”。二者不能同时使用。选中批次缺任何一张图时整批拒绝。没有选中的未完成图片不阻碍该批执行。
 
-卖家通过旧体验商品的标题、来源与三视图路径唯一定位，再读取其当前 seller_id；必须仍为 ACTIVE、具有 SELLER 角色，最新申请为 APPROVED，且本地模拟渠道状态为 QUALIFIED。不会修改用户角色、认证或渠道资格。所在地区取该卖家锚点商品的公开地区，不读取收货地址。
+卖家通过旧体验商品的标题、来源与三视图路径唯一定位，再读取其当前 seller_id；必须仍为 ACTIVE、具有 SELLER 角色，最新申请为 APPROVED。本工具的来源固定为 `maimai-experience-catalog-021`，仅追加模拟商品，所以合法的收款渠道状态 PENDING、QUALIFIED、UNQUALIFIED 均不影响本批导入；未知或缺失状态仍拒绝。它不会把模拟商品改成真实商品，也不会修改用户角色、卖家认证或收款渠道资格。所在地区取该卖家锚点商品的公开地区，不读取收货地址。
 
 分类按真实 ACTIVE 父类与 ACTIVE 叶子类匹配；同名异父类不会串联。仅在确实需要新增小类并人工确认时使用 `--create-missing-categories`，它只在已有且唯一的父类下追加缺失子类，不会新建父类或启用停用分类。本批 42 件均使用现有分类，正常不需要此参数。
 
@@ -43,7 +43,7 @@ python scripts/catalog-expansion/import_catalog.py --ids exp021-001,exp021-002 -
 
 ## 保留与回退
 
-每次应用先在 `.local/private/catalog-expansion/<timestamp>/` 保存完整数据库备份、选中清单与预览，安装仅属于该批的新图片，再在单一数据库事务中追加商品。事务内取得批次锁、分类与账号锁、再次检查卖家/分类/原图关系，核验每件清单键尚未导入，失败即随连接关闭回滚。
+每次应用先在 `.local/private/catalog-expansion/<timestamp>/` 保存完整数据库备份、选中清单与预览，安装仅属于该批的新图片，再在单一数据库事务中追加商品。事务内取得批次锁、分类与账号锁、再次检查卖家/分类/原图关系，核验每件清单键尚未导入，失败即随连接关闭回滚。原渠道状态保留在卖家快照中并参与事务内的完整相等校验；若预览后认证或渠道发生变化，必须重新预览，不会伪造渠道已开通。
 
 数据库审计以 `CATALOG_EXPANSION_ITEM` 和 `maimai-experience-catalog-021:<item-key>` 保留不可覆盖的键到产品 ID 映射；成功后导出 `idmap.json`、`installed-images.json` 与 `rollback-plan.json`。本地回执丢失时仍按数据库映射跳过。重复运行不会更改已有商品；用户后续改标题、价格、库存或下架都被保留。因并发变更触发保护时重新预览，不自动放宽校验。
 

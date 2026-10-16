@@ -319,7 +319,7 @@ import ItemImage from '../../shared/components/ItemImage.vue';
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { get, post, type ApiError } from '../../shared/api';
-import { EXPERIENCE_PRODUCT_SOURCE } from './experiencePayment';
+import { isExperienceProduct } from './experiencePayment';
 import { checkoutAttempt } from './checkoutAttempt';
 import { useAuthStore } from '../../shared/stores/auth';
 import {
@@ -387,13 +387,16 @@ const isExperienceCheckout = computed(
   () =>
     lines.value.length > 0 &&
     lines.value.every(
-      (line) => line.experienceSource === EXPERIENCE_PRODUCT_SOURCE,
+      (line) => isExperienceProduct(line.experienceSource),
     ),
 );
 const mixedExperience = computed(
   () =>
     lines.value.some((line) => !!line.experienceSource) &&
     !isExperienceCheckout.value,
+);
+const unsupportedExperience = computed(() =>
+  lines.value.some(line => !!line.experienceSource && !isExperienceProduct(line.experienceSource)),
 );
 const cartItemIds = ref<number[]>([]);
 const loading = ref(true);
@@ -478,6 +481,7 @@ const totalUnits = computed(() =>
   lines.value.reduce((sum, line) => sum + line.quantity, 0),
 );
 const submissionHint = computed(() => {
+  if (unsupportedExperience.value) return '部分商品暂未开放体验结算，请返回购物车调整';
   if (mixedExperience.value) return '体验商品与普通商品请分开结算';
   if (isExperienceCheckout.value && !experienceAccepted.value)
     return '请先确认体验订单说明';

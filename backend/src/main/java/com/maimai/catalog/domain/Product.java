@@ -36,6 +36,12 @@ public class Product {
     private String supplyNote;
     public String getExperienceSource() { return experienceSource; }
     public String getSupplyNote() { return supplyNote; }
+    public void markSellerSimulation() {
+        if (experienceSource == null) {
+            experienceSource = ExperienceProductSource.SELLER_SIMULATION;
+            supplyNote = "卖家提交的商品，当前用于站内模拟交易，不发生真实扣款或资金结算；商品情况和交付安排请与卖家核实。";
+        }
+    }
 
     @Column(name = "category_id", nullable = false)
     private Long categoryId;

@@ -32,6 +32,7 @@ public final class MeDtos {
     }
 
     public record SellerApplicationView(Long id, String status, String channelStatus, String intro,
-                                        String reason, Instant createdAt) {
+                                        String reason, Instant createdAt, String publishingMode,
+                                        boolean canPublish, String publishingMessage) {
     }
 }

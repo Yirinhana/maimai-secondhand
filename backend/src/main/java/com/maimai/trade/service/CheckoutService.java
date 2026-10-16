@@ -189,12 +189,13 @@ public class CheckoutService {
             Product product = productRepository.lockById(item.productId())
                     .orElseThrow(() -> BizException.notFound("商品不存在"));
             if (product.getSellerId().equals(userId)) throw BizException.badRequest("SELF_PURCHASE", "不能购买自己的商品");
-            if (experience && !"maimai-experience-045".equals(product.getExperienceSource()))
+            if (experience && !com.maimai.catalog.domain.ExperienceProductSource.supportsCheckout(product.getExperienceSource()))
                 throw BizException.conflict("EXPERIENCE_ONLY", "体验结算只能选择体验商品，请与普通商品分开结算");
             if (!experience && product.getExperienceSource() != null)
                 throw BizException.conflict("EXPERIENCE_PRODUCT", "该商品使用体验库存，可浏览、收藏和交流，不生成真实付款订单");
             var eligibility = jdbc.queryForList("SELECT status,channel_status FROM seller_applications WHERE user_id=? ORDER BY created_at DESC,id DESC LIMIT 1", product.getSellerId());
             if (eligibility.isEmpty() || !"APPROVED".equals(eligibility.getFirst().get("status"))
+                    || jdbc.queryForObject("SELECT COUNT(*) FROM user_roles WHERE user_id=? AND role='SELLER'",Long.class,product.getSellerId()) == 0
                     || (!experience && !"QUALIFIED".equals(eligibility.getFirst().get("channel_status")))) {
                 throw BizException.conflict("SELLER_NOT_QUALIFIED", "卖家当前资格不允许成交");
             }

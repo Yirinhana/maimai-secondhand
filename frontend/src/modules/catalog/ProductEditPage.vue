@@ -33,6 +33,7 @@
     </div>
 
     <template v-else>
+      <SellerPublishingNotice v-if="auth.isSeller && auth.me" :owner-id="auth.me.id" />
       <section
         v-if="product"
         class="mm-edit__state"
@@ -658,6 +659,7 @@ import GovernanceNotice from '../../shared/components/GovernanceNotice.vue';
 import { useCloudDraft } from './useCloudDraft';
 import DraftPhotos from './DraftPhotos.vue';
 import ListingAssistant from './ListingAssistant.vue';
+import SellerPublishingNotice from '../account/SellerPublishingNotice.vue';
 import {
   blankRecognitionPatch,
   categoryLeaves,

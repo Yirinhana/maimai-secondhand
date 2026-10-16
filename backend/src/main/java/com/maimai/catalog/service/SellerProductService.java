@@ -14,8 +14,7 @@ import com.maimai.catalog.repo.ProductRepository;
 import com.maimai.catalog.repo.StockLogRepository;
 import com.maimai.common.BizException;
 import com.maimai.common.security.SecurityUtils;
-import com.maimai.identity.domain.SellerApplication;
-import com.maimai.identity.repo.SellerApplicationRepository;
+import com.maimai.identity.service.SellerPublishingPolicy;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -39,7 +38,7 @@ public class SellerProductService {
     private final ProductImageRepository productImageRepository;
     private final StockLogRepository stockLogRepository;
     private final CategoryRepository categoryRepository;
-    private final SellerApplicationRepository sellerApplicationRepository;
+    private final SellerPublishingPolicy publishingPolicy;
     private final ProductAssembler assembler;
     private final ProductSpecifications specifications;
     private final ProductRevisionService revisions;
@@ -50,7 +49,7 @@ public class SellerProductService {
                                 ProductImageRepository productImageRepository,
                                 StockLogRepository stockLogRepository,
                                 CategoryRepository categoryRepository,
-                                SellerApplicationRepository sellerApplicationRepository,
+                                SellerPublishingPolicy publishingPolicy,
                                 ProductAssembler assembler,ProductRevisionService revisions,
                                 CategoryAvailability categoryAvailability,org.springframework.jdbc.core.JdbcTemplate jdbc) {
         this.specifications=new ProductSpecifications(jdbc);
@@ -58,7 +57,7 @@ public class SellerProductService {
         this.productImageRepository = productImageRepository;
         this.stockLogRepository = stockLogRepository;
         this.categoryRepository = categoryRepository;
-        this.sellerApplicationRepository = sellerApplicationRepository;
+        this.publishingPolicy = publishingPolicy;
         this.assembler = assembler;
         this.revisions=revisions;this.categoryAvailability=categoryAvailability;this.jdbc=jdbc;
     }
@@ -73,6 +72,7 @@ public class SellerProductService {
         }
         Product product = new Product();
         product.setSellerId(userId);
+        if (publishingPolicy.simulationEnabled()) product.markSellerSimulation();
         applyFields(product, request.title(), request.categoryId(), request.description(),
                 request.condition(), request.defects(), request.priceCents(), request.region(),
                 request.deliveryMethods(), request.freightCents(), request.returnPromise());
@@ -152,13 +152,26 @@ public class SellerProductService {
 
     public void submit(Long userId, Long productId) {
         Product product = ownedProduct(userId, productId);
-        requireQualifiedSeller(userId);
         if (product.getStatus() != Product.Status.DRAFT
                 && product.getStatus() != Product.Status.REJECTED
                 && product.getStatus() != Product.Status.OFF_SHELF) {
             throw BizException.badRequest("PRODUCT_STATUS_INVALID", "当前状态不可提交审核");
         }
+        if (publishingPolicy.simulationEnabled() && canInitializeSimulation(product)) {
+            publishingPolicy.requirePublish(userId);
+            product.markSellerSimulation();
+        } else {
+            publishingPolicy.requireExistingPublication(userId, product.getExperienceSource());
+        }
         submitForReview(product);
+    }
+
+    /** Only an untouched null-source draft can acquire a new mode; prior listings/orders keep their provenance. */
+    private boolean canInitializeSimulation(Product product) {
+        return product.getExperienceSource() == null && product.getStatus() == Product.Status.DRAFT
+                && jdbc.queryForObject("SELECT COUNT(*) FROM order_items WHERE product_id=?",Long.class,product.getId()) == 0
+                && jdbc.queryForObject("SELECT COUNT(*) FROM product_review_logs WHERE product_id=?",Long.class,product.getId()) == 0
+                && jdbc.queryForObject("SELECT COUNT(*) FROM product_revisions WHERE product_id=? AND action IN ('SUBMIT_REVIEW','APPROVE','REJECT','OFF_SHELF')",Long.class,product.getId()) == 0;
     }
 
     public void offShelf(Long userId, Long productId) {
@@ -296,22 +309,13 @@ public class SellerProductService {
         return String.join(",", normalized);
     }
 
-    /** 卖家准入：最新申请须 APPROVED。 */
-    private SellerApplication requireApprovedSeller(Long userId) {
-        SellerApplication application = sellerApplicationRepository
-                .findTopByUserIdOrderByCreatedAtDescIdDesc(userId)
-                .orElseThrow(() -> BizException.forbidden("需先完成卖家准入审核"));
-        if (application.getStatus() != SellerApplication.Status.APPROVED) {
-            throw BizException.forbidden("需先完成卖家准入审核");
-        }
-        return application;
+    /** 卖家准入与真实渠道资格独立；草稿仍须属于正常通过审核的卖家。 */
+    private void requireApprovedSeller(Long userId) {
+        publishingPolicy.requireApprovedSeller(userId);
     }
 
-    /** 发布可成交商品：还须收款渠道资格 QUALIFIED。 */
+    /** 模拟模式只要求平台审核；真实模式继续校验真实渠道资格。 */
     private void requireQualifiedSeller(Long userId) {
-        SellerApplication application = requireApprovedSeller(userId);
-        if (application.getChannelStatus() != SellerApplication.ChannelStatus.QUALIFIED) {
-            throw BizException.forbidden("收款渠道资格未开通，暂不可发布可成交商品");
-        }
+        publishingPolicy.requirePublish(userId);
     }
 }

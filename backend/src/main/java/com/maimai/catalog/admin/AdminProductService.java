@@ -39,19 +39,22 @@ public class AdminProductService {
     private final com.maimai.catalog.service.ProductRevisionService revisions;
     private final com.maimai.catalog.service.CategoryAvailability categories;
     private final org.springframework.jdbc.core.JdbcTemplate jdbc;
+    private final com.maimai.identity.service.SellerPublishingPolicy publishingPolicy;
 
     public AdminProductService(ProductRepository productRepository,
                                ProductReviewLogRepository productReviewLogRepository,
                                AdminAuditLogRepository adminAuditLogRepository,
                                NotificationService notificationService,
                                ProductAssembler assembler,com.maimai.catalog.service.ProductRevisionService revisions,
-                               com.maimai.catalog.service.CategoryAvailability categories,org.springframework.jdbc.core.JdbcTemplate jdbc) {
+                               com.maimai.catalog.service.CategoryAvailability categories,org.springframework.jdbc.core.JdbcTemplate jdbc,
+                               com.maimai.identity.service.SellerPublishingPolicy publishingPolicy) {
         this.productRepository = productRepository;
         this.productReviewLogRepository = productReviewLogRepository;
         this.adminAuditLogRepository = adminAuditLogRepository;
         this.notificationService = notificationService;
         this.assembler = assembler;
         this.revisions=revisions;this.categories=categories;this.jdbc=jdbc;
+        this.publishingPolicy=publishingPolicy;
     }
 
     /** 待审核队列：status 限 PENDING_REVIEW/CHANGES_REVIEW，默认 PENDING_REVIEW，按提交时间升序。 */
@@ -105,6 +108,7 @@ public class AdminProductService {
             throw BizException.badRequest("REVIEW_REASON_REQUIRED", "拒绝时必须填写理由");
         }
         if(approve) {
+            publishingPolicy.requireExistingPublication(product.getSellerId(), product.getExperienceSource());
             categories.requireActive(product.getCategoryId());
             if(assembler.images(productId).isEmpty())throw BizException.badRequest("PRODUCT_IMAGES_REQUIRED","商品至少需要一张图片才可上架");
         }
