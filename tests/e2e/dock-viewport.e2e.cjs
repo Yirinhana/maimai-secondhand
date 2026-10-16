@@ -5,7 +5,7 @@ const { test, expect } = require('@playwright/test');
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
     sessionStorage.setItem('maimai-welcome-seen-v1', '1');
-    localStorage.removeItem('maimai-maizai-dock-v1');
+    // Each test has its own context; keep the saved position on reload.
   });
   await page.route('**/*', (route) => {
     const url = new URL(route.request().url());
@@ -58,6 +58,105 @@ test.beforeEach(async ({ page }) => {
     };
     return route.fulfill({ json: responses[pathname] ?? [] });
   });
+});
+
+for (const width of [320, 390, 1920]) {
+  test(`cards and page actions scroll behind the user's fixed dock (${width}px)`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/search');
+    await expect(page.locator('.mm-product-card')).toHaveCount(24);
+    const launcher = page.locator('.tina-launcher');
+    await expect(launcher).toBeVisible();
+    await launcher.focus();
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('ArrowUp');
+    await expect(launcher).not.toHaveClass(/is-snapping/);
+    const before = await dockState(page);
+    const preference = await page.evaluate(() => localStorage.getItem('maimai-maizai-dock-v1'));
+    for (const top of [800, 1400, 400, 0]) {
+      await page.evaluate((y) => window.scrollTo({ top: y, behavior: 'instant' }), top);
+      await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      const after = await dockState(page);
+      expect(after.x).toBeCloseTo(before.x, 1);
+      expect(after.y).toBeCloseTo(before.y, 1);
+      expect(after.within).toBe(true);
+    }
+    // A transformed application shell and a page button must not contain or
+    // reposition the overlay. The button beneath it stays beneath it.
+    await page.evaluate(() => {
+      document.querySelector('#app').style.transform = 'translateZ(0)';
+      const dock = document.querySelector('.tina-launcher').getBoundingClientRect();
+      const button = document.createElement('button');
+      button.textContent = '页面内容按钮';
+      button.id = 'dock-page-obstacle';
+      button.style.cssText = `position:fixed;z-index:50;left:${dock.left}px;top:${dock.top}px;width:${dock.width}px;height:${dock.height}px`;
+      document.querySelector('main').append(button);
+    });
+    await expect.poll(async () => (await dockState(page)).y).toBeCloseTo(before.y, 1);
+    expect(await launcher.evaluate((e) => {
+      const r = e.getBoundingClientRect();
+      return e.parentElement === document.body && e.contains(document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2));
+    })).toBe(true);
+    expect(await page.evaluate(() => localStorage.getItem('maimai-maizai-dock-v1'))).toBe(preference);
+    await launcher.click();
+    await expect(page.locator('#tina-dialog')).toBeVisible();
+    await page.getByRole('button', { name: '关闭麦仔客服', exact: true }).click();
+    expect((await dockState(page)).y).toBeCloseTo(before.y, 1);
+    await page.screenshot({ path: test.info().outputPath(`manual-dock-${width}.png`) });
+  });
+}
+
+test('manual drag snaps to the nearest edge and survives navigation and reload', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto('/search');
+  const launcher = page.locator('.tina-launcher');
+  await expect(launcher).toBeVisible();
+  await expect(page.locator('.mm-product-card')).toHaveCount(24);
+  await page.evaluate(() => {
+    window.dockNativeDrags = 0;
+    document.addEventListener('dragstart', () => window.dockNativeDrags++);
+  });
+  const start = await launcher.boundingBox();
+  await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(250, 340, { steps: 12 });
+  await expect(launcher).toHaveClass(/is-dragging/);
+  expect(await page.evaluate(() => window.dockNativeDrags)).toBe(0);
+  expect((await dockState(page)).x).toBeGreaterThan(100);
+  await page.mouse.up();
+  await expect(launcher).not.toHaveClass(/is-snapping|is-dragging/);
+  const chosen = await dockState(page);
+  expect(chosen.x).toBeCloseTo(12, 1);
+  await expect(page.locator('#tina-dialog')).not.toBeVisible();
+  const saved = await page.evaluate(() => localStorage.getItem('maimai-maizai-dock-v1'));
+  expect(JSON.parse(saved).edge).toBe('left');
+  await page.goto('/');
+  await expect.poll(async () => (await dockState(page)).y).toBeCloseTo(chosen.y, 1);
+  await page.reload();
+  await expect.poll(async () => (await dockState(page)).y).toBeCloseTo(chosen.y, 1);
+  expect(await page.evaluate(() => localStorage.getItem('maimai-maizai-dock-v1'))).toBe(saved);
+});
+
+test('touch drag floats under the finger and only snaps after release', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/search');
+  const launcher = page.locator('.tina-launcher');
+  await expect(launcher).toBeVisible();
+  const r = await launcher.boundingBox();
+  const cdp = await page.context().newCDPSession(page);
+  try {
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: r.x + r.width / 2, y: r.y + r.height / 2 }] });
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: 145, y: 300 }] });
+    await expect(launcher).toHaveClass(/is-dragging/);
+    const floating = await dockState(page);
+    expect(floating.x).toBeGreaterThan(40);
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await expect(launcher).not.toHaveClass(/is-dragging|is-snapping/);
+    const settled = await dockState(page);
+    expect(settled.x).toBeCloseTo(12, 1);
+    expect(settled.y).toBeCloseTo(floating.y, 1);
+    await expect(page.locator('#tina-dialog')).not.toBeVisible();
+  } finally { await cdp.detach(); }
 });
 
 async function dockState(page) {

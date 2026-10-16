@@ -165,45 +165,49 @@ onBeforeUnmount(() => dialog.value?.close());
 </script>
 
 <template>
-  <button
-    ref="launcher"
-    type="button"
-    class="tina-launcher"
-    :class="{
-      'is-dragging': dock.dragging.value,
-      'is-snapping': dock.snapping.value,
-    }"
-    :style="dock.style.value"
-    aria-label="打开麦仔客服"
-    aria-describedby="maizai-position-help"
-    title="拖动麦仔，松手自动贴边"
-    aria-haspopup="dialog"
-    :aria-expanded="opened"
-    aria-controls="tina-dialog"
-    @click="openLauncher"
-    @pointerdown="dock.down"
-    @pointermove="moveLauncher"
-    @pointerup="dock.up"
-    @pointercancel="dock.cancel"
-    @lostpointercapture="dock.cancel"
-    @keydown="dock.keyboard"
-    @pointerenter="greet"
-    @pointerleave="reset"
-    @focus="greet"
-  >
-    <MaizaiMascot
-      class="tina-launcher__mascot"
-      :greeting="greeting"
-      :active="
-        animated && !opened && !dock.dragging.value && !dock.snapping.value
-      "
-    />
-    <span class="tina-launcher__label">麦仔客服</span
-    ><span v-if="unread" class="tina-unread" aria-label="有新回复"></span>
-  </button>
-  <span id="maizai-position-help" class="mm-visually-hidden"
-    >拖动时自由移动，松手后吸附到最近的左右边缘。键盘方向键调整位置，Home恢复右下角，回车打开客服。</span
-  >
+  <!-- Keep the fixed launcher independent of page transforms/stacking contexts.
+       Native modal dialogs still own the top layer and focus while open. -->
+  <Teleport to="body">
+    <button
+      ref="launcher"
+      type="button"
+      class="tina-launcher"
+      :class="{
+        'is-dragging': dock.dragging.value,
+        'is-snapping': dock.snapping.value,
+      }"
+      :style="dock.style.value"
+      aria-label="打开麦仔客服"
+      aria-describedby="maizai-position-help"
+      title="拖动麦仔，松手自动贴边"
+      aria-haspopup="dialog"
+      :aria-expanded="opened"
+      aria-controls="tina-dialog"
+      @click="openLauncher"
+      @pointerdown="dock.down"
+      @pointermove="moveLauncher"
+      @pointerup="dock.up"
+      @pointercancel="dock.cancel"
+      @lostpointercapture="dock.cancel"
+      @keydown="dock.keyboard"
+      @pointerenter="greet"
+      @pointerleave="reset"
+      @focus="greet"
+    >
+      <MaizaiMascot
+        class="tina-launcher__mascot"
+        :greeting="greeting"
+        :active="
+          animated && !opened && !dock.dragging.value && !dock.snapping.value
+        "
+      />
+      <span class="tina-launcher__label">麦仔客服</span
+      ><span v-if="unread" class="tina-unread" aria-label="有新回复"></span>
+    </button>
+    <span id="maizai-position-help" class="mm-visually-hidden"
+      >拖动时自由移动，松手后吸附到最近的左右边缘。键盘方向键调整位置，Home恢复右下角，回车打开客服。</span
+    >
+  </Teleport>
   <dialog
     id="tina-dialog"
     ref="dialog"
@@ -511,7 +515,7 @@ onBeforeUnmount(() => dialog.value?.close());
   position: fixed;
   right: max(18px, calc((100vw - 1380px) / 2));
   bottom: max(18px, env(safe-area-inset-bottom));
-  z-index: 40;
+  z-index: 1000;
   display: flex;
   flex-direction: column;
   align-items: center;

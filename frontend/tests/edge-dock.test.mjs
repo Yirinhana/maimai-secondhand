@@ -79,9 +79,11 @@ function fixture({ width = 390, height = 844, saved = new Map() } = {}) {
   let dock,
     captured = null,
     rendered;
+  const focusCalls = [];
   const button = {
     offsetWidth: 76,
     offsetHeight: 82,
+    focus: (options) => focusCalls.push(options),
     getBoundingClientRect: () =>
       rendered ?? {
         left: Number.parseFloat(dock.style.value.left) || width - 88,
@@ -109,6 +111,7 @@ function fixture({ width = 390, height = 844, saved = new Map() } = {}) {
     button: 0,
     clientX: x,
     clientY: y,
+    preventDefault() {},
     ...extra,
   });
   const flushResize = () => {
@@ -124,12 +127,47 @@ function fixture({ width = 390, height = 844, saved = new Map() } = {}) {
     win,
     point,
     button,
+    focusCalls,
+    captured: () => captured,
     flushResize,
     rendered: (value) => {
       rendered = value;
     },
   };
 }
+
+test('accepted primary pointer blocks native drag while retaining focus and ordinary clicks', () => {
+  const f = fixture();
+  let prevented = false;
+  f.dock.down(
+    f.point(340, 791, {
+      preventDefault() {
+        prevented = true;
+      },
+    }),
+  );
+  assert.equal(prevented, true);
+  assert.equal(f.captured(), 1);
+  assert.deepEqual(f.focusCalls, [{ preventScroll: true }]);
+  f.dock.up(f.point(340, 791));
+  assert.equal(f.dock.click({}), true, 'an ordinary tap still opens the chat');
+});
+
+test('non-primary, right-button and concurrent pointers keep their default behavior', () => {
+  const f = fixture();
+  let prevented = 0;
+  const preventDefault = () => prevented++;
+  f.dock.down(f.point(340, 791, { isPrimary: false, preventDefault }));
+  f.dock.down(f.point(340, 791, { button: 2, preventDefault }));
+  assert.equal(prevented, 0);
+  assert.deepEqual(f.focusCalls, []);
+  assert.equal(f.captured(), null);
+  f.dock.down(f.point(340, 791));
+  f.dock.down(f.point(340, 791, { pointerId: 2, preventDefault }));
+  assert.equal(prevented, 0);
+  assert.equal(f.focusCalls.length, 1);
+  assert.equal(f.captured(), 1);
+});
 
 for (const width of [390, 1280]) {
   test(`held pointer moves through the centre, releases to the nearest side (${width}px)`, () => {
@@ -275,34 +313,83 @@ test('unavailable local storage does not interrupt dragging', () => {
   assert.equal(f.dock.style.value.left, '12px');
 });
 
-test('page actions stay clear of the launcher without overwriting the saved preference', () => {
+test('page scrolling and nearby buttons never move the manually chosen dock', () => {
+  const f = fixture();
+  f.dock.down(f.point(340, 791));
+  f.dock.move(f.point(100, 300));
+  f.dock.up(f.point(100, 300));
+  const chosen = { ...f.dock.style.value };
+  const preference = [...f.saved.entries()];
+  let obstacleReads = 0;
+  globalThis.document.querySelectorAll = () => [
+    {
+      getClientRects: () => [{}],
+      getBoundingClientRect: () => {
+        obstacleReads++;
+        return { left: 0, right: 390, top: 250, bottom: 400 };
+      },
+    },
+  ];
+  for (const scrollY of [300, 900, 2000, 400, 0]) {
+    f.win.scrollY = scrollY;
+    f.win.dispatchEvent(new Event('scroll'));
+    f.win.visualViewport.dispatchEvent(new Event('scroll'));
+    f.flushResize();
+    assert.deepEqual(f.dock.style.value, chosen);
+    assert.deepEqual([...f.saved.entries()], preference);
+  }
+  globalThis.document.querySelectorAll = () => [];
+  f.win.dispatchEvent(new Event('resize'));
+  f.flushResize();
+  assert.deepEqual(f.dock.style.value, chosen);
+  assert.equal(
+    obstacleReads,
+    0,
+    'nearby page content must not drive positioning',
+  );
+});
+
+test('release keeps the chosen height even if a card or back-to-top button occupies it', () => {
   const f = fixture();
   globalThis.document.querySelectorAll = () => [
     {
       getClientRects: () => [{}],
       getBoundingClientRect: () => ({
         left: 300,
-        right: 370,
-        top: 760,
-        bottom: 804,
+        right: 390,
+        top: 250,
+        bottom: 400,
       }),
     },
   ];
-  f.win.dispatchEvent(new Event('scroll'));
+  f.dock.down(f.point(340, 791));
+  f.dock.move(f.point(340, 300));
+  f.dock.up(f.point(340, 300));
+  assert.equal(f.dock.position.value.edge, 'right');
+  assert.equal(f.dock.style.value.left, '302px');
+  assert.equal(f.dock.style.value.top, '259px');
+  const saved = JSON.parse(f.saved.values().next().value);
+  assert.equal(saved.ratio, (259 - 12) / (750 - 12));
+});
+
+test('a smaller keyboard viewport constrains placement temporarily and restores the saved height', () => {
+  const f = fixture();
+  f.dock.down(f.point(340, 791));
+  f.dock.move(f.point(100, 650));
+  f.dock.up(f.point(100, 650));
+  const chosen = { ...f.dock.style.value };
+  const preference = [...f.saved.entries()];
+  Object.assign(f.win.visualViewport, { height: 340, offsetTop: 40 });
+  f.win.visualViewport.dispatchEvent(new Event('resize'));
   f.flushResize();
   const top = Number.parseFloat(f.dock.style.value.top);
-  assert.ok(top + 82 <= 756, 'launcher stays above the visible page action');
-  assert.equal(f.dock.position.value.edge, 'right');
-  assert.equal(f.dock.position.value.ratio, 1);
-  assert.equal(
-    f.saved.size,
-    0,
-    'automatic placement must not save a new user preference',
-  );
-  globalThis.document.querySelectorAll = () => [];
-  f.win.dispatchEvent(new Event('scroll'));
+  assert.ok(top >= 52 && top + 82 <= 368);
+  assert.deepEqual([...f.saved.entries()], preference);
+  Object.assign(f.win.visualViewport, { height: 844, offsetTop: 0 });
+  f.win.visualViewport.dispatchEvent(new Event('resize'));
   f.flushResize();
-  assert.equal(f.dock.style.value.top, '750px');
+  assert.deepEqual(f.dock.style.value, chosen);
+  assert.deepEqual([...f.saved.entries()], preference);
 });
 
 test('pinch viewport offsets use CSS pixels and keep the selected side without saving', () => {

@@ -24,7 +24,6 @@ export function useEdgeDock(launcher: Ref<HTMLButtonElement | null>) {
   } | null = null;
   let suppressClick = false;
   let observer: ResizeObserver | undefined;
-  let contentObserver: MutationObserver | undefined;
   let resizeFrame = 0;
   const style = computed(() =>
     coordinates.value
@@ -73,7 +72,6 @@ export function useEdgeDock(launcher: Ref<HTMLButtonElement | null>) {
       ),
       middle: left + width / 2,
       width: element.offsetWidth,
-      height: element.offsetHeight,
     };
   }
   function place() {
@@ -87,51 +85,12 @@ export function useEdgeDock(launcher: Ref<HTMLButtonElement | null>) {
       return;
     }
     const left = position.value.edge === 'left' ? area.minX : area.maxX;
-    const preferred =
-      area.minY + (area.maxY - area.minY) * position.value.ratio;
-    // Keep the user's saved edge, but make room for visible page actions. This
-    // temporary adjustment is never persisted over the user's drag preference.
-    const obstacles = [
-      ...document.querySelectorAll<HTMLElement>(
-        'main button, main a, main input:not([type="hidden"]), main select, main textarea, main summary, .mm-back-top',
-      ),
-    ]
-      .filter(
-        (e) =>
-          e.getClientRects().length &&
-          getComputedStyle(e).visibility !== 'hidden',
-      )
-      .map((e) => e.getBoundingClientRect())
-      .filter(
-        (r) =>
-          r.bottom > area.minY &&
-          r.top < area.maxY + area.height &&
-          left < r.right + 4 &&
-          left + area.width > r.left - 4,
-      );
-    const overlap = (top: number) =>
-      obstacles.reduce(
-        (sum, r) =>
-          sum +
-          Math.max(
-            0,
-            Math.min(top + area.height, r.bottom + 4) -
-              Math.max(top, r.top - 4),
-          ),
-        0,
-      );
-    const candidates = [
-      preferred,
-      area.minY,
-      area.maxY,
-      ...obstacles.flatMap((r) => [r.top - area.height - 4, r.bottom + 4]),
-    ].map((top) => clamp(top, area.minY, area.maxY));
-    candidates.sort(
-      (a, b) =>
-        overlap(a) - overlap(b) ||
-        Math.abs(a - preferred) - Math.abs(b - preferred),
-    );
-    coordinates.value = { left, top: candidates[0] ?? preferred };
+    // Only the user's preference and the visible viewport determine position.
+    // Page cards/buttons scrolling behind this fixed overlay must not move it.
+    coordinates.value = {
+      left,
+      top: area.minY + (area.maxY - area.minY) * position.value.ratio,
+    };
   }
   function persist() {
     try {
@@ -168,6 +127,11 @@ export function useEdgeDock(launcher: Ref<HTMLButtonElement | null>) {
     if (!event.isPrimary || event.button !== 0 || pointer) return;
     const element = launcher.value;
     if (!element) return;
+    // Own the gesture before the launcher moves over a draggable page link.
+    // Otherwise native mouse drag can cancel pointer capture mid-gesture.
+    event.preventDefault();
+    // Cancelling pointerdown also cancels default focus; retain keyboard access.
+    element.focus({ preventScroll: true });
     const rect = element.getBoundingClientRect();
     const interruptedSnap = snapping.value;
     // Freeze the visible position, not the previous animation's destination.
@@ -306,14 +270,7 @@ export function useEdgeDock(launcher: Ref<HTMLButtonElement | null>) {
     place();
     observer = new ResizeObserver(schedulePlace);
     if (launcher.value) observer.observe(launcher.value);
-    const main = document.querySelector('main');
-    if (main) {
-      observer.observe(main);
-      contentObserver = new MutationObserver(schedulePlace);
-      contentObserver.observe(main, { childList: true, subtree: true });
-    }
     window.addEventListener('resize', fitViewport);
-    window.addEventListener('scroll', schedulePlace, { passive: true });
     window.addEventListener('blur', cancel);
     window.visualViewport?.addEventListener('resize', fitViewport);
     window.visualViewport?.addEventListener('scroll', fitViewport);
@@ -323,10 +280,8 @@ export function useEdgeDock(launcher: Ref<HTMLButtonElement | null>) {
     cancel();
     stopSnap();
     observer?.disconnect();
-    contentObserver?.disconnect();
     if (resizeFrame) cancelAnimationFrame(resizeFrame);
     window.removeEventListener('resize', fitViewport);
-    window.removeEventListener('scroll', schedulePlace);
     window.removeEventListener('blur', cancel);
     window.visualViewport?.removeEventListener('resize', fitViewport);
     window.visualViewport?.removeEventListener('scroll', fitViewport);
