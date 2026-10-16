@@ -259,7 +259,7 @@ test('seller sees useful product content and a prominent publish action before h
   expect(state.errors).toEqual([]);
 });
 
-test('publishing starts with the form and reports an incomplete draft beside the top save action', async ({
+test('publishing starts with photos and reports an incomplete draft beside the top save action', async ({
   page,
 }) => {
   const state = await installFixtures(page, 'seller');
@@ -267,7 +267,9 @@ test('publishing starts with the form and reports an incomplete draft beside the
   await page.goto('/publish');
   const title = page.getByLabel('标题', { exact: true });
   const titleBox = await bounds(title);
-  expect(titleBox.y + titleBox.height).toBeLessThan(650);
+  const photoBox = await bounds(page.locator('.draft-photos input[type="file"]'));
+  expect(photoBox.y + photoBox.height).toBeLessThan(650);
+  expect(photoBox.y).toBeLessThan(titleBox.y);
   const formBox = await bounds(page.locator('.mm-edit__form'));
   const helpBox = await bounds(page.getByLabel('发布帮助与草稿状态'));
   expect(helpBox.x).toBeGreaterThanOrEqual(formBox.x + formBox.width);
@@ -281,7 +283,7 @@ test('publishing starts with the form and reports an incomplete draft beside the
   );
   await expect(title).toHaveValue('填写到一半仍然保留的闲置');
   await expect(
-    page.getByRole('combobox', { name: '分类', exact: true }),
+    page.getByRole('combobox', { name: '商品大类', exact: true }),
   ).toBeFocused();
   expect(state.errors).toEqual([]);
 });

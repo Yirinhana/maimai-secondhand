@@ -43,6 +43,19 @@ if (Test-Path -LiteralPath $governanceConfigPath) {
     }
 }
 
+# Separate, opt-in owner-triggered image recognition; never execute env content.
+$listingConfigPath = Join-Path $ProjectRoot '.local/private/listing-assistant.env'
+if (Test-Path -LiteralPath $listingConfigPath) {
+    $allowedListingNames = @('MAIMAI_LISTING_AI_ENABLED', 'MAIMAI_LISTING_AI_BASE_URL',
+        'MAIMAI_LISTING_AI_API_KEY', 'MAIMAI_LISTING_AI_MODEL', 'MAIMAI_LISTING_AI_DAILY_LIMIT', 'MAIMAI_LISTING_AI_USER_DAILY_LIMIT')
+    foreach ($line in (Get-Content -LiteralPath $listingConfigPath -Encoding UTF8)) {
+        if ([string]::IsNullOrWhiteSpace($line) -or $line.TrimStart().StartsWith('#')) { continue }
+        $parts = $line.Split(@('='), 2)
+        if ($parts.Length -ne 2 -or $allowedListingNames -notcontains $parts[0].Trim()) { throw 'Invalid listing assistant configuration field; check the private sample format.' }
+        [Environment]::SetEnvironmentVariable($parts[0].Trim(), $parts[1].Trim(), 'Process')
+    }
+}
+
 function Invoke-CheckedCommand {
     param([string]$Executable, [string[]]$Arguments)
     & $Executable @Arguments

@@ -209,9 +209,11 @@ async function shot(p, name) {
     );
     const categories = await api(c, 'GET', '/categories');
     const cat = categories.find((x) => x.name === '图书教材') || categories[0];
-    await p
-      .getByLabel('分类', { exact: true })
-      .selectOption(String(cat.children?.[0]?.id || cat.id));
+    let leaf = cat;
+    while (leaf.children?.length) leaf = leaf.children[0];
+    await p.getByRole('combobox', { name: '商品大类', exact: true }).selectOption(String(cat.id));
+    if (leaf.id !== cat.id)
+      await p.getByRole('combobox', { name: '小分类', exact: true }).selectOption(String(leaf.id));
     await p.getByLabel('价格（元）', { exact: true }).fill('28');
     await p.getByLabel('库存', { exact: true }).fill('2');
     await p.getByLabel('所在地区', { exact: true }).fill('上海市徐汇区');

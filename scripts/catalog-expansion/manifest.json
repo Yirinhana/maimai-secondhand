@@ -1,0 +1,1490 @@
+{
+  "schemaVersion": 1,
+  "batch": "maimai-experience-catalog-021",
+  "source": "maimai-experience-catalog-021",
+  "notice": "体验账号供给；图片为生成素材，不代表真实供货、功能检测或市场成交价。仅新增商品，不创建订单或评价。",
+  "items": [
+    {
+      "key": "exp021-001",
+      "title": "深灰中长款呢料大衣 M 码",
+      "parent": "服饰鞋包",
+      "category": "上衣外套",
+      "comparisonFamily": "coat",
+      "sellerAnchor": "item-006",
+      "description": "深灰中长款呢料大衣 M 码。\n成色与瑕疵：左袖口少量起球。\nM；衣长约92cm；胸围约104cm；以成分标签复核为准；袖口少量起球，衣身有正常穿着褶皱；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "GOOD",
+      "defects": "左袖口少量起球",
+      "priceCents": 9800,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "size": "M；衣长约92cm；胸围约104cm",
+        "material": "以成分标签复核为准",
+        "care": "袖口少量起球，衣身有正常穿着褶皱",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-001-front.jpg",
+          "sha256": "0507d6fdcef46c27494410ef5c25ab37511d23bb903074942b2afcba0980ab9d",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-002",
+      "title": "驼色宽松呢料大衣 L 码",
+      "parent": "服饰鞋包",
+      "category": "上衣外套",
+      "comparisonFamily": "coat",
+      "sellerAnchor": "item-011",
+      "description": "驼色宽松呢料大衣 L 码。\n成色与瑕疵：下摆内侧轻微摩擦痕。\nL；衣长约98cm；胸围约112cm；以成分标签复核为准；下摆内侧轻微摩擦痕；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "LIKE_NEW",
+      "defects": "下摆内侧轻微摩擦痕",
+      "priceCents": 13800,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "size": "L；衣长约98cm；胸围约112cm",
+        "material": "以成分标签复核为准",
+        "care": "下摆内侧轻微摩擦痕",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-002-front.jpg",
+          "sha256": "262ed174245c58e4ad7ceee73f12720863de49250648f459b61ad310aade9083",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-003",
+      "title": "海军蓝短款呢料外套 S 码",
+      "parent": "服饰鞋包",
+      "category": "上衣外套",
+      "comparisonFamily": "coat",
+      "sellerAnchor": "item-016",
+      "description": "海军蓝短款呢料外套 S 码。\n成色与瑕疵：袖口起球且一处线头松散。\nS；衣长约68cm；胸围约96cm；以成分标签复核为准；袖口起球，线头松散位置需单独拍清；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "FAIR",
+      "defects": "袖口起球且一处线头松散",
+      "priceCents": 6800,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "size": "S；衣长约68cm；胸围约96cm",
+        "material": "以成分标签复核为准",
+        "care": "袖口起球，线头松散位置需单独拍清",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-003-front.jpg",
+          "sha256": "3ee3f728d5ab2a43194d77c6965716f2abfdeae5939886aacfe2da97175054de",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-004",
+      "title": "墨绿拉链帆布单肩包",
+      "parent": "服饰鞋包",
+      "category": "箱包皮具",
+      "comparisonFamily": "canvas-bag",
+      "sellerAnchor": "item-021",
+      "description": "墨绿拉链帆布单肩包。\n成色与瑕疵：包底有轻微摩擦痕。\n约34×29×11cm；帆布面料；包底轻微磨损；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "GOOD",
+      "defects": "包底有轻微摩擦痕",
+      "priceCents": 3800,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "size": "约34×29×11cm",
+        "material": "帆布面料",
+        "care": "包底轻微磨损",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-004-front.jpg",
+          "sha256": "f0f5c61b9603e824750cf9341ae72ae893bef2747965eedc51ced4bc6f9af828",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-005",
+      "title": "海军蓝帆布托特包",
+      "parent": "服饰鞋包",
+      "category": "箱包皮具",
+      "comparisonFamily": "canvas-bag",
+      "sellerAnchor": "item-026",
+      "description": "海军蓝帆布托特包。\n成色与瑕疵：提手颜色略有变浅。\n约36×32×9cm；帆布面料；提手有使用痕迹；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "FAIR",
+      "defects": "提手颜色略有变浅",
+      "priceCents": 2800,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "size": "约36×32×9cm",
+        "material": "帆布面料",
+        "care": "提手有使用痕迹",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-005-front.jpg",
+          "sha256": "161caf8526942086677d0ee539e82b962a40271be8e466bbf926d2eecf2c2d00",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-006",
+      "title": "米白双口袋帆布通勤包",
+      "parent": "服饰鞋包",
+      "category": "箱包皮具",
+      "comparisonFamily": "canvas-bag",
+      "sellerAnchor": "item-031",
+      "description": "米白双口袋帆布通勤包。\n成色与瑕疵：底角有一小处擦痕。\n约35×30×12cm；帆布面料；内外袋需展示，底角有轻微擦痕；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "LIKE_NEW",
+      "defects": "底角有一小处擦痕",
+      "priceCents": 4800,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "size": "约35×30×12cm",
+        "material": "帆布面料",
+        "care": "内外袋需展示，底角有轻微擦痕",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-006-front.jpg",
+          "sha256": "77b07bb0b3cad9ac643f14a6e6c1983bb9ad749349d0678f7a20c8fef6074dec",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-007",
+      "title": "Java 核心技术 卷 I 第11版 少量笔记",
+      "parent": "图书教材",
+      "category": "编程教材",
+      "comparisonFamily": "java-book",
+      "sellerAnchor": "item-036",
+      "description": "Java 核心技术 卷 I 第11版 少量笔记。\n成色与瑕疵：封角磨损，部分页有铅笔笔记。\n第11版；ISBN待版权页核对；部分页有铅笔笔记，随附资料范围需核对；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "GOOD",
+      "defects": "封角磨损，部分页有铅笔笔记",
+      "priceCents": 3200,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "edition": "第11版；ISBN待版权页核对",
+        "annotations": "部分页有铅笔笔记，随附资料范围需核对",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-007-front.jpg",
+          "sha256": "8a2ed74de977b60e44d30353ac70767a181e26f224fed714c971a29239206749",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-008",
+      "title": "Java 核心技术 卷 I 第11版 内页整洁",
+      "parent": "图书教材",
+      "category": "编程教材",
+      "comparisonFamily": "java-book",
+      "sellerAnchor": "item-041",
+      "description": "Java 核心技术 卷 I 第11版 内页整洁。\n成色与瑕疵：封面右下角轻微折痕。\n第11版；ISBN待版权页核对；体验条目设定为内页整洁，配套资料不默认包含；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "LIKE_NEW",
+      "defects": "封面右下角轻微折痕",
+      "priceCents": 4200,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "edition": "第11版；ISBN待版权页核对",
+        "annotations": "体验条目设定为内页整洁，配套资料不默认包含",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-008-front.jpg",
+          "sha256": "58d0024b6ff80ac238169f024ec5ab785a664cad2af8cd3de47cc752f2a14ff0",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-009",
+      "title": "Java 核心技术 卷 I 第11版 封边旧痕",
+      "parent": "图书教材",
+      "category": "编程教材",
+      "comparisonFamily": "java-book",
+      "sellerAnchor": "item-046",
+      "description": "Java 核心技术 卷 I 第11版 封边旧痕。\n成色与瑕疵：封边有明显磨损，数页折角。\n第11版；ISBN待版权页核对；数页折角，是否有缺页需按页核验；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "FAIR",
+      "defects": "封边有明显磨损，数页折角",
+      "priceCents": 2400,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "edition": "第11版；ISBN待版权页核对",
+        "annotations": "数页折角，是否有缺页需按页核验",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-009-front.jpg",
+          "sha256": "de7a8e704745ca711665ba4ca74a333df69948ef4afeb3a12e836fb27e33750a",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-010",
+      "title": "原木色三层窄书架",
+      "parent": "生活家居",
+      "category": "家具收纳",
+      "comparisonFamily": "shelf",
+      "sellerAnchor": "item-051",
+      "description": "原木色三层窄书架。\n成色与瑕疵：第二层前沿一处浅划痕。\n约40×24×80cm；螺丝连接，可拆装；仅同城面交，搬运条件另约；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "GOOD",
+      "defects": "第二层前沿一处浅划痕",
+      "priceCents": 6500,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "dimensions": "约40×24×80cm",
+        "disassembly": "螺丝连接，可拆装",
+        "transport": "仅同城面交，搬运条件另约",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "MEETUP"
+      ],
+      "freightCents": 0,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-010-front.jpg",
+          "sha256": "c3e85580354cd7f0c69e10ba1f06cc811b954aee618fc83ecd1c71799b69ca3c",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-011",
+      "title": "白色三层开放收纳架",
+      "parent": "生活家居",
+      "category": "家具收纳",
+      "comparisonFamily": "shelf",
+      "sellerAnchor": "item-056",
+      "description": "白色三层开放收纳架。\n成色与瑕疵：底脚轻微摩擦印。\n约45×25×85cm；可拆装，工具是否随附需约定；仅同城面交，搬运条件另约；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "LIKE_NEW",
+      "defects": "底脚轻微摩擦印",
+      "priceCents": 8500,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "dimensions": "约45×25×85cm",
+        "disassembly": "可拆装，工具是否随附需约定",
+        "transport": "仅同城面交，搬运条件另约",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "MEETUP"
+      ],
+      "freightCents": 0,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-011-front.jpg",
+          "sha256": "b27e1dcae1193bdb2d08129bcc7e52599d532ee311145bd3c5830ec7bc904b51",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-012",
+      "title": "竹色三层桌边书架",
+      "parent": "生活家居",
+      "category": "家具收纳",
+      "comparisonFamily": "shelf",
+      "sellerAnchor": "item-061",
+      "description": "竹色三层桌边书架。\n成色与瑕疵：层板边缘磨损，背面一处划痕。\n约38×25×78cm；可拆装，螺丝按原配置点清；仅同城面交，搬运条件另约；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "FAIR",
+      "defects": "层板边缘磨损，背面一处划痕",
+      "priceCents": 4500,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "dimensions": "约38×25×78cm",
+        "disassembly": "可拆装，螺丝按原配置点清",
+        "transport": "仅同城面交，搬运条件另约",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "MEETUP"
+      ],
+      "freightCents": 0,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-012-front.jpg",
+          "sha256": "e334bd14e1fc484523a5beacb363f2f46cd7b218fbb0538871288b9fc4a7caa6",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-013",
+      "title": "米白金属折臂阅读台灯",
+      "parent": "生活家居",
+      "category": "灯具装饰",
+      "comparisonFamily": "desk-lamp",
+      "sellerAnchor": "item-006",
+      "description": "米白金属折臂阅读台灯。\n成色与瑕疵：底座有细小划痕。\n底座约16cm，展开高约42cm；灯臂可折叠，灯泡范围需核对；可快递或面交；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "GOOD",
+      "defects": "底座有细小划痕",
+      "priceCents": 3900,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "dimensions": "底座约16cm，展开高约42cm",
+        "disassembly": "灯臂可折叠，灯泡范围需核对",
+        "transport": "可快递或面交",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-013-front.jpg",
+          "sha256": "884c5a143c2a6bb105d15f43ec6580f5911f8890bbb686520311a1932f3936e8",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-014",
+      "title": "墨绿圆罩桌面台灯",
+      "parent": "生活家居",
+      "category": "灯具装饰",
+      "comparisonFamily": "desk-lamp",
+      "sellerAnchor": "item-011",
+      "description": "墨绿圆罩桌面台灯。\n成色与瑕疵：灯罩背部一处细痕。\n底座约15cm，高约36cm；灯罩与底座一体收纳；快递需保护灯罩；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "LIKE_NEW",
+      "defects": "灯罩背部一处细痕",
+      "priceCents": 5900,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "dimensions": "底座约15cm，高约36cm",
+        "disassembly": "灯罩与底座一体收纳",
+        "transport": "快递需保护灯罩",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-014-front.jpg",
+          "sha256": "b7b2d282f76ed2b6733e44da4e85b401c1a6ef293d3fa325bd75e4c421a3676b",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-015",
+      "title": "黑色夹式长臂台灯",
+      "parent": "生活家居",
+      "category": "灯具装饰",
+      "comparisonFamily": "desk-lamp",
+      "sellerAnchor": "item-016",
+      "description": "黑色夹式长臂台灯。\n成色与瑕疵：夹具和关节外侧有正常旧痕。\n长臂展开约55cm；夹具可拆，适用桌厚待核对；可快递或面交；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "FAIR",
+      "defects": "夹具和关节外侧有正常旧痕",
+      "priceCents": 2900,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "dimensions": "长臂展开约55cm",
+        "disassembly": "夹具可拆，适用桌厚待核对",
+        "transport": "可快递或面交",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-015-front.jpg",
+          "sha256": "842e4c26c9eec595a22340d515c94cfc78f7af05641476c3c0ffb23bee9b18c4",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-016",
+      "title": "奶油白珐琅双耳炖锅 22cm",
+      "parent": "生活家居",
+      "category": "厨具餐具",
+      "comparisonFamily": "pot",
+      "sellerAnchor": "item-021",
+      "description": "奶油白珐琅双耳炖锅 22cm。\n成色与瑕疵：锅底有正常灶台摩擦痕。\n口径22cm，容量待实测；含锅盖一只；包裹需保护锅沿与把手；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "GOOD",
+      "defects": "锅底有正常灶台摩擦痕",
+      "priceCents": 7800,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "dimensions": "口径22cm，容量待实测",
+        "disassembly": "含锅盖一只",
+        "transport": "包裹需保护锅沿与把手",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1800,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-016-front.jpg",
+          "sha256": "f5b28db367f5c43698e50e78bdc3336184f78658f3158f81cdef6dc935e7fd91",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-017",
+      "title": "深蓝珐琅双耳炖锅 24cm",
+      "parent": "生活家居",
+      "category": "厨具餐具",
+      "comparisonFamily": "pot",
+      "sellerAnchor": "item-026",
+      "description": "深蓝珐琅双耳炖锅 24cm。\n成色与瑕疵：把手下侧一处细痕。\n口径24cm，容量待实测；含锅盖一只；可快递或面交；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "LIKE_NEW",
+      "defects": "把手下侧一处细痕",
+      "priceCents": 10800,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "dimensions": "口径24cm，容量待实测",
+        "disassembly": "含锅盖一只",
+        "transport": "可快递或面交",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1800,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-017-front.jpg",
+          "sha256": "d1f8d2d426b837fdcc476f68e1af09d3d22a6687f0d2ce275a7063ffa45e65d6",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-018",
+      "title": "灰色铸铁双耳炖锅 20cm",
+      "parent": "生活家居",
+      "category": "厨具餐具",
+      "comparisonFamily": "pot",
+      "sellerAnchor": "item-031",
+      "description": "灰色铸铁双耳炖锅 20cm。\n成色与瑕疵：锅底及锅盖边缘有使用旧痕。\n口径20cm，容量待实测；含锅盖一只；重物快递费用按页面显示；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "FAIR",
+      "defects": "锅底及锅盖边缘有使用旧痕",
+      "priceCents": 5800,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "dimensions": "口径20cm，容量待实测",
+        "disassembly": "含锅盖一只",
+        "transport": "重物快递费用按页面显示",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1800,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-018-front.jpg",
+          "sha256": "5998c89a05fbf3164b8e4401aa386e8f49f4952ad9f18996a64b9bcc224d4af5",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-019",
+      "title": "雾紫色 6mm 瑜伽垫",
+      "parent": "运动户外",
+      "category": "健身瑜伽",
+      "comparisonFamily": "yoga-mat",
+      "sellerAnchor": "item-036",
+      "description": "雾紫色 6mm 瑜伽垫。\n成色与瑕疵：边角有轻微卷边。\n约183×61cm，厚6mm；室内使用条目，边角磨损如图；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "GOOD",
+      "defects": "边角有轻微卷边",
+      "priceCents": 2500,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "dimensions": "约183×61cm，厚6mm",
+        "usage": "室内使用条目，边角磨损如图",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-019-front.jpg",
+          "sha256": "b8a434345abcdf058d6c460cd2555dcceef2e8d1f69d94c0be0deda95675ff34",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-020",
+      "title": "深蓝色 8mm 瑜伽垫 带绑带",
+      "parent": "运动户外",
+      "category": "健身瑜伽",
+      "comparisonFamily": "yoga-mat",
+      "sellerAnchor": "item-041",
+      "description": "深蓝色 8mm 瑜伽垫 带绑带。\n成色与瑕疵：表面一处浅压印。\n约183×61cm，厚8mm；存放时有轻微压痕，带收纳绑带；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "LIKE_NEW",
+      "defects": "表面一处浅压印",
+      "priceCents": 3500,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "dimensions": "约183×61cm，厚8mm",
+        "usage": "存放时有轻微压痕，带收纳绑带",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-020-front.jpg",
+          "sha256": "84b229a868f2e565941a669877c846d6991a6244b1a2ae6979824d39c029aac6",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-021",
+      "title": "浅灰色 10mm 瑜伽垫",
+      "parent": "运动户外",
+      "category": "健身瑜伽",
+      "comparisonFamily": "yoga-mat",
+      "sellerAnchor": "item-046",
+      "description": "浅灰色 10mm 瑜伽垫。\n成色与瑕疵：表面有正常压痕和边角磨损。\n约180×60cm，厚10mm；表面压痕需单独展示，不宣称承重或专业认证；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "FAIR",
+      "defects": "表面有正常压痕和边角磨损",
+      "priceCents": 1800,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "dimensions": "约180×60cm，厚10mm",
+        "usage": "表面压痕需单独展示，不宣称承重或专业认证",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-021-front.jpg",
+          "sha256": "6ac4d5f58d2ba0bcbbaa672960882712d2b87d4431747797e60acb3a980d24ef",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-022",
+      "title": "蓝黑色全碳素羽毛球拍 单支",
+      "parent": "运动户外",
+      "category": "球类运动",
+      "comparisonFamily": "racket",
+      "sellerAnchor": "item-051",
+      "description": "蓝黑色全碳素羽毛球拍 单支。\n成色与瑕疵：拍框顶部两处掉漆。\n单支，重量与线磅待核对；拍框掉漆，结构状况需当面核验；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "GOOD",
+      "defects": "拍框顶部两处掉漆",
+      "priceCents": 8800,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "dimensions": "单支，重量与线磅待核对",
+        "usage": "拍框掉漆，结构状况需当面核验",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-022-front.jpg",
+          "sha256": "aa4dbf73b3e6f20b634e89a56ba97fa351d7566eb56bcd7e968a15a59693c05a",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-023",
+      "title": "白橙色入门羽毛球拍 单支",
+      "parent": "运动户外",
+      "category": "球类运动",
+      "comparisonFamily": "racket",
+      "sellerAnchor": "item-056",
+      "description": "白橙色入门羽毛球拍 单支。\n成色与瑕疵：拍框边缘旧痕，手胶有磨损。\n单支，线磅待核对；手胶建议按需要更换，不含球筒；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "FAIR",
+      "defects": "拍框边缘旧痕，手胶有磨损",
+      "priceCents": 5500,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "dimensions": "单支，线磅待核对",
+        "usage": "手胶建议按需要更换，不含球筒",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-023-front.jpg",
+          "sha256": "a033ceb9949ff73045a7907354317891724947598e706d71a98a1288a9852539",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-024",
+      "title": "黑金色羽毛球拍 含拍套",
+      "parent": "运动户外",
+      "category": "球类运动",
+      "comparisonFamily": "racket",
+      "sellerAnchor": "item-061",
+      "description": "黑金色羽毛球拍 含拍套。\n成色与瑕疵：握柄末端轻微磨损。\n单支，含软拍套；穿线时间与线磅待核对，不保证品牌真伪；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "LIKE_NEW",
+      "defects": "握柄末端轻微磨损",
+      "priceCents": 12800,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "dimensions": "单支，含软拍套",
+        "usage": "穿线时间与线磅待核对，不保证品牌真伪",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-024-front.jpg",
+          "sha256": "050ea29b73db3e6a0b636cce4a7e131b19eb58cda4ca5f7dc1c95cad2131745a",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-025",
+      "title": "森林绿折叠露营椅",
+      "parent": "运动户外",
+      "category": "露营登山",
+      "comparisonFamily": "camp-chair",
+      "sellerAnchor": "item-006",
+      "description": "森林绿折叠露营椅。\n成色与瑕疵：椅脚有户外使用擦痕。\n展开约50×50×80cm；椅脚擦痕，承重以原标签为准；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "GOOD",
+      "defects": "椅脚有户外使用擦痕",
+      "priceCents": 4900,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "dimensions": "展开约50×50×80cm",
+        "usage": "椅脚擦痕，承重以原标签为准",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-025-front.jpg",
+          "sha256": "0bef62e563ccde9c2fed6335e17822ef3079e62420bc22ec05fdf7266b84dda5",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-026",
+      "title": "沙色高背折叠露营椅",
+      "parent": "运动户外",
+      "category": "露营登山",
+      "comparisonFamily": "camp-chair",
+      "sellerAnchor": "item-011",
+      "description": "沙色高背折叠露营椅。\n成色与瑕疵：收纳袋底部轻微磨损。\n展开约52×55×90cm；带收纳袋，支架锁止需使用前检查；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "LIKE_NEW",
+      "defects": "收纳袋底部轻微磨损",
+      "priceCents": 7900,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "dimensions": "展开约52×55×90cm",
+        "usage": "带收纳袋，支架锁止需使用前检查",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-026-front.jpg",
+          "sha256": "8ef69e1220691a8a92830888ea83c9ed4e7e7bc338db2a82d174f158c9091579",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-027",
+      "title": "深灰矮脚便携露营椅",
+      "parent": "运动户外",
+      "category": "露营登山",
+      "comparisonFamily": "camp-chair",
+      "sellerAnchor": "item-016",
+      "description": "深灰矮脚便携露营椅。\n成色与瑕疵：坐面有轻微旧印，支脚磨损。\n展开约48×48×62cm；矮脚款，露营旧痕按细节图展示；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "FAIR",
+      "defects": "坐面有轻微旧印，支脚磨损",
+      "priceCents": 3500,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "dimensions": "展开约48×48×62cm",
+        "usage": "矮脚款，露营旧痕按细节图展示",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-027-front.jpg",
+          "sha256": "adfaa3d7c9417952c0aaf0eac69d46446a2180cb5a52d5ef784362d8b19bec41",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-028",
+      "title": "原木色 40 寸民谣吉他",
+      "parent": "音乐乐器",
+      "category": "吉他与尤克里里",
+      "comparisonFamily": "guitar",
+      "sellerAnchor": "item-021",
+      "description": "原木色 40 寸民谣吉他。\n成色与瑕疵：面板右下角浅划痕。\n40寸；是否单板待核对；外观旧痕已列明，音准和弦距需试弹；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "GOOD",
+      "defects": "面板右下角浅划痕",
+      "priceCents": 18000,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "dimensions": "40寸；是否单板待核对",
+        "usage": "外观旧痕已列明，音准和弦距需试弹",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1800,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-028-front.jpg",
+          "sha256": "11706cdf52c58294003099c015625019a26bc001c9d33f052dc3920a8835adfa",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-029",
+      "title": "棕色渐变 41 寸民谣吉他",
+      "parent": "音乐乐器",
+      "category": "吉他与尤克里里",
+      "comparisonFamily": "guitar",
+      "sellerAnchor": "item-026",
+      "description": "棕色渐变 41 寸民谣吉他。\n成色与瑕疵：背板有一处细微擦痕。\n41寸；含软琴包；弦需按个人习惯调整，演示信息不等于专业检测；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "LIKE_NEW",
+      "defects": "背板有一处细微擦痕",
+      "priceCents": 26000,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "dimensions": "41寸；含软琴包",
+        "usage": "弦需按个人习惯调整，演示信息不等于专业检测",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1800,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-029-front.jpg",
+          "sha256": "fea64986cf3ee3e105992da6ebea9875ad1cbccd99cbc72a71b603331ce68c9a",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-030",
+      "title": "哑光黑 38 寸入门木吉他",
+      "parent": "音乐乐器",
+      "category": "吉他与尤克里里",
+      "comparisonFamily": "guitar",
+      "sellerAnchor": "item-031",
+      "description": "哑光黑 38 寸入门木吉他。\n成色与瑕疵：琴身边缘多处轻微旧痕。\n38寸；不含拾音器；外观旧痕，音梁与琴颈情况需试琴核实；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "FAIR",
+      "defects": "琴身边缘多处轻微旧痕",
+      "priceCents": 12000,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "dimensions": "38寸；不含拾音器",
+        "usage": "外观旧痕，音梁与琴颈情况需试琴核实",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1800,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-030-front.jpg",
+          "sha256": "13dcbf1295e584cd38ec0ee008dc533204b48c8c279b39a6dc77972915ea4a4c",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-031",
+      "title": "森林湖景 1000 片拼图",
+      "parent": "其他闲置",
+      "category": "拼图玩具",
+      "comparisonFamily": "jigsaw",
+      "sellerAnchor": "item-036",
+      "description": "森林湖景 1000 片拼图。\n成色与瑕疵：盒角有磨损。\n标称1000片，成品尺寸待外盒核对；体验条目，需完成清点后确认是否齐片；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "GOOD",
+      "defects": "盒角有磨损",
+      "priceCents": 2200,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "dimensions": "标称1000片，成品尺寸待外盒核对",
+        "usage": "体验条目，需完成清点后确认是否齐片",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-031-front.jpg",
+          "sha256": "29dde61d93e49084d0ea7ad459d479cfe58582824c889d93a1fa40b0e63ef2a8",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-032",
+      "title": "城市街景 1000 片拼图",
+      "parent": "其他闲置",
+      "category": "拼图玩具",
+      "comparisonFamily": "jigsaw",
+      "sellerAnchor": "item-041",
+      "description": "城市街景 1000 片拼图。\n成色与瑕疵：外盒盖一处浅压痕。\n标称1000片，外盒与图案须一致；有分装袋，不能仅凭封面认定齐片；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "LIKE_NEW",
+      "defects": "外盒盖一处浅压痕",
+      "priceCents": 3000,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "dimensions": "标称1000片，外盒与图案须一致",
+        "usage": "有分装袋，不能仅凭封面认定齐片",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-032-front.jpg",
+          "sha256": "37a8eb3fc6f119cfe5a84617e21779c3ca32570d4d9e35b2278b5197208566b1",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-033",
+      "title": "海边灯塔 500 片拼图",
+      "parent": "其他闲置",
+      "category": "拼图玩具",
+      "comparisonFamily": "jigsaw",
+      "sellerAnchor": "item-046",
+      "description": "海边灯塔 500 片拼图。\n成色与瑕疵：盒边有旧痕和少量胶带印。\n标称500片，尺寸待外盒核对；清点结果待核对，不声称未拆封；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "FAIR",
+      "defects": "盒边有旧痕和少量胶带印",
+      "priceCents": 1500,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "dimensions": "标称500片，尺寸待外盒核对",
+        "usage": "清点结果待核对，不声称未拆封",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-033-front.jpg",
+          "sha256": "081c7500b59d88e7357b4c294048ca23cc6372ec03db0efeabcabbfd3cbfcc1d",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-034",
+      "title": "蓝灰家用手工具箱",
+      "parent": "其他闲置",
+      "category": "五金工具",
+      "comparisonFamily": "hand-tools",
+      "sellerAnchor": "item-051",
+      "description": "蓝灰家用手工具箱 组合工具。\n成色与瑕疵：箱面有浅划痕。\n约28×20×7cm；12件清单待逐件核对；手动工具，不含电动设备；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "GOOD",
+      "defects": "箱面有浅划痕",
+      "priceCents": 4500,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "dimensions": "约28×20×7cm；12件清单待逐件核对",
+        "usage": "手动工具，不含电动设备",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-034-front.jpg",
+          "sha256": "cd03da65d1b403c30ade645de3b19d35111c44b88732ac280c953e8f14dc010a",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-035",
+      "title": "黑黄家用手工具箱",
+      "parent": "其他闲置",
+      "category": "五金工具",
+      "comparisonFamily": "hand-tools",
+      "sellerAnchor": "item-056",
+      "description": "黑黄家用手工具箱 组合工具。\n成色与瑕疵：把手下侧有轻微擦痕。\n约32×23×8cm；16件清单待逐件核对；钳子扳手等手动工具，是否缺件需核对；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "LIKE_NEW",
+      "defects": "把手下侧有轻微擦痕",
+      "priceCents": 6500,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "dimensions": "约32×23×8cm；16件清单待逐件核对",
+        "usage": "钳子扳手等手动工具，是否缺件需核对",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-035-front.jpg",
+          "sha256": "69b6daecfbc24bcad9e695c1b5f7e189f91012912dfcc95493811d1b503b9df2",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-036",
+      "title": "红灰便携维修工具箱",
+      "parent": "其他闲置",
+      "category": "五金工具",
+      "comparisonFamily": "hand-tools",
+      "sellerAnchor": "item-061",
+      "description": "红灰便携维修工具箱 组合工具。\n成色与瑕疵：部分工具有使用旧痕。\n约24×18×6cm；9件清单待逐件核对；普通家庭工具，不作绝缘防护或专业安全保证；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "FAIR",
+      "defects": "部分工具有使用旧痕",
+      "priceCents": 2800,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "dimensions": "约24×18×6cm；9件清单待逐件核对",
+        "usage": "普通家庭工具，不作绝缘防护或专业安全保证",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-036-front.jpg",
+          "sha256": "ab9c0c6c636e949ac0a9f379ab95f0caa974ee658b131a9b78faa90a5b27e736",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-037",
+      "title": "黑色方形电子体重秤",
+      "parent": "美妆个护",
+      "category": "健康测量",
+      "comparisonFamily": "scale",
+      "sellerAnchor": "item-006",
+      "description": "黑色方形电子体重秤。\n成色与瑕疵：玻璃角位轻微擦痕。\n约28×28cm；电池型号待核对；家用体重记录，精度需实际校验；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "GOOD",
+      "defects": "玻璃角位轻微擦痕",
+      "priceCents": 2500,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "dimensions": "约28×28cm；电池型号待核对",
+        "usage": "家用体重记录，精度需实际校验",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-037-front.jpg",
+          "sha256": "c2ce3ccc29ea1d7a9acb05a251feb338c4e2a1eb3267bf6ff52ea3dcfe032b6b",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-038",
+      "title": "浅粉色电子体重秤",
+      "parent": "美妆个护",
+      "category": "健康测量",
+      "comparisonFamily": "scale",
+      "sellerAnchor": "item-011",
+      "description": "浅粉色电子体重秤。\n成色与瑕疵：底部脚垫有正常摩擦印。\n约30×30cm；电池范围待核对；非医疗器械，不提供诊断功能；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "LIKE_NEW",
+      "defects": "底部脚垫有正常摩擦印",
+      "priceCents": 3800,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "dimensions": "约30×30cm；电池范围待核对",
+        "usage": "非医疗器械，不提供诊断功能",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-038-front.jpg",
+          "sha256": "f839bef70a15c424a1c67a5fd378968c019c44757d21eaa39094feaabd997be7",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-039",
+      "title": "竹纹圆角电子体重秤",
+      "parent": "美妆个护",
+      "category": "健康测量",
+      "comparisonFamily": "scale",
+      "sellerAnchor": "item-016",
+      "description": "竹纹圆角电子体重秤。\n成色与瑕疵：边框和底面有旧痕。\n约28×28cm；显示方式待核对；不默认支持APP或体脂测量；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "FAIR",
+      "defects": "边框和底面有旧痕",
+      "priceCents": 1800,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "dimensions": "约28×28cm；显示方式待核对",
+        "usage": "不默认支持APP或体脂测量",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-039-front.jpg",
+          "sha256": "a577e881f341953d88cbcf4253d9474c8af36bf73a56fb88cb43fa300d98e1cb",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-040",
+      "title": "灰白紧凑型有线机械键盘",
+      "parent": "数码电子",
+      "category": "电脑及配件",
+      "comparisonFamily": "keyboard",
+      "sellerAnchor": "item-021",
+      "description": "灰白 87 键有线机械键盘。\n成色与瑕疵：空格键有轻微打油。\n紧凑配列，USB有线；有线设备，无电池；拆修记录待核对；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "GOOD",
+      "defects": "空格键有轻微打油",
+      "priceCents": 8500,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "capacity": "紧凑配列，USB有线",
+        "battery": "有线设备，无电池",
+        "repair": "拆修记录待核对",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-040-front.jpg",
+          "sha256": "416c373df81345da4378683aa9d42adc1af6a4c8330fa32d9f07be2a595dab92",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-041",
+      "title": "黑色全尺寸有线机械键盘",
+      "parent": "数码电子",
+      "category": "电脑及配件",
+      "comparisonFamily": "keyboard",
+      "sellerAnchor": "item-026",
+      "description": "黑色 104 键有线机械键盘。\n成色与瑕疵：常用键帽有正常打油。\n带数字区全尺寸配列，USB有线；有线设备，无电池；拆修记录待核对；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "FAIR",
+      "defects": "常用键帽有正常打油",
+      "priceCents": 6500,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "capacity": "带数字区全尺寸配列，USB有线",
+        "battery": "有线设备，无电池",
+        "repair": "拆修记录待核对",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-041-front.jpg",
+          "sha256": "a51e3be51f8c7777da75203de6c1950de86e36d53f871288b60e83eea018e49d",
+          "reviewed": true
+        }
+      ]
+    },
+    {
+      "key": "exp021-042",
+      "title": "浅灰迷你有线机械键盘",
+      "parent": "数码电子",
+      "category": "电脑及配件",
+      "comparisonFamily": "keyboard",
+      "sellerAnchor": "item-031",
+      "description": "浅灰 68 键有线机械键盘。\n成色与瑕疵：外壳背侧有一处细痕。\n迷你配列，USB有线；有线设备，无电池；轴体型号和拆修记录待核对；未核定，不以生成图确认品牌型号；以本条描述及图片明确列出的配件为准，其他不默认包含。\n供给范围：单件个人闲置，随附物品以本条说明为准。",
+      "condition": "LIKE_NEW",
+      "defects": "外壳背侧有一处细痕",
+      "priceCents": 11500,
+      "stock": 1,
+      "supplyNote": "体验账号个人闲置整理，单件库存；不承诺稳定货源。图片为生成素材，体验来源在详情及比价中保留。",
+      "specifications": {
+        "capacity": "迷你配列，USB有线",
+        "battery": "有线设备，无电池",
+        "repair": "轴体型号和拆修记录待核对",
+        "brand": "未核定，不以生成图确认品牌型号",
+        "accessories": "以本条描述及图片明确列出的配件为准，其他不默认包含"
+      },
+      "deliveryMethods": [
+        "EXPRESS",
+        "MEETUP"
+      ],
+      "freightCents": 1000,
+      "returnPromise": "按平台售后规则协商处理",
+      "shippingProvinces": [],
+      "images": [
+        {
+          "view": "front",
+          "file": "exp021-042-front.jpg",
+          "sha256": "2d69cb16fa798ce52c5f751349eed575a5ac3c188f965abbbe0b453edf5e163a",
+          "reviewed": true
+        }
+      ]
+    }
+  ]
+}

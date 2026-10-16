@@ -89,7 +89,7 @@ async function request<T>(
       method,
       credentials: 'same-origin',
       signal: AbortSignal.timeout(
-        path.startsWith('/ai/workflows') || path === '/support/chat' || /\/(ai-assessment|ai-help)$/.test(path)
+        path.startsWith('/ai/workflows') || path === '/support/chat' || path === '/me/listing-assistant/recognize' || /\/(ai-assessment|ai-help)$/.test(path)
           ? 65000
           : 15000,
       ),

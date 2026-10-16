@@ -25,7 +25,8 @@ async function shot(p,name){await noOverflow(p);const file=path.join(OUT,name+'.
  await secondPage.getByLabel('标题',{exact:true}).fill('第二设备的修改 '+run);await expect.poll(async()=> (await api(second,'GET','/me/listing-drafts/new')).payload?.form.title).toBe('第二设备的修改 '+run);
  await sp.getByLabel('标题',{exact:true}).fill('本机保留版本 '+run);await expect(sp.getByRole('button',{name:'用本机内容更新云端'})).toBeVisible();await sp.getByRole('button',{name:'用本机内容更新云端'}).click();await expect.poll(async()=> (await api(seller.ctx,'GET','/me/listing-drafts/new')).payload?.form.title).toBe('本机保留版本 '+run);
  await secondPage.close();await second.close();
- await sp.getByLabel('分类',{exact:true}).selectOption(String(category.id));await sp.getByLabel('品牌 / 型号',{exact:true}).fill('本地核查手机');await sp.getByLabel('电池状态',{exact:true}).fill('86%');
+ const containsCategory=c=>c.id===category.id||c.children?.some(containsCategory);const rootCategory=cats.find(containsCategory);
+ await sp.getByRole('combobox',{name:'商品大类',exact:true}).selectOption(String(rootCategory.id));if(rootCategory.id!==category.id)await sp.getByRole('combobox',{name:'小分类',exact:true}).selectOption(String(category.id));await sp.getByLabel('品牌 / 型号',{exact:true}).fill('本地核查手机');await sp.getByLabel('电池状态',{exact:true}).fill('86%');
  await sp.locator('.draft-photos input[type=file]').setInputFiles(path.join(__dirname,'fixture8x8.png'));await expect(sp.locator('.draft-photo-grid img')).toHaveCount(1);
  await expect.poll(async()=> (await api(seller.ctx,'GET','/me/listing-drafts/new')).payload?.imageIds?.length).toBe(1);
  const imageId=(await api(seller.ctx,'GET','/me/listing-drafts/new')).payload.imageIds[0];const denied=await buyer.ctx.request.get(BASE+'/api/v1/me/media/'+imageId);expect(denied.status()).toBe(404);

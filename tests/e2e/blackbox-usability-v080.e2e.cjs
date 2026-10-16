@@ -21,7 +21,7 @@ async function login(p,email,switching=false){await p.goto(BASE+'/login'+(switch
   await p.getByLabel(/^价格（元）/).fill('12.345');await p.getByLabel(/^库存/).fill('-1');
   await p.getByLabel(/^商品描述/).fill('中途离开后保留这段描述。');
   await p.getByRole('button',{name:'保存草稿',exact:true}).click();
-  await expect(p.getByLabel(/^分类/)).toBeFocused();
+  await expect(p.getByRole('combobox',{name:'商品大类',exact:true})).toBeFocused();
   await expect(p.locator('#product-priceYuan-error')).toContainText('最多保留两位小数');
   await expect(p.locator('#product-stock-error')).toContainText('不能填写小数或负数');
   await shot(p,'draft-errors-desktop');
@@ -50,7 +50,10 @@ async function login(p,email,switching=false){await p.goto(BASE+'/login'+(switch
   await expect(p.getByLabel('标题',{exact:true})).toHaveValue('');await p.reload();await expect(p.getByLabel('标题',{exact:true})).toHaveValue('');
   if(local){
    await p.getByLabel('标题',{exact:true}).fill('未发布的表单验收记录 '+run);
-   const last=await p.getByLabel(/^分类/).locator('option').last().getAttribute('value');await p.getByLabel(/^分类/).selectOption(last);
+   const rootSelector=p.getByRole('combobox',{name:'商品大类',exact:true});
+   const last=await rootSelector.locator('option').last().getAttribute('value');await rootSelector.selectOption(last);
+   const childSelector=p.getByRole('combobox',{name:'小分类',exact:true});
+   if(await childSelector.count())await childSelector.selectOption(await childSelector.locator('option').last().getAttribute('value'));
    await p.getByLabel(/^价格（元）/).fill('25.01');await p.getByLabel(/^库存/).fill('3');await p.getByLabel(/^所在地区/).fill('上海市');
    await p.getByRole('button',{name:'保存草稿',exact:true}).click();await expect(p).toHaveURL(/\/publish\/\d+$/, {timeout:15000});
    await expect(p.locator('input[type="file"]')).toBeFocused();

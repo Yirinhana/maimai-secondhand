@@ -6,6 +6,7 @@
 !*.env.example
 node_modules/
 dist/
+.vite/
 target/
 __pycache__/
 *.py[cod]

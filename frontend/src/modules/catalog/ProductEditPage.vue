@@ -2,7 +2,9 @@
   <div class="mm-edit">
     <header class="mm-edit__page-header">
       <div>
-        <h1 class="mm-edit__heading">{{ isEdit ? '编辑商品' : '发布闲置' }}</h1>
+        <h1 class="mm-edit__heading">
+          {{ isEdit ? '编辑商品' : '发布闲置' }}
+        </h1>
         <p class="mm-muted">写清物品情况，让合适的买家更快找到你。</p>
       </div>
       <div v-if="!pageLoading && !pageError" class="mm-edit__save-group">
@@ -67,6 +69,36 @@
           novalidate
           @submit.prevent
         >
+          <MmCard
+            v-if="!isEdit"
+            title="先添加商品照片"
+            class="mm-edit__section"
+          >
+            <DraftPhotos
+              :key="auth.me?.id"
+              v-model="draftImageIds"
+              @busy="draftPhotoUploading = $event"
+            />
+          </MmCard>
+          <ListingAssistant
+            v-if="auth.me"
+            :key="`${auth.me.id}:${productId ?? 'new'}:${assistantEpoch}`"
+            class="mm-edit__section"
+            :owner-id="auth.me.id"
+            :draft-image-ids="draftImageIds"
+            :title="form.title"
+            :category-id="form.categoryId"
+            :current-price="form.priceYuan"
+            :product-id="productId"
+            :uploading="draftPhotoUploading"
+            :feedback="assistantFeedback"
+            @recognition-start="beginRecognition"
+            @recognition="applyRecognition"
+            @use-price="
+              form.priceYuan = $event;
+              fieldErrors.priceYuan = '';
+            "
+          />
           <MmCard title="基本信息" class="mm-edit__section">
             <div class="mm-edit__fields">
               <MmInput
@@ -78,29 +110,63 @@
                 placeholder="一句话说明这件闲置"
                 :error="fieldErrors.title"
               />
-              <label class="mm-edit__field">
-                <span class="mm-edit__label">分类</span>
-                <select
-                  v-model="form.categoryId"
-                  aria-label="分类"
-                  @input="fieldErrors.categoryId = ''"
-                  :aria-invalid="!!fieldErrors.categoryId"
-                  :aria-describedby="
-                    fieldErrors.categoryId
-                      ? 'product-categoryId-error'
-                      : undefined
-                  "
-                >
-                  <option value="" disabled>请选择分类</option>
-                  <option
-                    v-for="opt in categoryOptions"
-                    :key="opt.id"
-                    :value="String(opt.id)"
+              <div class="mm-edit__category-fields">
+                <label class="mm-edit__field">
+                  <span class="mm-edit__label">商品大类</span>
+                  <select
+                    :value="selectedRootId"
+                    aria-label="商品大类"
+                    :aria-invalid="!!fieldErrors.categoryId && !selectedRootId"
+                    :aria-describedby="
+                      fieldErrors.categoryId
+                        ? 'product-categoryId-error'
+                        : undefined
+                    "
+                    @change="
+                      selectRoot(($event.target as HTMLSelectElement).value)
+                    "
                   >
-                    {{ opt.name }}
-                  </option>
-                </select>
-
+                    <option value="" disabled>先选择商品大类</option>
+                    <option
+                      v-for="root in categoryTree"
+                      :key="root.id"
+                      :value="String(root.id)"
+                    >
+                      {{ root.name }}
+                    </option>
+                  </select>
+                </label>
+                <label
+                  v-if="selectedRoot?.children.length"
+                  class="mm-edit__field"
+                >
+                  <span class="mm-edit__label">小分类</span>
+                  <select
+                    v-model="form.categoryId"
+                    aria-label="小分类"
+                    :aria-invalid="!!fieldErrors.categoryId"
+                    :aria-describedby="
+                      fieldErrors.categoryId
+                        ? 'product-categoryId-error'
+                        : undefined
+                    "
+                    @change="fieldErrors.categoryId = ''"
+                  >
+                    <option value="" disabled>
+                      再选择 {{ selectedRoot.name }} 下的小分类
+                    </option>
+                    <option
+                      v-for="opt in childCategories"
+                      :key="opt.id"
+                      :value="String(opt.id)"
+                    >
+                      {{ opt.name }}
+                    </option>
+                  </select>
+                </label>
+                <p v-else-if="!selectedRootId" class="mm-edit__hint">
+                  选择大类后，再选择对应的小分类。
+                </p>
                 <span
                   v-if="fieldErrors.categoryId"
                   id="product-categoryId-error"
@@ -108,7 +174,7 @@
                   role="alert"
                   >{{ fieldErrors.categoryId }}</span
                 >
-              </label>
+              </div>
               <label class="mm-edit__field">
                 <span class="mm-edit__label">商品描述</span>
                 <textarea
@@ -362,8 +428,7 @@
             </div>
           </MmCard>
 
-          <!-- New-listing photos remain private until the draft becomes a product. -->
-          <MmCard title="商品图片" class="mm-edit__section">
+          <MmCard v-if="isEdit" title="商品图片" class="mm-edit__section">
             <template v-if="isEdit">
               <p class="mm-edit__hint">
                 合计 1~9 张，单张 ≤5MB，仅支持 JPG /
@@ -411,11 +476,6 @@
                 {{ imageError }}
               </p>
             </template>
-            <DraftPhotos
-              v-else
-              v-model="draftImageIds"
-              @busy="draftPhotoUploading = $event"
-            />
           </MmCard>
 
           <!-- 库存调整：编辑模式独立入口 -->
@@ -597,6 +657,15 @@
 import GovernanceNotice from '../../shared/components/GovernanceNotice.vue';
 import { useCloudDraft } from './useCloudDraft';
 import DraftPhotos from './DraftPhotos.vue';
+import ListingAssistant from './ListingAssistant.vue';
+import {
+  blankRecognitionPatch,
+  categoryLeaves,
+  categoryRoot,
+  type ListingEdits,
+  type ListingFields,
+  type ListingRecognition,
+} from './listingAssistant';
 import ProductSpecifications from './ProductSpecifications.vue';
 import WorkflowAssistant from '../support/WorkflowAssistant.vue';
 import JourneyGuide from '../../shared/components/JourneyGuide.vue';
@@ -605,7 +674,15 @@ import MapPicker, {
   type SelectedAddress,
 } from '../../shared/components/MapPicker.vue';
 import ProductRevisions from './ProductRevisions.vue';
-import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue';
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  reactive,
+  ref,
+  watch,
+} from 'vue';
 import { useAuthStore } from '../../shared/stores/auth';
 import { parseYuan } from '../../shared/moneyInput';
 import { askConfirmation } from '../../shared/confirm';
@@ -652,15 +729,32 @@ const productId = computed(() => {
 });
 const isEdit = computed(() => productId.value !== null);
 
-interface CategoryOption {
-  id: number;
-  name: string;
-}
-
-const categoryOptions = ref<CategoryOption[]>([]);
+const categoryTree = ref<Category[]>([]);
+const categoryOptions = computed(() => categoryLeaves(categoryTree.value));
+const selectedRootId = ref('');
+const selectedRoot = computed(() =>
+  categoryTree.value.find((root) => String(root.id) === selectedRootId.value),
+);
+const childCategories = computed(() =>
+  categoryLeaves(selectedRoot.value?.children ?? []),
+);
 const product = ref<ProductDetail | null>(null);
 const pageLoading = ref(true);
 const pageError = ref('');
+let pageLoadEpoch = 0,
+  editorDisposed = false;
+const editorOwnerId = auth.me?.id;
+const currentLoad = (generation: number) =>
+  !editorDisposed &&
+  generation === pageLoadEpoch &&
+  auth.me?.id === editorOwnerId;
+let categoryRequest: Promise<Category[]> | undefined;
+const loadCategories = () =>
+  (categoryRequest ??= get<Category[]>('/categories'));
+onBeforeUnmount(() => {
+  editorDisposed = true;
+  pageLoadEpoch++;
+});
 
 const stateNotice = computed(() =>
   product.value
@@ -698,6 +792,87 @@ const emptyForm = () => ({
   shippingProvinces: [] as string[],
 });
 const form = reactive(emptyForm());
+const assistantEpoch = ref(0),
+  assistantFeedback = ref('');
+const assistantEdits: ListingEdits = {
+  title: 0,
+  categoryId: 0,
+  description: 0,
+};
+let recognitionStart: {
+  ownerId: number;
+  productId: number | null;
+  fields: ListingFields;
+  edits: ListingEdits;
+} | null = null;
+for (const field of ['title', 'categoryId', 'description'] as const) {
+  watch(
+    () => form[field],
+    () => {
+      assistantEdits[field]++;
+    },
+    { flush: 'sync' },
+  );
+}
+watch(
+  () => form.categoryId,
+  (id) => {
+    if (id) selectedRootId.value = categoryRoot(categoryTree.value, id);
+  },
+  { flush: 'sync' },
+);
+function selectRoot(id: string) {
+  selectedRootId.value = id;
+  assistantEdits.categoryId++;
+  const root = selectedRoot.value;
+  if (!root) form.categoryId = '';
+  else if (!root.children.length) form.categoryId = String(root.id);
+  else if (
+    !childCategories.value.some((child) => String(child.id) === form.categoryId)
+  )
+    form.categoryId = '';
+  fieldErrors.categoryId = '';
+}
+function beginRecognition() {
+  assistantFeedback.value = '';
+  recognitionStart = auth.me
+    ? {
+        ownerId: auth.me.id,
+        productId: productId.value,
+        fields: {
+          title: form.title,
+          categoryId: form.categoryId,
+          description: form.description,
+        },
+        edits: { ...assistantEdits },
+      }
+    : null;
+}
+function applyRecognition(suggestion: ListingRecognition) {
+  if (
+    !recognitionStart ||
+    recognitionStart.ownerId !== auth.me?.id ||
+    recognitionStart.productId !== productId.value
+  )
+    return;
+  const { patch, filled, kept } = blankRecognitionPatch(
+    form,
+    recognitionStart.fields,
+    assistantEdits,
+    recognitionStart.edits,
+    suggestion,
+    categoryOptions.value.map((c) => c.id),
+  );
+  Object.assign(form, patch);
+  if (patch.title) fieldErrors.title = '';
+  if (patch.categoryId) fieldErrors.categoryId = '';
+  assistantFeedback.value = [
+    filled.length ? `已填入：${filled.join('、')}。` : '没有覆盖当前填写内容。',
+    kept.length ? `已保留你填写或调整过的${kept.join('、')}。` : '',
+    '请核对识别内容，补充实际成色、缺陷和价格。',
+  ].join('');
+  recognitionStart = null;
+}
 const draftImageIds = ref<string[]>([]),
   createdProductId = ref<number | null>(null);
 const limitShipping = ref(false),
@@ -743,18 +918,6 @@ const stockLoading = ref(false);
 const stockError = ref('');
 const stockMessage = ref('');
 
-function flattenCategories(
-  tree: Category[],
-  prefix: string,
-  out: CategoryOption[],
-) {
-  for (const c of tree) {
-    out.push({ id: c.id, name: prefix + c.name });
-    if (c.children?.length)
-      flattenCategories(c.children, prefix + c.name + ' / ', out);
-  }
-}
-
 function fillForm(p: ProductDetail) {
   form.specifications = { ...(p.specifications ?? {}) };
   form.title = p.title;
@@ -772,41 +935,53 @@ function fillForm(p: ProductDetail) {
   limitShipping.value = form.shippingProvinces.length > 0;
 }
 
-async function loadProduct(preserveInput = false) {
-  if (productId.value === null) return;
-  const p = await get<ProductDetail>(`/seller/products/${productId.value}`);
+async function loadProduct(preserveInput = false, generation = pageLoadEpoch) {
+  const requestedProductId = productId.value;
+  if (requestedProductId === null) return false;
+  const p = await get<ProductDetail>(`/seller/products/${requestedProductId}`);
+  if (!currentLoad(generation) || productId.value !== requestedProductId)
+    return false;
   product.value = p;
-  if (preserveInput) return;
-  fillForm(p);
-  form.categoryId = String(p.categoryId ?? '');
+  if (!preserveInput) {
+    fillForm(p);
+    form.categoryId = String(p.categoryId ?? '');
+  }
+  return true;
 }
 
 onMounted(async () => {
+  const generation = ++pageLoadEpoch;
   try {
-    provinceOptions.value = await get<string[]>('/shipping-provinces');
+    const provinces = await get<string[]>('/shipping-provinces');
+    if (editorDisposed || auth.me?.id !== editorOwnerId) return;
+    provinceOptions.value = provinces;
+    if (!currentLoad(generation)) return;
   } catch (e) {
+    if (!currentLoad(generation)) return;
     provinceError.value = (e as ApiError).message || '配送省份列表加载失败';
   }
   try {
-    const tree = await get<Category[]>('/categories');
-    const out: CategoryOption[] = [];
-    flattenCategories(tree, '', out);
-    categoryOptions.value = out;
+    const categories = await loadCategories();
+    if (!currentLoad(generation)) return;
+    categoryTree.value = categories;
   } catch (e) {
+    if (!currentLoad(generation)) return;
     pageError.value = (e as ApiError).message || '分类加载失败';
     pageLoading.value = false;
     return;
   }
   if (isEdit.value) {
     try {
-      await loadProduct();
+      if (!(await loadProduct(false, generation))) return;
     } catch (e) {
+      if (!currentLoad(generation)) return;
       pageError.value = (e as ApiError).message || '商品加载失败';
     }
   }
+  if (!currentLoad(generation)) return;
   restoreDraft();
   await cloud.initialize(hasLocalDraft());
-  pageLoading.value = false;
+  if (currentLoad(generation)) pageLoading.value = false;
 });
 
 const yuanToCents = parseYuan;
@@ -833,8 +1008,12 @@ function hasLocalDraft() {
 }
 function applyDraftData(raw: unknown) {
   if (!raw) {
+    assistantEpoch.value++;
+    assistantFeedback.value = '';
+    recognitionStart = null;
     trackDraft = false;
     Object.assign(form, emptyForm());
+    selectedRootId.value = '';
     draftImageIds.value = [];
     createdProductId.value = null;
     limitShipping.value = false;
@@ -849,6 +1028,9 @@ function applyDraftData(raw: unknown) {
   if (typeof raw !== 'object') return;
   const data = raw as Record<string, unknown>;
   if (data.schema !== 1 || !data.form || typeof data.form !== 'object') return;
+  assistantEpoch.value++;
+  assistantFeedback.value = '';
+  recognitionStart = null;
   const saved = data.form as Record<string, unknown>,
     defaults = emptyForm();
   trackDraft = false;
@@ -900,6 +1082,15 @@ function applyDraftData(raw: unknown) {
     data.productId > 0
       ? data.productId
       : null;
+  selectedRootId.value =
+    categoryRoot(categoryTree.value, form.categoryId) ||
+    (categoryTree.value.some(
+      (root) =>
+        String(root.id) ===
+        String(saved.rootCategoryId ?? data.rootCategoryId ?? ''),
+    )
+      ? String(saved.rootCategoryId ?? data.rootCategoryId)
+      : '');
   mapResetKey.value++;
   trackDraft = true;
   persistDraft();
@@ -907,7 +1098,7 @@ function applyDraftData(raw: unknown) {
 const cloudSource = computed(() =>
   JSON.stringify({
     schema: 1,
-    form,
+    form: { ...form, rootCategoryId: selectedRootId.value },
     limitShipping: limitShipping.value,
     imageIds: draftImageIds.value,
     productId: createdProductId.value,
@@ -948,7 +1139,7 @@ function removeSavedDraft() {
   }
 }
 watch(
-  [form, limitShipping, draftImageIds, createdProductId],
+  [form, limitShipping, draftImageIds, createdProductId, selectedRootId],
   () => {
     if (trackDraft) persistDraft();
   },
@@ -966,7 +1157,11 @@ async function clearForm() {
   )
     return;
   trackDraft = false;
+  assistantEpoch.value++;
+  assistantFeedback.value = '';
+  recognitionStart = null;
   Object.assign(form, emptyForm());
+  selectedRootId.value = '';
   draftImageIds.value = [];
   createdProductId.value = null;
   await cloud.clear();
@@ -1005,7 +1200,9 @@ function validate(): boolean {
     (c) => String(c.id) === form.categoryId,
   )
     ? ''
-    : '请选择分类';
+    : selectedRootId.value
+      ? '请选择对应的小分类'
+      : '请先选择商品大类，再选择小分类';
   const price = yuanToCents(form.priceYuan);
   fieldErrors.priceYuan =
     price !== null && price >= 1
@@ -1258,6 +1455,7 @@ watch(
   () => route.params.id,
   async (id, previous) => {
     if (id === previous) return;
+    const generation = ++pageLoadEpoch;
     trackDraft = false;
     cloud.ready.value = false;
     draftImageIds.value = [];
@@ -1265,19 +1463,26 @@ watch(
     pageLoading.value = true;
     pageError.value = '';
     try {
-      if (id) await loadProduct();
-      else {
+      const categories = await loadCategories();
+      if (!currentLoad(generation)) return;
+      categoryTree.value = categories;
+      if (id) {
+        if (!(await loadProduct(false, generation))) return;
+      } else {
         product.value = null;
         Object.assign(form, emptyForm());
+        selectedRootId.value = '';
         limitShipping.value = false;
       }
       restoreDraft();
       await cloud.initialize(hasLocalDraft());
     } catch (e) {
+      if (!currentLoad(generation)) return;
       pageError.value = (e as ApiError).message;
     } finally {
-      pageLoading.value = false;
+      if (currentLoad(generation)) pageLoading.value = false;
     }
+    if (!currentLoad(generation)) return;
     if (!previous && id && !pageError.value) {
       await nextTick();
       saveMessage.value = product.value?.images.length
@@ -1449,6 +1654,20 @@ watch(
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: var(--mm-space-4);
+}
+.mm-edit__category-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+.mm-edit__category-fields > .mm-edit__field-error {
+  grid-column: 1 / -1;
+}
+@media (max-width: 600px) {
+  .mm-edit__category-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .mm-edit__field {
